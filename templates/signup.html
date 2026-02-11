@@ -25,7 +25,34 @@
             </div>
             <div class="form-group">
                 <label>Country <span class="required">*</span></label>
-                <input type="text" name="country" class="form-input" placeholder="e.g. Ghana, Nigeria, Kenya" required>
+                <select name="country" id="countrySelect" class="form-input" required>
+                    <option value="">Select your country</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Date of Birth <span class="required">*</span></label>
+                <div style="display:flex;gap:8px;">
+                    <select name="dob_day" id="dobDay" class="form-input" required style="flex:1;"><option value="">DD</option></select>
+                    <select name="dob_month" id="dobMonth" class="form-input" required style="flex:1;"><option value="">MM</option></select>
+                    <select name="dob_year" id="dobYear" class="form-input" required style="flex:1.2;"><option value="">YYYY</option></select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>How did you hear about us? <span class="required">*</span></label>
+                <select name="hear_about" id="hearAbout" class="form-input" required>
+                    <option value="">Select an option</option>
+                    <option value="Social Media">Social Media</option>
+                    <option value="Friend Recommended">Friend Recommended</option>
+                    <option value="Google Search">Google Search</option>
+                    <option value="School/Teacher">School/Teacher</option>
+                    <option value="Online Forum">Online Forum</option>
+                    <option value="Blog/Article">Blog/Article</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="form-group" id="friendNameGroup" style="display:none;">
+                <label>Friend's Name</label>
+                <input type="text" name="friend_name" class="form-input" placeholder="Who recommended us?">
             </div>
             <div class="form-group">
                 <label>Education Level <span class="required">*</span></label>
@@ -83,4 +110,19 @@
         <button onclick="document.getElementById('termsModal').style.display='none'" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:20px;">I Understand</button>
     </div>
 </div>
+{% endblock %}
+{% block scripts %}
+<script>
+const countries = ["Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda","Argentina","Armenia","Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan","Bolivia","Bosnia and Herzegovina","Botswana","Brazil","Brunei","Bulgaria","Burkina Faso","Burundi","Cabo Verde","Cambodia","Cameroon","Canada","Central African Republic","Chad","Chile","China","Colombia","Comoros","Congo (DRC)","Congo (Republic)","Costa Rica","Côte d'Ivoire","Croatia","Cuba","Cyprus","Czech Republic","Denmark","Djibouti","Dominica","Dominican Republic","Ecuador","Egypt","El Salvador","Equatorial Guinea","Eritrea","Estonia","Eswatini","Ethiopia","Fiji","Finland","France","Gabon","Gambia","Georgia","Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guinea-Bissau","Guyana","Haiti","Honduras","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland","Israel","Italy","Jamaica","Japan","Jordan","Kazakhstan","Kenya","Kiribati","Kosovo","Kuwait","Kyrgyzstan","Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg","Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania","Mauritius","Mexico","Micronesia","Moldova","Monaco","Mongolia","Montenegro","Morocco","Mozambique","Myanmar","Namibia","Nauru","Nepal","Netherlands","New Zealand","Nicaragua","Niger","Nigeria","North Korea","North Macedonia","Norway","Oman","Pakistan","Palau","Palestine","Panama","Papua New Guinea","Paraguay","Peru","Philippines","Poland","Portugal","Qatar","Romania","Russia","Rwanda","Saint Kitts and Nevis","Saint Lucia","Saint Vincent and the Grenadines","Samoa","San Marino","São Tomé and Príncipe","Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia","Solomon Islands","Somalia","South Africa","South Korea","South Sudan","Spain","Sri Lanka","Sudan","Suriname","Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania","Thailand","Timor-Leste","Togo","Tonga","Trinidad and Tobago","Tunisia","Turkey","Turkmenistan","Tuvalu","Uganda","Ukraine","United Arab Emirates","United Kingdom","United States","Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe"];
+const sel = document.getElementById('countrySelect');
+countries.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; sel.appendChild(o); });
+const dayEl = document.getElementById('dobDay'), monthEl = document.getElementById('dobMonth'), yearEl = document.getElementById('dobYear');
+for (let d = 1; d <= 31; d++) { const o = document.createElement('option'); o.value = String(d).padStart(2,'0'); o.textContent = String(d).padStart(2,'0'); dayEl.appendChild(o); }
+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].forEach((m, i) => { const o = document.createElement('option'); o.value = String(i+1).padStart(2,'0'); o.textContent = m; monthEl.appendChild(o); });
+const yr = new Date().getFullYear();
+for (let y = yr - 10; y >= yr - 50; y--) { const o = document.createElement('option'); o.value = y; o.textContent = y; yearEl.appendChild(o); }
+document.getElementById('hearAbout').addEventListener('change', function() {
+    document.getElementById('friendNameGroup').style.display = this.value === 'Friend Recommended' ? 'block' : 'none';
+});
+</script>
 {% endblock %}
