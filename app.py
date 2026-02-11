@@ -21,8 +21,11 @@ from datetime import datetime, timedelta
 from functools import wraps
 from flask import (
     Flask, request, jsonify, render_template, redirect,
-    url_for, session, flash, g
+    url_for, session, flash, g, send_from_directory
 )
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(32)
@@ -309,12 +312,19 @@ def signup_page():
             flash('You must agree to the Terms & Conditions', 'error')
             return render_template('signup.html')
 
+        dob_day = request.form.get('dob_day', '')
+        dob_month = request.form.get('dob_month', '')
+        dob_year = request.form.get('dob_year', '')
+        dob = f"{dob_day}/{dob_month}/{dob_year}" if dob_day and dob_month and dob_year else ''
+        hear_about = request.form.get('hear_about', '').strip()
+        friend_name = request.form.get('friend_name', '').strip()
+
         password_hash, salt = hash_password(password)
         is_admin = 1 if email == ADMIN_EMAIL else 0
 
         db.execute(
-            'INSERT INTO users (email, username, password_hash, salt, full_name, is_admin, country, education_level, field_of_study) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            (email, username, password_hash, salt, full_name, is_admin, country, education_level, field_of_study)
+            'INSERT INTO users (email, username, password_hash, salt, full_name, is_admin, country, education_level, field_of_study, dob, hear_about, friend_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            (email, username, password_hash, salt, full_name, is_admin, country, education_level, field_of_study, dob, hear_about, friend_name)
         )
         db.commit()
 
@@ -387,6 +397,97 @@ def profile_page():
         return redirect(url_for('dashboard_page'))
 
     return render_template('profile.html', user=user)
+
+@app.route('/upload-avatar', methods=['POST'])
+@login_required
+def upload_avatar():
+    if 'avatar' not in request.files:
+        flash('No file selected', 'error')
+        return redirect(url_for('profile_page'))
+    f = request.files['avatar']
+    if f.filename == '':
+        flash('No file selected', 'error')
+        return redirect(url_for('profile_page'))
+    ext = f.filename.rsplit('.', 1)[-1].lower() if '.' in f.filename else 'jpg'
+    if ext not in ('jpg', 'jpeg', 'png', 'gif', 'webp'):
+        flash('Only image files allowed', 'error')
+        return redirect(url_for('profile_page'))
+    fname = f"avatar_{session['user_id']}.{ext}"
+    upload_dir = os.path.join(os.path.dirname(__file__), 'uploads', 'avatars')
+    os.makedirs(upload_dir, exist_ok=True)
+    f.save(os.path.join(upload_dir, fname))
+    db = get_db()
+    db.execute('UPDATE users SET avatar = ? WHERE id = ?', (f"/uploads/avatars/{fname}", session['user_id']))
+    db.commit()
+    flash('Profile picture updated!', 'success')
+    return redirect(url_for('profile_page'))
+
+@app.route('/uploads/<path:filename>')
+def serve_upload(filename):
+    return send_from_directory(os.path.join(os.path.dirname(__file__), 'uploads'), filename)
+
+@app.route('/upload-resume', methods=['POST'])
+@login_required
+def upload_resume():
+    if 'resume' not in request.files:
+        return jsonify({'error': 'No file'}), 400
+    f = request.files['resume']
+    if f.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+    ext = f.filename.rsplit('.', 1)[-1].lower() if '.' in f.filename else 'pdf'
+    if ext not in ('pdf', 'doc', 'docx', 'txt'):
+        return jsonify({'error': 'Only PDF, DOC, DOCX, TXT allowed'}), 400
+    fname = f"resume_{session['user_id']}.{ext}"
+    upload_dir = os.path.join(os.path.dirname(__file__), 'uploads', 'resumes')
+    os.makedirs(upload_dir, exist_ok=True)
+    f.save(os.path.join(upload_dir, fname))
+    # Read text for analysis
+    content = ''
+    fpath = os.path.join(upload_dir, fname)
+    if ext == 'txt':
+        with open(fpath, 'r', errors='ignore') as rf: content = rf.read()
+    elif ext == 'pdf':
+        try:
+            import subprocess
+            result = subprocess.run(['pdftotext', fpath, '-'], capture_output=True, text=True, timeout=10)
+            content = result.stdout
+        except: content = '[PDF uploaded — text extraction not available]'
+    else:
+        content = '[Document uploaded — please paste text for detailed analysis]'
+    return jsonify({'success': True, 'text': content, 'filename': fname})
+
+@app.route('/api/admin/send-email', methods=['POST'])
+@admin_required
+def api_admin_send_email():
+    data = request.get_json()
+    to_emails = data.get('to', [])
+    subject = data.get('subject', '')
+    body = data.get('body', '')
+    if not to_emails or not subject or not body:
+        return jsonify({'error': 'Missing to, subject, or body'}), 400
+    # Store emails in DB for now (actual SMTP can be configured later)
+    db = get_db()
+    db.execute("""CREATE TABLE IF NOT EXISTS sent_emails (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        to_email TEXT, subject TEXT, body TEXT, sent_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )""")
+    sent = 0
+    for email in to_emails:
+        db.execute('INSERT INTO sent_emails (to_email, subject, body) VALUES (?, ?, ?)', (email, subject, body))
+        sent += 1
+    db.commit()
+    return jsonify({'success': True, 'sent': sent, 'note': 'Emails queued. Configure SMTP in settings to actually deliver.'})
+
+@app.route('/api/admin/users-full')
+@admin_required
+def api_admin_users_full():
+    db = get_db()
+    users = db.execute('''
+        SELECT u.*, COUNT(b.id) as bookmark_count
+        FROM users u LEFT JOIN bookmarks b ON u.id = b.user_id
+        GROUP BY u.id ORDER BY u.created_at DESC
+    ''').fetchall()
+    return jsonify([dict(u) for u in users])
 
 @app.route('/dashboard')
 @login_required
