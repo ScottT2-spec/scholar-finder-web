@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<section class="hero">
+    <h1>Find Your Perfect<br><span class="grad-text">Scholarship Match</span></h1>
+    <p>Search {{ stats.scholarships }}+ scholarships, {{ stats.universities }} universities, and {{ stats.opportunities }} opportunities worldwide — matched to your profile, for free.</p>
+    
+    <div class="stat-row">
+        <div class="stat-item"><div class="stat-num">{{ stats.scholarships }}</div><div class="stat-label">Scholarships</div></div>
+        <div class="stat-item"><div class="stat-num">{{ stats.universities }}</div><div class="stat-label">Universities</div></div>
+        <div class="stat-item"><div class="stat-num">{{ stats.opportunities }}</div><div class="stat-label">Opportunities</div></div>
+        <div class="stat-item"><div class="stat-num">{{ stats.cities }}</div><div class="stat-label">Cities</div></div>
+    </div>
+
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        {% if user %}
+            <a href="/dashboard" class="btn btn-primary">Go to Dashboard →</a>
+        {% else %}
+            <a href="/signup" class="btn btn-primary">Get Started — It's Free →</a>
+            <a href="/scholarships" class="btn btn-secondary">Browse Scholarships</a>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Image Carousel -->
+<section class="carousel-section">
+    <div class="carousel-wrapper">
+        <div class="carousel-track" id="carouselTrack">
+            <div class="carousel-slide"><img src="https://images.unsplash.com/photo-1523050854058-8df90110c3f1?w=1200&h=600&fit=crop&q=80" alt="Graduation" loading="lazy"></div>
+            <div class="carousel-slide"><img src="https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=1200&h=600&fit=crop&q=80" alt="Students together" loading="lazy"></div>
+            <div class="carousel-slide"><img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&h=600&fit=crop&q=80" alt="Study group" loading="lazy"></div>
+            <div class="carousel-slide"><img src="https://images.unsplash.com/photo-1531482615713-2afd69097998?w=1200&h=600&fit=crop&q=80" alt="Hackathon" loading="lazy"></div>
+            <div class="carousel-slide"><img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=1200&h=600&fit=crop&q=80" alt="Technology" loading="lazy"></div>
+            <div class="carousel-slide"><img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=1200&h=600&fit=crop&q=80" alt="Studying" loading="lazy"></div>
+            <div class="carousel-slide"><img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=1200&h=600&fit=crop&q=80" alt="Classroom" loading="lazy"></div>
+            <div class="carousel-slide"><img src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&h=600&fit=crop&q=80" alt="Collaboration" loading="lazy"></div>
+            <div class="carousel-slide"><img src="https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=1200&h=600&fit=crop&q=80" alt="Campus" loading="lazy"></div>
+            <div class="carousel-slide"><img src="https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1200&h=600&fit=crop&q=80" alt="Professional meeting" loading="lazy"></div>
+        </div>
+        <div class="carousel-dots" id="carouselDots"></div>
+    </div>
+</section>
+
+<!-- Tools Section -->
+<section class="section">
+    <div class="container">
+        <h2 class="section-title" style="text-align:center;margin-bottom:8px;">🛠️ Powerful Tools</h2>
+        <p style="text-align:center;color:var(--text2);margin-bottom:28px;">Everything you need to prepare your applications</p>
+        <div class="grid-3">
+            <a href="/tools/essay-rater" class="tool-card">
+                <div class="tool-icon">✍️</div>
+                <h3>Essay Rater</h3>
+                <p>Get instant feedback on your personal statement, SOP, or motivation letter.</p>
+            </a>
+            <a href="/tools/school-matcher" class="tool-card">
+                <div class="tool-icon">🎓</div>
+                <h3>School Matcher</h3>
+                <p>Enter your grades and preferences — find universities that fit you.</p>
+            </a>
+            <a href="/tools/resume-review" class="tool-card">
+                <div class="tool-icon">📄</div>
+                <h3>Resume Review</h3>
+                <p>Paste your resume for instant analysis on structure and impact.</p>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Features -->
+<section class="section" style="background:var(--accent-lighter);padding:48px 0;">
+    <div class="container">
+        <h2 class="section-title" style="text-align:center;margin-bottom:28px;">Everything you need to study abroad</h2>
+        <div class="grid-3">
+            <div class="feature-card"><div class="icon">🎯</div><h3>Smart Matching</h3><p>Scholarships ranked by how well they fit your profile.</p></div>
+            <div class="feature-card"><div class="icon">📌</div><h3>Save & Track</h3><p>Bookmark opportunities and track your application status.</p></div>
+            <div class="feature-card"><div class="icon">🏫</div><h3>University Explorer</h3><p>Browse 86 universities with rankings and tuition.</p></div>
+            <div class="feature-card"><div class="icon">💰</div><h3>Cost Comparison</h3><p>Compare living costs across 51 student cities.</p></div>
+            <div class="feature-card"><div class="icon">🛂</div><h3>Visa Guides</h3><p>Student visa info for 26 countries.</p></div>
+            <div class="feature-card"><div class="icon">📝</div><h3>Test Prep</h3><p>IELTS, TOEFL, SAT, GRE tips and resources.</p></div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="section" style="padding-bottom:60px;">
+    <div class="container" style="text-align:center;">
+        <div class="card" style="padding:40px;max-width:600px;margin:0 auto;box-shadow:var(--shadow-lg);">
+            <h2 style="font-size:1.4rem;margin-bottom:10px;">Ready to find your opportunity?</h2>
+            <p style="color:var(--text2);margin-bottom:20px;">Join students already using ScholarFinder.</p>
+            {% if user %}
+                <a href="/dashboard" class="btn btn-primary">Open Dashboard →</a>
+            {% else %}
+                <a href="/signup" class="btn btn-primary">Create Free Account →</a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Carousel
+(function() {
+    const track = document.getElementById('carouselTrack');
+    const dots = document.getElementById('carouselDots');
+    if (!track || !dots) return;
+    const slides = track.querySelectorAll('.carousel-slide');
+    let current = 0;
+    for (let i = 0; i < slides.length; i++) {
+        const dot = document.createElement('button');
+        dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
+        dot.onclick = () => goTo(i);
+        dots.appendChild(dot);
+    }
+    function goTo(i) {
+        current = ((i % slides.length) + slides.length) % slides.length;
+        track.style.transform = 'translateX(-' + (current * 100) + '%)';
+        dots.querySelectorAll('.carousel-dot').forEach((d, j) => d.classList.toggle('active', j === current));
+    }
+    setInterval(() => goTo(current + 1), 2500);
+
+    // Touch swipe
+    let sx = 0;
+    track.addEventListener('touchstart', e => sx = e.changedTouches[0].screenX, {passive: true});
+    track.addEventListener('touchend', e => {
+        const diff = sx - e.changedTouches[0].screenX;
+        if (Math.abs(diff) > 40) goTo(current + (diff > 0 ? 1 : -1));
+    });
+})();
+</script>
+{% endblock %}

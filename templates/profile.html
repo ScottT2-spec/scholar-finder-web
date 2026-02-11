@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Profile{% endblock %}
+{% block content %}
+<section class="section">
+    <div class="container" style="max-width: 600px;">
+        <h2 class="section-title">👤 Your Profile</h2>
+        <p style="color: var(--text2); margin-bottom: 24px;">Fill in your details to get personalized scholarship matches.</p>
+        
+        <form method="POST">
+            <div class="card">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" name="full_name" class="form-input" value="{{ user.full_name or '' }}">
+                </div>
+                <div class="form-group">
+                    <label>Country</label>
+                    <input type="text" name="country" class="form-input" placeholder="e.g. Ghana, Nigeria, Kenya" value="{{ user.country or '' }}">
+                </div>
+                <div class="form-group">
+                    <label>Education Level</label>
+                    <select name="education_level" class="form-input">
+                        <option value="">Select level</option>
+                        <option value="high_school" {{ 'selected' if user.education_level == 'high_school' }}>High School</option>
+                        <option value="undergraduate" {{ 'selected' if user.education_level == 'undergraduate' }}>Undergraduate</option>
+                        <option value="masters" {{ 'selected' if user.education_level == 'masters' }}>Masters</option>
+                        <option value="phd" {{ 'selected' if user.education_level == 'phd' }}>PhD</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Field of Study</label>
+                    <input type="text" name="field_of_study" class="form-input" placeholder="e.g. Computer Science, Engineering, Medicine" value="{{ user.field_of_study or '' }}">
+                </div>
+                <div class="form-group">
+                    <label>GPA / Grade</label>
+                    <input type="text" name="gpa" class="form-input" placeholder="e.g. 3.5/4.0 or A1" value="{{ user.gpa or '' }}">
+                </div>
+                <div class="form-group">
+                    <label>Interests (comma separated)</label>
+                    <input type="text" name="interests" class="form-input" placeholder="e.g. AI, robotics, medicine, business" value="{{ user.interests or '' }}">
+                </div>
+                <div class="form-group">
+                    <label>Short Bio</label>
+                    <textarea name="bio" class="form-input" placeholder="Tell us about yourself...">{{ user.bio or '' }}</textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Profile</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
