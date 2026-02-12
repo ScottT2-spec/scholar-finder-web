@@ -1338,6 +1338,31 @@ def server_error(e):
 # ============================================
 # INIT & RUN
 # ============================================
+# SEO ROUTES
+# ============================================
+@app.route('/robots.txt')
+def robots():
+    return """User-agent: *
+Allow: /
+Sitemap: /sitemap.xml
+""", 200, {'Content-Type': 'text/plain'}
+
+@app.route('/sitemap.xml')
+def sitemap():
+    from flask import make_response
+    base = request.host_url.rstrip('/')
+    pages = ['/', '/scholarships', '/universities', '/opportunities', '/cost-of-living',
+             '/visa-guide', '/test-prep', '/faq', '/tools/essay-rater', '/tools/resume-review', '/tools/school-matcher']
+    xml = ['<?xml version="1.0" encoding="UTF-8"?>',
+           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+    for p in pages:
+        xml.append(f'<url><loc>{base}{p}</loc><changefreq>weekly</changefreq></url>')
+    xml.append('</urlset>')
+    resp = make_response('\n'.join(xml))
+    resp.headers['Content-Type'] = 'application/xml'
+    return resp
+
+# ============================================
 init_db()
 
 if __name__ == '__main__':
