@@ -34,7 +34,10 @@ app.secret_key = secrets.token_hex(32)
 # DATABASE
 # ============================================
 DB_PATH = os.path.join(os.path.dirname(__file__), 'scholarweb.db')
-DATA_DIR = os.path.join(os.path.dirname(__file__), '..', 'scholarbot')
+# Use local data/ folder (works on PythonAnywhere and local)
+_local_data = os.path.join(os.path.dirname(__file__), 'data')
+_bot_data = os.path.join(os.path.dirname(__file__), '..', 'scholarbot')
+DATA_DIR = _local_data if os.path.isdir(_local_data) else _bot_data
 
 ADMIN_EMAIL = 'scottantwi930@gmail.com'
 
