@@ -6,7 +6,17 @@
         <h1>🎓 Create Account</h1>
         <p class="sub">Join thousands of students finding opportunities</p>
         
-        <form method="POST" id="signupForm">
+        <form method="POST" id="signupForm" enctype="multipart/form-data">
+            <!-- Profile Picture -->
+            <div class="form-group" style="text-align:center;margin-bottom:24px;">
+                <div id="signupAvatarPreview" style="width:90px;height:90px;border-radius:50%;background:var(--accent-lighter);border:2.5px dashed var(--accent);display:inline-flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;transition:0.2s;margin-bottom:8px;" onclick="document.getElementById('signupAvatarInput').click()">
+                    <span id="signupAvatarIcon" style="font-size:2rem;color:var(--accent);">📷</span>
+                </div>
+                <br>
+                <label for="signupAvatarInput" style="font-size:0.82rem;color:var(--accent);font-weight:600;cursor:pointer;">Tap to add profile photo</label>
+                <input type="file" name="avatar" id="signupAvatarInput" accept="image/*" style="display:none;" onchange="previewSignupAvatar(this)">
+            </div>
+
             <div class="form-group">
                 <label>Full Name <span class="required">*</span></label>
                 <input type="text" name="full_name" class="form-input" placeholder="Your full name" required>
@@ -124,5 +134,16 @@ for (let y = yr - 10; y >= yr - 50; y--) { const o = document.createElement('opt
 document.getElementById('hearAbout').addEventListener('change', function() {
     document.getElementById('friendNameGroup').style.display = this.value === 'Friend Recommended' ? 'block' : 'none';
 });
+function previewSignupAvatar(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.getElementById('signupAvatarPreview');
+            preview.style.border = '2.5px solid var(--accent)';
+            preview.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;" alt="Preview">';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
 </script>
 {% endblock %}

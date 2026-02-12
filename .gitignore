@@ -1,8 +1,5 @@
 __pycache__/
 *.pyc
-*.db
-*.log
-*.pid
-web.pid
-web.log
 .env
+uploads/avatars/
+*.log

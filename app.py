@@ -333,6 +333,19 @@ def signup_page():
         session['username'] = username
         log_activity(user['id'], 'signup')
 
+        # Handle avatar upload during signup
+        if 'avatar' in request.files:
+            f = request.files['avatar']
+            if f.filename:
+                ext = f.filename.rsplit('.', 1)[-1].lower() if '.' in f.filename else 'jpg'
+                if ext in ('jpg', 'jpeg', 'png', 'gif', 'webp'):
+                    fname = f"avatar_{user['id']}.{ext}"
+                    upload_dir = os.path.join(os.path.dirname(__file__), 'uploads', 'avatars')
+                    os.makedirs(upload_dir, exist_ok=True)
+                    f.save(os.path.join(upload_dir, fname))
+                    db.execute('UPDATE users SET avatar = ? WHERE id = ?', (f"/uploads/avatars/{fname}", user['id']))
+                    db.commit()
+
         return redirect(url_for('dashboard_page') + '?welcome=1')
 
     return render_template('signup.html')
