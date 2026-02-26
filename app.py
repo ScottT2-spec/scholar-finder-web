@@ -30,9 +30,9 @@ from email.mime.multipart import MIMEMultipart
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(32)
 
-# ============================================
+# 
 # DATABASE
-# ============================================
+# 
 DB_PATH = os.path.join(os.path.dirname(__file__), 'scholarweb.db')
 # Use local data/ folder (works on PythonAnywhere and local)
 _local_data = os.path.join(os.path.dirname(__file__), 'data')
@@ -110,9 +110,9 @@ def init_db():
     db.commit()
     db.close()
 
-# ============================================
+# 
 # AUTH HELPERS
-# ============================================
+# 
 def hash_password(password, salt=None):
     if salt is None:
         salt = secrets.token_hex(16)
@@ -163,9 +163,9 @@ def log_activity(user_id, action, details=''):
     except Exception:
         pass
 
-# ============================================
+# 
 # LOAD DATA FILES
-# ============================================
+# 
 def load_json(filename):
     path = os.path.join(DATA_DIR, filename)
     if os.path.exists(path):
@@ -197,9 +197,9 @@ def get_test_prep():
 def get_essay_guides():
     return load_json('essay_guides.json')
 
-# ============================================
+# 
 # SCHOLARSHIP MATCHING
-# ============================================
+# 
 def match_scholarships(user):
     """Match scholarships to user profile — returns sorted by relevance"""
     scholarships = get_scholarships()
@@ -561,9 +561,9 @@ def faq_page():
     user = get_current_user()
     return render_template('faq.html', user=user)
 
-# ============================================
+# 
 # API ENDPOINTS
-# ============================================
+# 
 @app.route('/api/scholarships')
 def api_scholarships():
     q = request.args.get('q', '').lower()
@@ -703,9 +703,9 @@ def api_stats():
         'faq': len(get_faq()),
     })
 
-# ============================================
+# 
 # BOOKMARK API
-# ============================================
+#
 @app.route('/api/bookmarks', methods=['GET'])
 @login_required
 def api_get_bookmarks():
@@ -765,9 +765,9 @@ def api_update_bookmark_status(bookmark_id):
     db.commit()
     return jsonify({'success': True})
 
-# ============================================
+# 
 # MATCHING API
-# ============================================
+# 
 @app.route('/api/match')
 @login_required
 def api_match():
@@ -779,9 +779,9 @@ def api_match():
         'results': matched[:limit]
     })
 
-# ============================================
+# 
 # ADMIN API
-# ============================================
+# 
 @app.route('/api/admin/stats')
 @admin_required
 def api_admin_stats():
@@ -1138,9 +1138,9 @@ def google_auth():
     flash('Google login coming soon! Use email signup for now.', 'error')
     return redirect(url_for('signup_page'))
 
-# ============================================
-# AI CHATBOT API
-# ============================================
+# 
+# AI CHATBOT
+#
 @app.route('/api/chat', methods=['POST'])
 def api_chat():
     """Smart chatbot — searches all data to answer questions"""
@@ -1323,9 +1323,9 @@ def api_chat():
     return jsonify({'reply': reply, 'source': 'Default', 'related': []})
 
 
-# ============================================
+#
 # ERROR HANDLERS
-# ============================================
+#
 @app.errorhandler(404)
 def not_found(e):
     if request.path.startswith('/api/'):
@@ -1338,11 +1338,11 @@ def server_error(e):
         return jsonify({'error': 'Server error'}), 500
     return render_template('500.html'), 500
 
-# ============================================
+#
 # INIT & RUN
-# ============================================
+#
 # SEO ROUTES
-# ============================================
+#
 @app.route('/robots.txt')
 def robots():
     return """User-agent: *
@@ -1365,7 +1365,7 @@ def sitemap():
     resp.headers['Content-Type'] = 'application/xml'
     return resp
 
-# ============================================
+#
 init_db()
 
 if __name__ == '__main__':
