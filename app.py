@@ -39,7 +39,7 @@ _local_data = os.path.join(os.path.dirname(__file__), 'data')
 _bot_data = os.path.join(os.path.dirname(__file__), '..', 'scholarbot')
 DATA_DIR = _local_data if os.path.isdir(_local_data) else _bot_data
 
-ADMIN_EMAIL = 'scottantwi930@gmail.com'
+ADMIN_EMAIL = 'ADMIN EMAIL'
 
 def get_db():
     if 'db' not in g:
