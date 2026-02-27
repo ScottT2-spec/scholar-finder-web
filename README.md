@@ -4,6 +4,8 @@ A Website I built to help students (especially in Africa) find scholarships, uni
 
 **Website:** [scholarfinder.pythonanywhere.com/](https://scholarfinder.pythonanywhere.com/)
 
+![scholarfinder_web](images/IMG_2808.jpeg)
+
 ## What's in the database
 
 | What | How many |
