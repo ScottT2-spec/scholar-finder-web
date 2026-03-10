@@ -65,9 +65,8 @@
     background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
     z-index: 9999; display: flex; align-items: center; justify-content: center;
     padding: 20px; animation: aiFadeIn 0.2s ease;
-    overflow: hidden; touch-action: none;
+    overflow: hidden;
 }
-body.modal-open { overflow: hidden !important; position: fixed; width: 100%; }
 @keyframes aiFadeIn { from { opacity: 0; } to { opacity: 1; } }
 .ai-modal {
     background: rgba(12, 14, 22, 0.95); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
@@ -92,7 +91,7 @@ body.modal-open { overflow: hidden !important; position: fixed; width: 100%; }
     transition: 0.2s; display: flex; align-items: center; justify-content: center;
 }
 .ai-modal-close:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
-.ai-modal-body { padding: 24px; overflow-y: auto; flex: 1; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.ai-modal-body { padding: 24px; overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; }
 
 /* Scout */
 .scout-form { display: flex; flex-direction: column; gap: 16px; }
@@ -492,16 +491,12 @@ body.modal-open { overflow: hidden !important; position: fixed; width: 100%; }
             case 'prep': body.innerHTML = buildPrepUI(); prepMessages = []; initPrepStart(); break;
         }
         $('#aiModalOverlay').style.display = 'flex';
-        window._scrollY = window.scrollY;
-        document.body.classList.add('modal-open');
-        document.body.style.top = '-' + window._scrollY + 'px';
+        document.body.style.overflow = 'hidden';
     }
 
     function closeAgentModal() {
         $('#aiModalOverlay').style.display = 'none';
-        document.body.classList.remove('modal-open');
-        document.body.style.top = '';
-        window.scrollTo(0, window._scrollY || 0);
+        document.body.style.overflow = '';
     }
 
     function showLoading(el) {
@@ -523,7 +518,7 @@ body.modal-open { overflow: hidden !important; position: fixed; width: 100%; }
             '</div><div id="scoutResults" style="margin-top:20px;"></div>';
     }
     document.addEventListener('click', async function(e) {
-        if (e.target && e.target.id === 'scoutSearch') {
+        if (e.target && e.target.closest('#scoutSearch')) {
             const results = $('#scoutResults');
             showLoading(results);
             const country = ($('#scoutCountry').value || '').toLowerCase();
@@ -568,10 +563,10 @@ body.modal-open { overflow: hidden !important; position: fixed; width: 100%; }
         }
     });
     document.addEventListener('click', async function(e) {
-        if (e.target && e.target.classList.contains('writerBtn')) {
+        if (e.target && e.target.closest('.writerBtn')) {
             const essay = $('#writerText').value;
             if (!essay.trim()) { alert('Please write or paste your essay first.'); return; }
-            const action = e.target.dataset.action;
+            const action = e.target.closest('.writerBtn').dataset.action;
             const results = $('#writerResults');
             showLoading(results);
             const prompts = {
@@ -602,7 +597,7 @@ body.modal-open { overflow: hidden !important; position: fixed; width: 100%; }
             '</div><div id="profResults" style="margin-top:20px;"></div>';
     }
     document.addEventListener('click', async function(e) {
-        if (e.target && e.target.id === 'profAnalyze') {
+        if (e.target && e.target.closest('#profAnalyze')) {
             const results = $('#profResults');
             showLoading(results);
             const reply = await callAI([
@@ -777,7 +772,7 @@ body.modal-open { overflow: hidden !important; position: fixed; width: 100%; }
             '<div id="advResults"></div></div>';
     }
     document.addEventListener('click', async function(e) {
-        if (e.target && e.target.id === 'advAnalyze') {
+        if (e.target && e.target.closest('#advAnalyze')) {
             const results = $('#advResults');
             showLoading(results);
             const country = ($('#advCountry').value||'').toLowerCase();
@@ -826,7 +821,7 @@ body.modal-open { overflow: hidden !important; position: fixed; width: 100%; }
         prepMessages.push({role:'assistant', content: reply});
         addChatMsg('assistant', reply);
     }
-    document.addEventListener('click', function(e) { if (e.target && e.target.id === 'prepSend') sendPrep(); });
+    document.addEventListener('click', function(e) { if (e.target && e.target.closest('#prepSend')) sendPrep(); });
     document.addEventListener('keydown', function(e) { if (e.target && e.target.id === 'prepInput' && e.key === 'Enter') sendPrep(); });
     async function sendPrep() {
         const input = $('#prepInput');
