@@ -65,7 +65,6 @@
     background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
     z-index: 9999; display: flex; align-items: center; justify-content: center;
     padding: 20px; animation: aiFadeIn 0.2s ease;
-    overflow: hidden;
 }
 @keyframes aiFadeIn { from { opacity: 0; } to { opacity: 1; } }
 .ai-modal {
@@ -91,7 +90,7 @@
     transition: 0.2s; display: flex; align-items: center; justify-content: center;
 }
 .ai-modal-close:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
-.ai-modal-body { padding: 24px; overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; }
+.ai-modal-body { padding: 24px; overflow-y: auto; flex: 1; }
 
 /* Scout */
 .scout-form { display: flex; flex-direction: column; gap: 16px; }
@@ -512,10 +511,11 @@
             '<div><label>Your Country</label><input type="text" id="scoutCountry" placeholder="e.g. Ghana"></div>' +
             '<div><label>Field of Interest</label><input type="text" id="scoutField" placeholder="e.g. Computer Science"></div>' +
             '<div><label>Degree Level</label><select id="scoutLevel"><option value="">Any Level</option><option value="undergraduate">Undergraduate</option><option value="masters">Masters</option><option value="phd">PhD</option></select></div>' +
-            '<button class="btn ai-launch-btn" onclick="window._runScout()" style="width:100%;">🔍 Find My Scholarships</button>' +
+            '<button class="btn ai-launch-btn" id="scoutSearch" style="width:100%;">🔍 Find My Scholarships</button>' +
             '</div><div id="scoutResults" style="margin-top:20px;"></div>';
     }
-    window._runScout = async function() {
+    document.addEventListener('click', async function(e) {
+        if (e.target && e.target.id === 'scoutSearch') {
             const results = $('#scoutResults');
             showLoading(results);
             const country = ($('#scoutCountry').value || '').toLowerCase();
@@ -537,7 +537,8 @@
                 {role:'user', content: 'My profile:\n- GPA: ' + ($('#scoutGpa').value||'Not specified') + '\n- Country: ' + ($('#scoutCountry').value||'Not specified') + '\n- Field: ' + ($('#scoutField').value||'Not specified') + '\n- Level: ' + ($('#scoutLevel').value||'Not specified') + '\n\nScholarships:\n' + scholText + '\n\nAnalyze which are the best fit for me. Rank them and explain WHY each matches. Give a match assessment and key tips.'}
             ], 1500);
             showResult(results, reply);
-    };
+        }
+    });
 
     // ==================== WRITER ====================
     function buildWriterUI() {
@@ -548,9 +549,9 @@
             '<textarea id="writerText" style="width:100%;min-height:250px;padding:14px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:14px;font-family:var(--font);line-height:1.7;resize:vertical;" placeholder="Paste or write your essay here..."></textarea>' +
             '<div style="font-size:12px;color:var(--text3);margin-top:4px;">Words: <strong id="wWC">0</strong></div></div>' +
             '<div style="display:flex;gap:10px;flex-wrap:wrap;">' +
-            '<button class="btn ai-launch-btn" onclick="window._runWriter(\'review\')">📋 Review</button>' +
-            '<button class="btn ai-launch-btn" onclick="window._runWriter(\'improve\')" style="background:linear-gradient(135deg,#20b2aa,#1a9090)!important;">✨ Improve</button>' +
-            '<button class="btn ai-launch-btn" onclick="window._runWriter(\'brainstorm\')" style="background:linear-gradient(135deg,#e67e22,#d35400)!important;">💡 Brainstorm</button></div>' +
+            '<button class="btn ai-launch-btn writerBtn" data-action="review">📋 Review</button>' +
+            '<button class="btn ai-launch-btn writerBtn" data-action="improve" style="background:linear-gradient(135deg,#20b2aa,#1a9090)!important;">✨ Improve</button>' +
+            '<button class="btn ai-launch-btn writerBtn" data-action="brainstorm" style="background:linear-gradient(135deg,#e67e22,#d35400)!important;">💡 Brainstorm</button></div>' +
             '<div id="writerResults"></div></div>';
     }
     document.addEventListener('input', function(e) {
@@ -558,9 +559,11 @@
             const wc = $('#wWC'); if (wc) wc.textContent = e.target.value.trim() ? e.target.value.trim().split(/\s+/).length : 0;
         }
     });
-    window._runWriter = async function(action) {
+    document.addEventListener('click', async function(e) {
+        if (e.target && e.target.classList.contains('writerBtn')) {
             const essay = $('#writerText').value;
             if (!essay.trim()) { alert('Please write or paste your essay first.'); return; }
+            const action = e.target.dataset.action;
             const results = $('#writerResults');
             showLoading(results);
             const prompts = {
@@ -573,7 +576,8 @@
                 {role:'user', content: prompts[action]}
             ], 2000);
             showResult(results, reply);
-    };
+        }
+    });
 
     // ==================== PROFILER ====================
     function buildProfilerUI() {
@@ -586,10 +590,11 @@
             '<div><label>Years of Experience</label><input type="number" id="profExp" min="0" placeholder="e.g. 2"></div>' +
             '<div class="full-width"><label>Key Skills</label><input type="text" id="profSkills" placeholder="e.g. Python, Leadership, Research"></div>' +
             '<div class="full-width"><label>Activities / Extracurriculars</label><input type="text" id="profActivities" placeholder="e.g. Debate club, volunteering"></div>' +
-            '<div class="full-width"><button class="btn ai-launch-btn" onclick="window._runProfiler()" style="width:100%;">👤 Analyze My Profile</button></div>' +
+            '<div class="full-width"><button class="btn ai-launch-btn" id="profAnalyze" style="width:100%;">👤 Analyze My Profile</button></div>' +
             '</div><div id="profResults" style="margin-top:20px;"></div>';
     }
-    window._runProfiler = async function() {
+    document.addEventListener('click', async function(e) {
+        if (e.target && e.target.id === 'profAnalyze') {
             const results = $('#profResults');
             showLoading(results);
             const reply = await callAI([
@@ -597,23 +602,29 @@
                 {role:'user', content: 'Evaluate this profile:\n- Name: ' + ($('#profName').value||'N/A') + '\n- Country: ' + ($('#profCountry').value||'N/A') + '\n- GPA: ' + ($('#profGpa').value||'N/A') + '\n- Level: ' + ($('#profLevel').value||'N/A') + '\n- Field: ' + ($('#profField').value||'N/A') + '\n- Experience: ' + ($('#profExp').value||'N/A') + ' years\n- Skills: ' + ($('#profSkills').value||'N/A') + '\n- Activities: ' + ($('#profActivities').value||'N/A') + '\n\nGive: 1. Profile Strength Score /100, 2. Strengths, 3. Gaps, 4. Action plan for next 3-6 months, 5. Best scholarship types to target, 6. Red flags'}
             ], 1500);
             showResult(results, reply);
-    };
+        }
+    });
 
     // ==================== TRACKER ====================
     function buildTrackerUI() {
-        return '<div id="trackerContent" style="text-align:center;padding:30px;"><div class="ai-loading-spinner"></div><p style="color:var(--text2);margin-top:12px;">AI is analyzing scholarship deadlines...</p></div>';
+        return '<div id="trackerContent" style="text-align:center;padding:20px;"><div class="ai-loading-spinner"></div><p style="color:var(--text2);margin-top:12px;">Loading deadlines...</p></div>';
     }
     function parseScholarshipDeadline(str) {
         if (!str) return null;
         var s = str.trim();
         var skip = /^(varies|rolling|open|ongoing|tbd|tba|check|multiple|annual)/i;
         if (skip.test(s)) return null;
+        // Try native parse first (handles "April 30, 2026" etc.)
         var d = new Date(s);
         if (!isNaN(d)) return d;
+        // Month name map
         var months = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11,
             january:0,february:1,march:2,april:3,may:4,june:5,july:6,august:7,september:8,october:9,november:10,december:11};
+        // Strip "each year", "annually", "(varies)", etc.
         var cleaned = s.replace(/\s*(each year|annually|every year|\(varies\)|\(annual\))/gi, '').trim();
+        // Handle ranges like "October - December" or "January - February" → use first month
         cleaned = cleaned.replace(/\s*[-–]\s*[A-Za-z]+/, '').trim();
+        // Try to find month + day + year
         var m1 = cleaned.match(/([A-Za-z]+)\s+(\d{1,2})(?:\s*,?\s*(\d{4}))?/);
         if (m1) {
             var mn = months[m1[1].toLowerCase()];
@@ -622,12 +633,14 @@
                 var year = m1[3] ? parseInt(m1[3]) : null;
                 var now = new Date();
                 if (!year) {
+                    // Use current year; if date already passed, use next year
                     var candidate = new Date(now.getFullYear(), mn, day);
                     year = candidate < new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7) ? now.getFullYear() + 1 : now.getFullYear();
                 }
                 return new Date(year, mn, day);
             }
         }
+        // Try month only (no day), e.g. "October" or "March"
         var m2 = cleaned.match(/^([A-Za-z]+)(?:\s+(\d{4}))?$/);
         if (m2) {
             var mn2 = months[m2[1].toLowerCase()];
@@ -635,120 +648,80 @@
                 var now2 = new Date();
                 var yr = m2[2] ? parseInt(m2[2]) : null;
                 if (!yr) {
+                    // Last day of that month; use current or next year
                     var candidate2 = new Date(now2.getFullYear(), mn2 + 1, 0);
                     yr = candidate2 < new Date(now2.getFullYear(), now2.getMonth(), now2.getDate() - 7) ? now2.getFullYear() + 1 : now2.getFullYear();
                 }
-                return new Date(yr, mn2 + 1, 0);
+                return new Date(yr, mn2 + 1, 0); // Last day of month
             }
         }
         return null;
     }
-
-    // Daily rotation seed — picks different scholarships each day
-    function dailySeed() {
-        var now = new Date();
-        return now.getFullYear() * 1000 + Math.floor((now - new Date(now.getFullYear(),0,0)) / 864e5);
-    }
-    function shuffleWithSeed(arr, seed) {
-        var a = arr.slice();
-        for (var i = a.length - 1; i > 0; i--) {
-            seed = (seed * 9301 + 49297) % 233280;
-            var j = Math.floor((seed / 233280) * (i + 1));
-            var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
-        }
-        return a;
-    }
-
     function initTracker() {
-        var tc = document.getElementById('trackerContent');
-        if (!tc) return;
-        var now = new Date();
-        var todayStr = now.toLocaleDateString('en-US', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
-        var seed = dailySeed();
-
-        var all = scholarshipData.filter(function(s) { return s.deadline; }).map(function(s) {
-            var dl = parseScholarshipDeadline(s.deadline);
+        const tc = $('#trackerContent');
+        const now = new Date();
+        const all = scholarshipData.filter(s => s.deadline).map(s => {
+            const dl = parseScholarshipDeadline(s.deadline);
             if (!dl) return null;
             return { name: s.name, country: s.country, funding: s.funding||'', deadline: s.deadline, link: s.link||'', days: Math.ceil((dl - now) / 864e5) };
-        }).filter(function(d) { return d && d.days > -3; }).sort(function(a,b) { return a.days - b.days; });
+        }).filter(d => d && d.days > -3).sort((a, b) => a.days - b.days);
 
-        var urgent = all.filter(function(d) { return d.days < 7; });
-        var upcoming = all.filter(function(d) { return d.days >= 7 && d.days < 30; });
-        var planned = all.filter(function(d) { return d.days >= 30; });
+        const urgent = all.filter(d => d.days < 7);
+        const upcoming = all.filter(d => d.days >= 7 && d.days < 30);
+        const planned = all.filter(d => d.days >= 30);
 
         if (!all.length) { tc.innerHTML = '<p style="color:var(--text3);padding:40px;">No upcoming deadlines found.</p>'; return; }
 
-        // Pick curated daily selections: urgent=all (they're time-sensitive), upcoming=6 rotated, planned=5 rotated
-        var pickUrgent = urgent.slice(0, 6);
-        var pickUpcoming = shuffleWithSeed(upcoming, seed).slice(0, 6);
-        var pickPlanned = shuffleWithSeed(planned, seed + 7).slice(0, 5);
-        // Sort picks by days
-        pickUpcoming.sort(function(a,b){ return a.days - b.days; });
-        pickPlanned.sort(function(a,b){ return a.days - b.days; });
-
-        function renderCard(d) {
-            var u = d.days < 7 ? 'red' : d.days < 30 ? 'yellow' : 'green';
-            var colors = { red: '#ef4444', yellow: '#f59e0b', green: '#22c55e' };
-            var bgColors = { red: 'rgba(239,68,68,0.08)', yellow: 'rgba(245,158,11,0.08)', green: 'rgba(34,197,94,0.08)' };
-            var borderColors = { red: 'rgba(239,68,68,0.25)', yellow: 'rgba(245,158,11,0.25)', green: 'rgba(34,197,94,0.25)' };
-            var dayText = d.days < 0 ? 'Passed' : d.days === 0 ? 'TODAY' : d.days === 1 ? '1 day left' : d.days + ' days left';
-            var applyBtn = d.link ? '<a href="'+escapeHtml(d.link)+'" target="_blank" style="display:inline-block;margin-top:8px;font-size:12px;color:#8B5CF6;text-decoration:none;font-weight:600;padding:4px 12px;border:1px solid rgba(139,92,246,0.3);border-radius:6px;">Apply →</a>' : '';
-            return '<div style="background:'+bgColors[u]+';border:1px solid '+borderColors[u]+';border-radius:12px;padding:16px;margin-bottom:10px;">' +
-                '<div style="display:flex;justify-content:space-between;align-items:start;gap:12px;">' +
-                '<div style="flex:1;"><h4 style="font-size:14px;color:var(--text);margin:0 0 4px;font-weight:600;">'+escapeHtml(d.name)+'</h4>' +
-                '<p style="font-size:12px;color:var(--text2);margin:0;">📍 '+escapeHtml(d.country||'Global')+' · ⏰ '+escapeHtml(d.deadline)+(d.funding?' · 💰 '+escapeHtml(d.funding):'')+'</p>' +
-                applyBtn+'</div>' +
-                '<div style="text-align:center;min-width:60px;"><div style="font-size:22px;font-weight:800;color:'+colors[u]+';">'+(d.days<0?'—':d.days)+'</div><div style="font-size:10px;color:'+colors[u]+';font-weight:600;text-transform:uppercase;">'+dayText+'</div></div>' +
-                '</div></div>';
+        function renderItem(d) {
+            const u = d.days < 7 ? 'red' : d.days < 30 ? 'yellow' : 'green';
+            const color = u === 'red' ? 'var(--danger)' : u === 'yellow' ? 'var(--warning)' : 'var(--success)';
+            const dayLabel = d.days < 0 ? 'PASSED' : d.days === 0 ? 'TODAY' : d.days === 1 ? '1 day' : d.days + ' days';
+            const linkBtn = d.link ? ' <a href="'+escapeHtml(d.link)+'" target="_blank" style="font-size:11px;color:#8B5CF6;text-decoration:none;font-weight:600;">Apply →</a>' : '';
+            return '<div class="tracker-item"><div class="tracker-dot '+u+'"></div><div class="tracker-info"><h4>'+escapeHtml(d.name)+linkBtn+'</h4><p>'+escapeHtml(d.country||'')+' · '+d.deadline+(d.funding?' · '+escapeHtml(d.funding):'')+'</p></div><div class="tracker-days '+u+'"><div class="days-num" style="color:'+color+';">'+(d.days<0?'—':d.days)+'</div><div class="days-label">'+dayLabel+'</div></div></div>';
         }
 
-        function renderSection(title, emoji, bgColor, borderColor, textColor, picks, totalCount) {
-            var html = '<div style="margin-bottom:24px;">' +
-                '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">' +
-                '<h3 style="font-size:16px;margin:0;color:'+textColor+';font-weight:700;">'+emoji+' '+title+'</h3>' +
-                '<span style="font-size:11px;color:var(--text3);background:var(--card);padding:3px 10px;border-radius:100px;">'+picks.length+' shown · '+totalCount+' total</span></div>';
-            if (!picks.length) {
-                html += '<p style="color:var(--text3);font-size:13px;padding:16px;text-align:center;background:var(--card);border-radius:12px;border:1px solid var(--border);">✨ No scholarships in this category right now</p>';
-            } else {
-                html += picks.map(renderCard).join('');
+        function renderSection(title, emoji, color, items, maxShow) {
+            if (!items.length) return '<div style="margin-bottom:24px;"><h3 style="font-size:15px;margin-bottom:8px;">'+emoji+' '+title+' <span style="font-size:12px;color:var(--text3);font-weight:400;">(0)</span></h3><p style="color:var(--text3);font-size:13px;padding:12px 0;">None right now — check back soon!</p></div>';
+            const shown = items.slice(0, maxShow);
+            const hidden = items.length - maxShow;
+            let html = '<div style="margin-bottom:24px;"><h3 style="font-size:15px;margin-bottom:12px;color:'+color+';">'+emoji+' '+title+' <span style="font-size:12px;color:var(--text3);font-weight:400;">('+items.length+')</span></h3>';
+            html += '<div class="tracker-timeline">' + shown.map(renderItem).join('') + '</div>';
+            if (hidden > 0) {
+                const secId = 'trackerMore_' + title.replace(/\s/g,'');
+                html += '<div id="'+secId+'" class="tracker-timeline" style="display:none;">' + items.slice(maxShow).map(renderItem).join('') + '</div>';
+                html += '<button onclick="var el=document.getElementById(\''+secId+'\');if(el.style.display===\'none\'){el.style.display=\'block\';this.textContent=\'Show less ↑\'}else{el.style.display=\'none\';this.textContent=\'Show '+hidden+' more ↓\'}" style="background:none;border:1px solid var(--border);color:var(--text2);padding:6px 16px;border-radius:8px;font-size:12px;cursor:pointer;margin-top:8px;font-family:var(--font);">Show '+hidden+' more ↓</button>';
             }
             html += '</div>';
             return html;
         }
 
-        // Build the full UI
         tc.innerHTML =
-            // How it works banner
-            '<div style="background:linear-gradient(135deg,rgba(139,92,246,0.1),rgba(32,178,170,0.08));border:1px solid rgba(139,92,246,0.2);border-radius:12px;padding:16px 20px;margin-bottom:20px;">' +
-            '<div style="font-size:13px;font-weight:600;color:#8B5CF6;margin-bottom:6px;">📅 How Tracker Works</div>' +
-            '<p style="font-size:13px;color:var(--text2);margin:0;line-height:1.6;">Tracker monitors <strong style="color:var(--text);">'+all.length+'</strong> scholarship deadlines and highlights the most important ones daily. ' +
-            '<span style="color:#ef4444;font-weight:600;">Red</span> = apply immediately, ' +
-            '<span style="color:#f59e0b;font-weight:600;">Yellow</span> = start preparing, ' +
-            '<span style="color:#22c55e;font-weight:600;">Green</span> = plan ahead. ' +
-            'Selections rotate every day so you discover new opportunities. Our AI scraper adds fresh scholarships automatically.</p></div>' +
+            '<div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center;">' +
+            '<div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:8px 14px;font-size:13px;color:var(--danger);font-weight:600;">🔴 '+urgent.length+' Urgent</div>' +
+            '<div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:8px 14px;font-size:13px;color:var(--warning);font-weight:600;">🟡 '+upcoming.length+' Coming Up</div>' +
+            '<div style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:8px 14px;font-size:13px;color:var(--success);font-weight:600;">🟢 '+planned.length+' Plan Ahead</div>' +
+            '<div style="margin-left:auto;font-size:11px;color:var(--text3);">📊 '+all.length+' trackable deadlines · Updated daily</div></div>' +
+            '<div id="trackerAiTip" style="margin-bottom:20px;"></div>' +
+            renderSection('Urgent — Apply Now!', '🔴', 'var(--danger)', urgent, 10) +
+            renderSection('Coming Up — Prepare Now', '🟡', 'var(--warning)', upcoming, 10) +
+            renderSection('Plan Ahead — Start Early', '🟢', 'var(--success)', planned, 8) +
+            '<button class="btn ai-launch-btn" id="trackerAiBtn" style="width:100%;margin-top:12px;">🤖 Get AI Strategy Tips</button>';
 
-            // Summary badges
-            '<div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">' +
-            '<div style="flex:1;min-width:100px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:12px;text-align:center;"><div style="font-size:24px;font-weight:800;color:#ef4444;">'+urgent.length+'</div><div style="font-size:11px;color:#ef4444;font-weight:600;">URGENT</div></div>' +
-            '<div style="flex:1;min-width:100px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:12px;text-align:center;"><div style="font-size:24px;font-weight:800;color:#f59e0b;">'+upcoming.length+'</div><div style="font-size:11px;color:#f59e0b;font-weight:600;">COMING UP</div></div>' +
-            '<div style="flex:1;min-width:100px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:10px;padding:12px;text-align:center;"><div style="font-size:24px;font-weight:800;color:#22c55e;">'+planned.length+'</div><div style="font-size:11px;color:#22c55e;font-weight:600;">PLAN AHEAD</div></div></div>' +
-
-            // Deadline sections
-            renderSection('Urgent — Apply Now!', '🔴', 'rgba(239,68,68,0.08)', 'rgba(239,68,68,0.25)', '#ef4444', pickUrgent, urgent.length) +
-            renderSection('Coming Up — Start Preparing', '🟡', 'rgba(245,158,11,0.08)', 'rgba(245,158,11,0.25)', '#f59e0b', pickUpcoming, upcoming.length) +
-            renderSection('Plan Ahead — Research Now', '🟢', 'rgba(34,197,94,0.08)', 'rgba(34,197,94,0.25)', '#22c55e', pickPlanned, planned.length) +
-
-            // AI strategy button + result area
-            '<div id="trackerAiSection" style="margin-top:16px;">' +
-            '<button class="btn ai-launch-btn" onclick="window._runTrackerAI(this)" style="width:100%;padding:14px 24px;font-size:15px;">🤖 Get AI Strategy Tips</button>' +
-            '<div id="trackerAiResult" style="margin-top:16px;"></div>' +
-            '</div>';
-
-        // Store data for the AI button
-        window._trackerData = { urgent: urgent, upcoming: upcoming, planned: planned, all: all, pickUrgent: pickUrgent, pickUpcoming: pickUpcoming, pickPlanned: pickPlanned, todayStr: todayStr };
+        // AI strategy button
+        var aiBtn = $('#trackerAiBtn');
+        if (aiBtn) aiBtn.addEventListener('click', async function() {
+            var tip = $('#trackerAiTip');
+            tip.innerHTML = '<div style="text-align:center;padding:16px;"><div class="ai-loading-spinner"></div><p style="color:var(--text2);margin-top:8px;font-size:13px;">AI analyzing your deadlines...</p></div>';
+            var summary = '🔴 Urgent ('+urgent.length+'): ' + urgent.slice(0,5).map(function(d){return d.name+' ('+d.days+'d)'}).join(', ') +
+                '\n🟡 Coming up ('+upcoming.length+'): ' + upcoming.slice(0,5).map(function(d){return d.name+' ('+d.days+'d)'}).join(', ') +
+                '\n🟢 Plan ahead ('+planned.length+'): ' + planned.slice(0,5).map(function(d){return d.name+' ('+d.days+'d)'}).join(', ');
+            var reply = await callAI([
+                {role:'system', content:'You are Tracker, a scholarship deadline strategist. Give a short, punchy 3-5 bullet action plan based on the deadline overview. Be specific about which scholarships to focus on THIS WEEK. Use markdown. Keep it under 200 words.'},
+                {role:'user', content:'Here are my scholarship deadlines:\n'+summary+'\n\nWhat should I focus on right now?'}
+            ], 600);
+            tip.innerHTML = '<div style="background:linear-gradient(135deg,rgba(139,92,246,0.08),rgba(32,178,170,0.05));border:1px solid rgba(139,92,246,0.2);border-radius:12px;padding:16px 20px;line-height:1.6;color:var(--text);font-size:14px;"><div style="font-size:12px;color:#8B5CF6;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">🤖 Tracker AI — Your Action Plan</div>' + markdownToHtml(reply) + '</div>';
+        });
     }
-
-    // (Tracker AI handler is defined outside IIFE as window._runTrackerAI)
 
     // ==================== ADVISOR ====================
     function buildAdvisorUI() {
@@ -759,10 +732,11 @@
             '<div><label style="font-size:12px;color:var(--text3);text-transform:uppercase;display:block;margin-bottom:4px;">GPA</label><input type="number" id="advGpa" min="0" max="4" step="0.1" placeholder="3.5" style="width:100%;padding:10px 14px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:14px;"></div>' +
             '<div><label style="font-size:12px;color:var(--text3);text-transform:uppercase;display:block;margin-bottom:4px;">Field</label><input type="text" id="advField" placeholder="e.g. Engineering" style="width:100%;padding:10px 14px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:14px;"></div>' +
             '<div><label style="font-size:12px;color:var(--text3);text-transform:uppercase;display:block;margin-bottom:4px;">Level</label><select id="advLevel" style="width:100%;padding:10px 14px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:14px;"><option value="undergraduate">Undergraduate</option><option value="masters">Masters</option><option value="phd">PhD</option></select></div></div>' +
-            '<button class="btn ai-launch-btn" onclick="window._runAdvisor()" style="width:100%;">🎓 Build My Strategy</button>' +
+            '<button class="btn ai-launch-btn" id="advAnalyze" style="width:100%;">🎓 Build My Strategy</button>' +
             '<div id="advResults"></div></div>';
     }
-    window._runAdvisor = async function() {
+    document.addEventListener('click', async function(e) {
+        if (e.target && e.target.id === 'advAnalyze') {
             const results = $('#advResults');
             showLoading(results);
             const country = ($('#advCountry').value||'').toLowerCase();
@@ -780,14 +754,15 @@
                 {role:'user', content:'Create a strategy for:\n- Country: '+($('#advCountry').value||'?')+'\n- GPA: '+($('#advGpa').value||'?')+'\n- Field: '+($('#advField').value||'?')+'\n- Level: '+($('#advLevel').value||'?')+'\n\nScholarships:\n'+scholText+'\n\nGive: 1. Priority ranking with reasoning, 2. Application timeline, 3. Effort assessment, 4. Safety/Reach/Target categories, 5. Key strategy tips'}
             ], 2000);
             showResult(results, reply);
-    };
+        }
+    });
 
     // ==================== PREP ====================
     function buildPrepUI() {
         return '<div class="prep-chat" id="prepChat" style="max-height:400px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;margin-bottom:16px;"></div>' +
             '<div style="display:flex;gap:10px;">' +
             '<input type="text" id="prepInput" placeholder="Type your answer..." style="flex:1;padding:12px 16px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:14px;font-family:var(--font);">' +
-            '<button class="btn ai-launch-btn" onclick="window._runPrepSend()">Send</button></div>';
+            '<button class="btn ai-launch-btn" id="prepSend">Send</button></div>';
     }
     function addChatMsg(role, text) {
         const chat = $('#prepChat');
@@ -810,7 +785,7 @@
         prepMessages.push({role:'assistant', content: reply});
         addChatMsg('assistant', reply);
     }
-    window._runPrepSend = function() { sendPrep(); };
+    document.addEventListener('click', function(e) { if (e.target && e.target.id === 'prepSend') sendPrep(); });
     document.addEventListener('keydown', function(e) { if (e.target && e.target.id === 'prepInput' && e.key === 'Enter') sendPrep(); });
     async function sendPrep() {
         const input = $('#prepInput');
@@ -835,63 +810,11 @@
     }
 
     // Init
-    // Expose ALL functions globally so inline onclick can reach them
-    window._sf = {
-        callAI: callAI, md: markdownToHtml, $: $, $$: $$,
-        show: showLoading, result: showResult, esc: escapeHtml,
-        scholarshipData: function(){ return scholarshipData; },
-        prepMessages: function(){ return prepMessages; },
-        setPrepMessages: function(m){ prepMessages = m; },
-        addChatMsg: addChatMsg
-    };
-
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initAIAgents);
     } else {
         initAIAgents();
     }
 })();
-
-// Tracker AI — global onclick handler (outside IIFE so inline onclick can reach it)
-window._runTrackerAI = async function(btn) {
-    var data = window._trackerData;
-    if (!data) return;
-    var callAI = window._sf.callAI;
-    var markdownToHtml = window._sf.md;
-    if (!callAI || !markdownToHtml) return;
-
-    var aiResult = document.getElementById('trackerAiResult');
-    btn.disabled = true;
-    btn.textContent = '🤖 Generating strategy...';
-    btn.style.opacity = '0.7';
-    if (aiResult) aiResult.innerHTML = '<div style="text-align:center;padding:20px;"><div class="ai-loading-spinner"></div></div>';
-
-    var summaryText = '🔴 URGENT ('+data.urgent.length+'):\n' +
-        data.pickUrgent.map(function(d){ return '- '+d.name+' ('+d.country+') — '+d.days+' days, '+d.deadline+(d.funding?', '+d.funding:''); }).join('\n') +
-        '\n\n🟡 COMING UP ('+data.upcoming.length+' total):\n' +
-        data.pickUpcoming.map(function(d){ return '- '+d.name+' ('+d.country+') — '+d.days+' days, '+d.deadline+(d.funding?', '+d.funding:''); }).join('\n') +
-        '\n\n🟢 PLAN AHEAD ('+data.planned.length+' total):\n' +
-        data.pickPlanned.map(function(d){ return '- '+d.name+' ('+d.country+') — '+d.days+' days, '+d.deadline+(d.funding?', '+d.funding:''); }).join('\n');
-
-    try {
-        var reply = await callAI([
-            {role:'system', content:'You are Tracker, a scholarship deadline strategist powered by Llama AI. Give sharp, specific, actionable advice.\n\nFormat your response as:\n## ⚡ This Week\'s Priority\n(most urgent actions)\n\n## 📋 Next 2 Weeks\n(what to prepare)\n\n## 🔭 Start Researching\n(longer-term opportunities to explore)\n\nRules:\n- Name specific scholarships by name\n- Prioritize fully funded scholarships\n- Be encouraging but direct\n- Max 250 words\n- Use bullets and bold for key info'},
-            {role:'user', content:'Today: '+data.todayStr+'\n\nScholarship deadlines:\n'+summaryText+'\n\nGive me my personalized action plan.'}
-        ], 1200);
-
-        if (aiResult) aiResult.innerHTML = '<div style="background:linear-gradient(135deg,rgba(139,92,246,0.1),rgba(32,178,170,0.06));border:1px solid rgba(139,92,246,0.25);border-radius:16px;padding:24px;line-height:1.7;color:var(--text);font-size:14px;">' +
-            '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid rgba(139,92,246,0.15);">' +
-            '<span style="font-size:28px;">🤖</span>' +
-            '<div><div style="font-size:15px;font-weight:700;color:#8B5CF6;">AI Strategy Tips</div>' +
-            '<div style="font-size:11px;color:var(--text3);">Powered by Llama AI · Personalized from '+data.all.length+' deadlines</div></div></div>' +
-            markdownToHtml(reply) + '</div>';
-    } catch(err) {
-        if (aiResult) aiResult.innerHTML = '<div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);border-radius:12px;padding:16px;color:var(--text2);font-size:13px;text-align:center;">⚠️ AI tips unavailable right now. Please try again.</div>';
-    }
-
-    btn.disabled = false;
-    btn.textContent = '🤖 Refresh AI Strategy Tips';
-    btn.style.opacity = '1';
-};
 </script>
 {% endblock %}
