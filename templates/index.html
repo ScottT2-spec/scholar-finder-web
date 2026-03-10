@@ -431,8 +431,6 @@
             .replace(/\n/g, '<br>');
     }
 
-    window._sfMarkdown = markdownToHtml;
-    window._sfCallAI = callAI;
     async function callAI(messages, maxTokens = 1024) {
         try {
             const resp = await fetch('/api/ai/chat', {
@@ -514,11 +512,10 @@
             '<div><label>Your Country</label><input type="text" id="scoutCountry" placeholder="e.g. Ghana"></div>' +
             '<div><label>Field of Interest</label><input type="text" id="scoutField" placeholder="e.g. Computer Science"></div>' +
             '<div><label>Degree Level</label><select id="scoutLevel"><option value="">Any Level</option><option value="undergraduate">Undergraduate</option><option value="masters">Masters</option><option value="phd">PhD</option></select></div>' +
-            '<button class="btn ai-launch-btn" id="scoutSearch" style="width:100%;">🔍 Find My Scholarships</button>' +
+            '<button class="btn ai-launch-btn" onclick="window._runScout()" style="width:100%;">🔍 Find My Scholarships</button>' +
             '</div><div id="scoutResults" style="margin-top:20px;"></div>';
     }
-    document.addEventListener('click', async function(e) {
-        if (e.target && e.target.closest('#scoutSearch')) {
+    window._runScout = async function() {
             const results = $('#scoutResults');
             showLoading(results);
             const country = ($('#scoutCountry').value || '').toLowerCase();
@@ -540,8 +537,7 @@
                 {role:'user', content: 'My profile:\n- GPA: ' + ($('#scoutGpa').value||'Not specified') + '\n- Country: ' + ($('#scoutCountry').value||'Not specified') + '\n- Field: ' + ($('#scoutField').value||'Not specified') + '\n- Level: ' + ($('#scoutLevel').value||'Not specified') + '\n\nScholarships:\n' + scholText + '\n\nAnalyze which are the best fit for me. Rank them and explain WHY each matches. Give a match assessment and key tips.'}
             ], 1500);
             showResult(results, reply);
-        }
-    });
+    };
 
     // ==================== WRITER ====================
     function buildWriterUI() {
@@ -552,9 +548,9 @@
             '<textarea id="writerText" style="width:100%;min-height:250px;padding:14px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:14px;font-family:var(--font);line-height:1.7;resize:vertical;" placeholder="Paste or write your essay here..."></textarea>' +
             '<div style="font-size:12px;color:var(--text3);margin-top:4px;">Words: <strong id="wWC">0</strong></div></div>' +
             '<div style="display:flex;gap:10px;flex-wrap:wrap;">' +
-            '<button class="btn ai-launch-btn writerBtn" data-action="review">📋 Review</button>' +
-            '<button class="btn ai-launch-btn writerBtn" data-action="improve" style="background:linear-gradient(135deg,#20b2aa,#1a9090)!important;">✨ Improve</button>' +
-            '<button class="btn ai-launch-btn writerBtn" data-action="brainstorm" style="background:linear-gradient(135deg,#e67e22,#d35400)!important;">💡 Brainstorm</button></div>' +
+            '<button class="btn ai-launch-btn" onclick="window._runWriter(\'review\')">📋 Review</button>' +
+            '<button class="btn ai-launch-btn" onclick="window._runWriter(\'improve\')" style="background:linear-gradient(135deg,#20b2aa,#1a9090)!important;">✨ Improve</button>' +
+            '<button class="btn ai-launch-btn" onclick="window._runWriter(\'brainstorm\')" style="background:linear-gradient(135deg,#e67e22,#d35400)!important;">💡 Brainstorm</button></div>' +
             '<div id="writerResults"></div></div>';
     }
     document.addEventListener('input', function(e) {
@@ -562,11 +558,9 @@
             const wc = $('#wWC'); if (wc) wc.textContent = e.target.value.trim() ? e.target.value.trim().split(/\s+/).length : 0;
         }
     });
-    document.addEventListener('click', async function(e) {
-        if (e.target && e.target.closest('.writerBtn')) {
+    window._runWriter = async function(action) {
             const essay = $('#writerText').value;
             if (!essay.trim()) { alert('Please write or paste your essay first.'); return; }
-            const action = e.target.closest('.writerBtn').dataset.action;
             const results = $('#writerResults');
             showLoading(results);
             const prompts = {
@@ -579,8 +573,7 @@
                 {role:'user', content: prompts[action]}
             ], 2000);
             showResult(results, reply);
-        }
-    });
+    };
 
     // ==================== PROFILER ====================
     function buildProfilerUI() {
@@ -593,11 +586,10 @@
             '<div><label>Years of Experience</label><input type="number" id="profExp" min="0" placeholder="e.g. 2"></div>' +
             '<div class="full-width"><label>Key Skills</label><input type="text" id="profSkills" placeholder="e.g. Python, Leadership, Research"></div>' +
             '<div class="full-width"><label>Activities / Extracurriculars</label><input type="text" id="profActivities" placeholder="e.g. Debate club, volunteering"></div>' +
-            '<div class="full-width"><button class="btn ai-launch-btn" id="profAnalyze" style="width:100%;">👤 Analyze My Profile</button></div>' +
+            '<div class="full-width"><button class="btn ai-launch-btn" onclick="window._runProfiler()" style="width:100%;">👤 Analyze My Profile</button></div>' +
             '</div><div id="profResults" style="margin-top:20px;"></div>';
     }
-    document.addEventListener('click', async function(e) {
-        if (e.target && e.target.closest('#profAnalyze')) {
+    window._runProfiler = async function() {
             const results = $('#profResults');
             showLoading(results);
             const reply = await callAI([
@@ -605,8 +597,7 @@
                 {role:'user', content: 'Evaluate this profile:\n- Name: ' + ($('#profName').value||'N/A') + '\n- Country: ' + ($('#profCountry').value||'N/A') + '\n- GPA: ' + ($('#profGpa').value||'N/A') + '\n- Level: ' + ($('#profLevel').value||'N/A') + '\n- Field: ' + ($('#profField').value||'N/A') + '\n- Experience: ' + ($('#profExp').value||'N/A') + ' years\n- Skills: ' + ($('#profSkills').value||'N/A') + '\n- Activities: ' + ($('#profActivities').value||'N/A') + '\n\nGive: 1. Profile Strength Score /100, 2. Strengths, 3. Gaps, 4. Action plan for next 3-6 months, 5. Best scholarship types to target, 6. Red flags'}
             ], 1500);
             showResult(results, reply);
-        }
-    });
+    };
 
     // ==================== TRACKER ====================
     function buildTrackerUI() {
@@ -768,11 +759,10 @@
             '<div><label style="font-size:12px;color:var(--text3);text-transform:uppercase;display:block;margin-bottom:4px;">GPA</label><input type="number" id="advGpa" min="0" max="4" step="0.1" placeholder="3.5" style="width:100%;padding:10px 14px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:14px;"></div>' +
             '<div><label style="font-size:12px;color:var(--text3);text-transform:uppercase;display:block;margin-bottom:4px;">Field</label><input type="text" id="advField" placeholder="e.g. Engineering" style="width:100%;padding:10px 14px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:14px;"></div>' +
             '<div><label style="font-size:12px;color:var(--text3);text-transform:uppercase;display:block;margin-bottom:4px;">Level</label><select id="advLevel" style="width:100%;padding:10px 14px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:14px;"><option value="undergraduate">Undergraduate</option><option value="masters">Masters</option><option value="phd">PhD</option></select></div></div>' +
-            '<button class="btn ai-launch-btn" id="advAnalyze" style="width:100%;">🎓 Build My Strategy</button>' +
+            '<button class="btn ai-launch-btn" onclick="window._runAdvisor()" style="width:100%;">🎓 Build My Strategy</button>' +
             '<div id="advResults"></div></div>';
     }
-    document.addEventListener('click', async function(e) {
-        if (e.target && e.target.closest('#advAnalyze')) {
+    window._runAdvisor = async function() {
             const results = $('#advResults');
             showLoading(results);
             const country = ($('#advCountry').value||'').toLowerCase();
@@ -790,15 +780,14 @@
                 {role:'user', content:'Create a strategy for:\n- Country: '+($('#advCountry').value||'?')+'\n- GPA: '+($('#advGpa').value||'?')+'\n- Field: '+($('#advField').value||'?')+'\n- Level: '+($('#advLevel').value||'?')+'\n\nScholarships:\n'+scholText+'\n\nGive: 1. Priority ranking with reasoning, 2. Application timeline, 3. Effort assessment, 4. Safety/Reach/Target categories, 5. Key strategy tips'}
             ], 2000);
             showResult(results, reply);
-        }
-    });
+    };
 
     // ==================== PREP ====================
     function buildPrepUI() {
         return '<div class="prep-chat" id="prepChat" style="max-height:400px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;margin-bottom:16px;"></div>' +
             '<div style="display:flex;gap:10px;">' +
             '<input type="text" id="prepInput" placeholder="Type your answer..." style="flex:1;padding:12px 16px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:14px;font-family:var(--font);">' +
-            '<button class="btn ai-launch-btn" id="prepSend">Send</button></div>';
+            '<button class="btn ai-launch-btn" onclick="window._runPrepSend()">Send</button></div>';
     }
     function addChatMsg(role, text) {
         const chat = $('#prepChat');
@@ -821,7 +810,7 @@
         prepMessages.push({role:'assistant', content: reply});
         addChatMsg('assistant', reply);
     }
-    document.addEventListener('click', function(e) { if (e.target && e.target.closest('#prepSend')) sendPrep(); });
+    window._runPrepSend = function() { sendPrep(); };
     document.addEventListener('keydown', function(e) { if (e.target && e.target.id === 'prepInput' && e.key === 'Enter') sendPrep(); });
     async function sendPrep() {
         const input = $('#prepInput');
@@ -846,6 +835,16 @@
     }
 
     // Init
+    // Expose ALL functions globally so inline onclick can reach them
+    window._sf = {
+        callAI: callAI, md: markdownToHtml, $: $, $$: $$,
+        show: showLoading, result: showResult, esc: escapeHtml,
+        scholarshipData: function(){ return scholarshipData; },
+        prepMessages: function(){ return prepMessages; },
+        setPrepMessages: function(m){ prepMessages = m; },
+        addChatMsg: addChatMsg
+    };
+
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initAIAgents);
     } else {
@@ -857,8 +856,8 @@
 window._runTrackerAI = async function(btn) {
     var data = window._trackerData;
     if (!data) return;
-    var callAI = window._sfCallAI;
-    var markdownToHtml = window._sfMarkdown;
+    var callAI = window._sf.callAI;
+    var markdownToHtml = window._sf.md;
     if (!callAI || !markdownToHtml) return;
 
     var aiResult = document.getElementById('trackerAiResult');
