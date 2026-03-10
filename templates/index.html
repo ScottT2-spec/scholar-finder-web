@@ -432,6 +432,8 @@ body.modal-open { overflow: hidden !important; position: fixed; width: 100%; }
             .replace(/\n/g, '<br>');
     }
 
+    window._sfMarkdown = markdownToHtml;
+    window._sfCallAI = callAI;
     async function callAI(messages, maxTokens = 1024) {
         try {
             const resp = await fetch('/api/ai/chat', {
@@ -752,61 +754,15 @@ body.modal-open { overflow: hidden !important; position: fixed; width: 100%; }
 
             // AI strategy button + result area
             '<div id="trackerAiSection" style="margin-top:16px;">' +
-            '<button class="btn ai-launch-btn" id="trackerAiBtn" style="width:100%;padding:14px 24px;font-size:15px;">🤖 Get AI Strategy Tips</button>' +
+            '<button class="btn ai-launch-btn" onclick="window._runTrackerAI(this)" style="width:100%;padding:14px 24px;font-size:15px;">🤖 Get AI Strategy Tips</button>' +
+            '<div id="trackerAiResult" style="margin-top:16px;"></div>' +
             '</div>';
 
         // Store data for the AI button
         window._trackerData = { urgent: urgent, upcoming: upcoming, planned: planned, all: all, pickUrgent: pickUrgent, pickUpcoming: pickUpcoming, pickPlanned: pickPlanned, todayStr: todayStr };
     }
 
-    // ==================== TRACKER AI (delegated click) ====================
-    document.addEventListener('click', async function(e) {
-        if (!e.target || e.target.id !== 'trackerAiBtn') return;
-        e.stopPropagation();
-        var btn = e.target;
-        var data = window._trackerData;
-        if (!data) return;
-
-        btn.disabled = true;
-        btn.innerHTML = '<span class="ai-loading-spinner" style="width:16px;height:16px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:8px;"></span> Generating strategy...';
-        btn.style.opacity = '0.7';
-
-        var aiResult = document.getElementById('trackerAiResult');
-        if (!aiResult) {
-            aiResult = document.createElement('div');
-            aiResult.id = 'trackerAiResult';
-            aiResult.style.marginTop = '16px';
-            btn.parentNode.appendChild(aiResult);
-        }
-        aiResult.innerHTML = '';
-
-        var summaryText = '🔴 URGENT ('+data.urgent.length+'):\n' +
-            data.pickUrgent.map(function(d){ return '- '+d.name+' ('+d.country+') — '+d.days+' days, '+d.deadline+(d.funding?', '+d.funding:''); }).join('\n') +
-            '\n\n🟡 COMING UP ('+data.upcoming.length+' total):\n' +
-            data.pickUpcoming.map(function(d){ return '- '+d.name+' ('+d.country+') — '+d.days+' days, '+d.deadline+(d.funding?', '+d.funding:''); }).join('\n') +
-            '\n\n🟢 PLAN AHEAD ('+data.planned.length+' total):\n' +
-            data.pickPlanned.map(function(d){ return '- '+d.name+' ('+d.country+') — '+d.days+' days, '+d.deadline+(d.funding?', '+d.funding:''); }).join('\n');
-
-        try {
-            var reply = await callAI([
-                {role:'system', content:'You are Tracker, a scholarship deadline strategist powered by Llama AI. Give sharp, specific, actionable advice.\n\nFormat your response as:\n## ⚡ This Week\'s Priority\n(most urgent actions)\n\n## 📋 Next 2 Weeks\n(what to prepare)\n\n## 🔭 Start Researching\n(longer-term opportunities to explore)\n\nRules:\n- Name specific scholarships by name\n- Prioritize fully funded scholarships\n- Be encouraging but direct\n- Max 250 words\n- Use bullets and bold for key info'},
-                {role:'user', content:'Today: '+data.todayStr+'\n\nScholarship deadlines:\n'+summaryText+'\n\nGive me my personalized action plan.'}
-            ], 1200);
-
-            aiResult.innerHTML = '<div style="background:linear-gradient(135deg,rgba(139,92,246,0.1),rgba(32,178,170,0.06));border:1px solid rgba(139,92,246,0.25);border-radius:16px;padding:24px;line-height:1.7;color:var(--text);font-size:14px;">' +
-                '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid rgba(139,92,246,0.15);">' +
-                '<span style="font-size:28px;">🤖</span>' +
-                '<div><div style="font-size:15px;font-weight:700;color:#8B5CF6;">AI Strategy Tips</div>' +
-                '<div style="font-size:11px;color:var(--text3);">Powered by Llama AI · Personalized from '+data.all.length+' deadlines</div></div></div>' +
-                markdownToHtml(reply) + '</div>';
-        } catch(err) {
-            aiResult.innerHTML = '<div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);border-radius:12px;padding:16px;color:var(--text2);font-size:13px;text-align:center;">⚠️ AI tips unavailable right now. Please try again.</div>';
-        }
-
-        btn.disabled = false;
-        btn.innerHTML = '🤖 Refresh AI Strategy Tips';
-        btn.style.opacity = '1';
-    });
+    // (Tracker AI handler is defined outside IIFE as window._runTrackerAI)
 
     // ==================== ADVISOR ====================
     function buildAdvisorUI() {
@@ -901,5 +857,47 @@ body.modal-open { overflow: hidden !important; position: fixed; width: 100%; }
         initAIAgents();
     }
 })();
+
+// Tracker AI — global onclick handler (outside IIFE so inline onclick can reach it)
+window._runTrackerAI = async function(btn) {
+    var data = window._trackerData;
+    if (!data) return;
+    var callAI = window._sfCallAI;
+    var markdownToHtml = window._sfMarkdown;
+    if (!callAI || !markdownToHtml) return;
+
+    var aiResult = document.getElementById('trackerAiResult');
+    btn.disabled = true;
+    btn.textContent = '🤖 Generating strategy...';
+    btn.style.opacity = '0.7';
+    if (aiResult) aiResult.innerHTML = '<div style="text-align:center;padding:20px;"><div class="ai-loading-spinner"></div></div>';
+
+    var summaryText = '🔴 URGENT ('+data.urgent.length+'):\n' +
+        data.pickUrgent.map(function(d){ return '- '+d.name+' ('+d.country+') — '+d.days+' days, '+d.deadline+(d.funding?', '+d.funding:''); }).join('\n') +
+        '\n\n🟡 COMING UP ('+data.upcoming.length+' total):\n' +
+        data.pickUpcoming.map(function(d){ return '- '+d.name+' ('+d.country+') — '+d.days+' days, '+d.deadline+(d.funding?', '+d.funding:''); }).join('\n') +
+        '\n\n🟢 PLAN AHEAD ('+data.planned.length+' total):\n' +
+        data.pickPlanned.map(function(d){ return '- '+d.name+' ('+d.country+') — '+d.days+' days, '+d.deadline+(d.funding?', '+d.funding:''); }).join('\n');
+
+    try {
+        var reply = await callAI([
+            {role:'system', content:'You are Tracker, a scholarship deadline strategist powered by Llama AI. Give sharp, specific, actionable advice.\n\nFormat your response as:\n## ⚡ This Week\'s Priority\n(most urgent actions)\n\n## 📋 Next 2 Weeks\n(what to prepare)\n\n## 🔭 Start Researching\n(longer-term opportunities to explore)\n\nRules:\n- Name specific scholarships by name\n- Prioritize fully funded scholarships\n- Be encouraging but direct\n- Max 250 words\n- Use bullets and bold for key info'},
+            {role:'user', content:'Today: '+data.todayStr+'\n\nScholarship deadlines:\n'+summaryText+'\n\nGive me my personalized action plan.'}
+        ], 1200);
+
+        if (aiResult) aiResult.innerHTML = '<div style="background:linear-gradient(135deg,rgba(139,92,246,0.1),rgba(32,178,170,0.06));border:1px solid rgba(139,92,246,0.25);border-radius:16px;padding:24px;line-height:1.7;color:var(--text);font-size:14px;">' +
+            '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid rgba(139,92,246,0.15);">' +
+            '<span style="font-size:28px;">🤖</span>' +
+            '<div><div style="font-size:15px;font-weight:700;color:#8B5CF6;">AI Strategy Tips</div>' +
+            '<div style="font-size:11px;color:var(--text3);">Powered by Llama AI · Personalized from '+data.all.length+' deadlines</div></div></div>' +
+            markdownToHtml(reply) + '</div>';
+    } catch(err) {
+        if (aiResult) aiResult.innerHTML = '<div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);border-radius:12px;padding:16px;color:var(--text2);font-size:13px;text-align:center;">⚠️ AI tips unavailable right now. Please try again.</div>';
+    }
+
+    btn.disabled = false;
+    btn.textContent = '🤖 Refresh AI Strategy Tips';
+    btn.style.opacity = '1';
+};
 </script>
 {% endblock %}
