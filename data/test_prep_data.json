@@ -1,0 +1,243 @@
+{
+  "ielts": {
+    "full_name": "International English Language Testing System",
+    "types": ["Academic (for university admissions)", "General Training (for immigration/work)"],
+    "format": {
+      "Listening": "40 questions, 30 minutes + 10 min transfer time (paper) or no transfer time (computer)",
+      "Reading": "40 questions, 60 minutes, 3 passages",
+      "Writing": "2 tasks — Task 1: 150 words (describe data/process), Task 2: 250 words (essay), 60 minutes total",
+      "Speaking": "11-14 minutes, face-to-face interview with examiner (3 parts: intro, long turn, discussion)"
+    },
+    "scoring": "0-9 band scale (half bands possible, e.g. 6.5). Each section scored separately. Overall = average of 4 sections, rounded to nearest half band.",
+    "common_requirements": {
+      "Most universities": "6.5 overall (no band below 6.0)",
+      "Top universities (Oxford, Cambridge, Imperial)": "7.0-7.5 overall",
+      "Some programs": "6.0 minimum",
+      "PhD programs": "Often 7.0+ overall"
+    },
+    "cost": "$255 USD (approximately GHS 3,800 in Ghana — varies by test center and exchange rate)",
+    "validity": "2 years from test date",
+    "test_centers_ghana": "British Council Accra, IDP IELTS Accra. Computer-delivered and paper-based both available.",
+    "one_skill_retake": "NEW: If you're close to your target score, you can retake just ONE section (Listening, Reading, Writing, or Speaking) instead of the full test. Available at select centers.",
+    "free_prep_resources": [
+      "British Council IELTS Prep — https://learnenglish.britishcouncil.org/skills",
+      "IELTS Liz — https://ieltsliz.com (free lessons, model answers, tips)",
+      "IELTS Buddy — https://www.ieltsbuddy.com",
+      "YouTube channels: IELTS Liz, E2 IELTS, IELTS Advantage, Keith Speaking Academy",
+      "Cambridge IELTS Practice Tests (books 1-19, find at bookshops or online)",
+      "BBC Learning English — https://www.bbc.co.uk/learningenglish",
+      "IELTS.org official sample tests — https://ielts.org/take-a-test/preparation-resources/sample-test-questions",
+      "Road to IELTS (free version via British Council) — https://www.roadtoielts.com"
+    ],
+    "tips": [
+      "Practice with real Cambridge IELTS tests (books 16-19 are most current format)",
+      "For Writing Task 2: Master 4 essay types (opinion, discussion, problem-solution, two-part question)",
+      "Speaking: Practice speaking English daily, record yourself, and review",
+      "Reading: Practice skimming, scanning, and paraphrasing techniques",
+      "Listening: Listen to BBC podcasts, TED talks, and academic lectures",
+      "Take the computer-based test — results come in 3-5 days vs 13 days for paper",
+      "Consider the One Skill Retake if you're close to your target — it's cheaper and faster",
+      "Book your test 4-6 weeks in advance as Accra test centers fill up quickly"
+    ]
+  },
+  "toefl": {
+    "full_name": "Test of English as a Foreign Language (iBT)",
+    "types": ["TOEFL iBT (primary test — MAJOR UPDATE January 2026)", "TOEFL iBT Home Edition (take from home)", "TOEFL Essentials (shorter, cheaper alternative)", "TOEFL ITP (institutional only)"],
+    "important_update": "⚠️ MAJOR CHANGE: As of January 2026, TOEFL iBT uses a new 1-6 band scale (similar to IELTS) instead of the old 0-120 scale. During the 2-year transition period (until Jan 2028), you'll also receive a comparable 0-120 score. The test format has been completely redesigned with new task types.",
+    "format": {
+      "Reading": "50 items, ~30 minutes (Complete the Words, Read in Daily Life, Read an Academic Passage)",
+      "Listening": "47 items, ~29 minutes (Listen and Choose, Conversations, Announcements, Academic Talks)",
+      "Writing": "12 items, ~23 minutes (Build a Sentence, Write an Email, Academic Discussion)",
+      "Speaking": "11 items, ~8 minutes (Listen and Repeat, Take an Interview)",
+      "Total": "~2 hours (computer-adaptive, time may vary)"
+    },
+    "scoring": "NEW: 1-6 band scale per section. Overall = average of 4 sections, rounded to nearest 0.5. During transition (until Jan 2028), you'll also get 0-120 comparable score.",
+    "common_requirements": {
+      "Note": "Universities are transitioning to the new scale. Check each university for updated requirements.",
+      "Most universities (new scale)": "4.0-4.5 overall (equivalent to old 80-90)",
+      "Top universities (new scale)": "5.0+ overall (equivalent to old 100+)",
+      "Old scale reference": "80-100+ (still shown during transition period)"
+    },
+    "cost": "$200-245 USD (varies by country — check ETS website for Ghana-specific pricing)",
+    "validity": "2 years from test date",
+    "test_centers_ghana": "ETS-authorized centers in Accra. TOEFL iBT Home Edition also available (take from home with webcam).",
+    "free_prep_resources": [
+      "ETS Official TOEFL Prep — https://www.ets.org/toefl/test-takers/ibt/prepare",
+      "TOEFL Go! (official ETS mobile app)",
+      "ETS Free TOEFL iBT Sample Test (40-minute practice)",
+      "Magoosh TOEFL Blog — https://magoosh.com/toefl/",
+      "YouTube: TST Prep, NoteFull, Magoosh TOEFL, Juva Prep",
+      "EdX TOEFL Prep Course (free audit option)",
+      "ETS TOEFL iBT Information Bulletin (PDF) — free download from ETS website"
+    ],
+    "tips": [
+      "⚠️ The test changed significantly in January 2026 — make sure your prep materials cover the NEW format",
+      "New format is computer-adaptive: questions get harder/easier based on your answers",
+      "The new 1-6 band scale aligns with IELTS, making score comparisons easier for universities",
+      "Take the free official ETS sample test to understand the new format",
+      "Speaking section is now shorter (~8 min) with Listen and Repeat tasks",
+      "Writing section includes Build a Sentence and Write an Email — practice these new formats",
+      "Scores available in just 3 days",
+      "TOEFL Home Edition is available if no convenient test center — same test, same scores",
+      "MyBest scores: ETS combines your best section scores from multiple tests"
+    ]
+  },
+  "duolingo": {
+    "full_name": "Duolingo English Test (DET)",
+    "types": ["One format — computer-adaptive test taken at home"],
+    "format": {
+      "Adaptive Test": "45 minutes, computer-adaptive questions testing reading, writing, listening, speaking",
+      "Writing Sample": "10 minutes, 2 writing prompts (sent to universities)",
+      "Speaking Sample": "10 minutes, 2 speaking prompts (video sent to universities)",
+      "Total": "~1 hour",
+      "Subscore breakdown": "Literacy, Comprehension, Conversation, Production"
+    },
+    "scoring": "10-160 overall scale. Four subscores: Literacy (10-160), Comprehension (10-160), Conversation (10-160), Production (10-160).",
+    "common_requirements": {
+      "Most universities": "110-120",
+      "Top universities": "125-135+",
+      "Some programs": "100-105 minimum",
+      "Growing acceptance": "5,000+ institutions worldwide accept DET"
+    },
+    "cost": "$65 USD — significantly cheaper than IELTS ($255) or TOEFL ($200+)",
+    "validity": "2 years from test date",
+    "test_centers_ghana": "No test center needed! Take at home anytime — you only need a computer, stable internet, webcam, and microphone.",
+    "free_prep_resources": [
+      "Duolingo English Test Official Practice — https://englishtest.duolingo.com/prepare",
+      "Free 15-minute practice test on official website (unlimited retakes)",
+      "YouTube: Duolingo English Test Tips, Teacher Luke, DET Practice",
+      "Duolingo app (for daily English practice)",
+      "Reddit: r/DuolingoEnglishTest (community tips and score reports)",
+      "DET Ready (official prep materials)"
+    ],
+    "tips": [
+      "Take the free practice test multiple times — it's very similar to the real test",
+      "Can be taken AT HOME anytime, 24/7 — no test center appointment needed!",
+      "Results in 48 hours — fastest turnaround of all English tests",
+      "Accepted by 5,000+ universities worldwide (growing rapidly)",
+      "Best budget option at $65 compared to $200-255 for TOEFL/IELTS",
+      "Computer-adaptive: questions get harder as you answer correctly",
+      "You can retake every 21 days",
+      "Universities see your writing and speaking samples — take these seriously",
+      "Ensure stable internet and quiet room — test will be invalidated if interrupted",
+      "Not yet accepted by ALL universities — check your target schools first"
+    ]
+  },
+  "sat": {
+    "full_name": "Scholastic Assessment Test (Digital SAT)",
+    "types": ["Digital SAT (fully digital since March 2024)"],
+    "format": {
+      "Reading and Writing": "2 modules, 54 questions, 64 minutes. Module 2 difficulty adapts based on Module 1 performance.",
+      "Math": "2 modules, 44 questions, 70 minutes. Built-in Desmos graphing calculator available for all questions.",
+      "Total": "2 hours 14 minutes (plus breaks)"
+    },
+    "scoring": "400-1600 total (200-800 per section). Scores available ~2 weeks after test day.",
+    "common_requirements": {
+      "Good score": "1200+",
+      "Competitive": "1350-1450",
+      "Top universities (Ivy League)": "1500+",
+      "Note": "Many top US universities remain test-optional through 2026, but some (MIT, Georgetown, Dartmouth, Brown, Yale, UT Austin) now require or strongly recommend scores again"
+    },
+    "cost": "$68 USD registration + $43 international fee = $111 total for international students (2025-2026). Fee waivers available for eligible low-income students.",
+    "validity": "5 years (but most universities prefer recent scores within 2-3 years)",
+    "test_centers_ghana": "Several SAT test centers in Accra area. Check College Board for current list. Register early as seats fill fast.",
+    "test_dates_2025_2026": "August 23, October 4, November 1, December 6 (2025); March 14, May 2, June 7 (2026)",
+    "free_prep_resources": [
+      "Khan Academy SAT Prep — https://www.khanacademy.org/sat (OFFICIAL College Board partner, fully free)",
+      "College Board Official Practice — https://satsuite.collegeboard.org/sat/practice-preparation",
+      "Bluebook App — Official digital practice tests (download from bluebook.app.collegeboard.org)",
+      "YouTube: Scalar Learning, 1600.io, Organic Chemistry Tutor, Supertutor TV",
+      "Reddit: r/SAT community (peer tips and study groups)",
+      "College Panda Math and Erica Meltzer Reading (affordable books)"
+    ],
+    "tips": [
+      "Khan Academy SAT prep is FREE, personalized, and the BEST resource (official College Board partner)",
+      "Download the Bluebook app and take full-length practice tests under real conditions",
+      "Digital format is adaptive: strong performance on Module 1 unlocks harder (higher-scoring) Module 2",
+      "Built-in Desmos graphing calculator available on ALL math questions — practice using it",
+      "Test-optional trend: Some top schools have reinstated SAT requirements (MIT, Dartmouth, Yale, Brown) — check each school's policy",
+      "Strong scores still significantly boost applications, especially for international students seeking financial aid",
+      "Take at least 4-6 full practice tests before the real exam",
+      "Register 6-8 weeks early — Ghana test centers fill up quickly",
+      "You need an approved device (laptop/tablet) — borrow from school if needed"
+    ]
+  },
+  "gre": {
+    "full_name": "Graduate Record Examination",
+    "types": ["GRE General Test (shorter format since Sept 2023)", "GRE Subject Tests (specific fields — limited availability)"],
+    "format": {
+      "Verbal Reasoning": "2 sections, 27 questions each, 41 minutes total",
+      "Quantitative Reasoning": "2 sections, 27 questions each, 47 minutes total",
+      "Analytical Writing": "1 essay task ('Analyze an Issue'), 30 minutes",
+      "Total": "~1 hour 58 minutes (significantly shorter than pre-2023 format)"
+    },
+    "scoring": "Verbal: 130-170 (1-point increments), Quantitative: 130-170 (1-point increments), Analytical Writing: 0-6 (half-point increments)",
+    "common_requirements": {
+      "Good score": "Verbal 155+ / Quant 160+",
+      "Top programs": "Verbal 160+ / Quant 165+",
+      "Writing": "4.0+ for most programs",
+      "Note": "Many graduate programs have dropped or made GRE optional — check before you prep! This trend accelerated post-COVID."
+    },
+    "cost": "$220 USD worldwide. Fee reduction voucher available (reduces to $100) for students demonstrating financial need.",
+    "validity": "5 years from test date",
+    "test_centers_ghana": "ETS-authorized test centers in Accra. GRE at Home also available worldwide with ProctorU.",
+    "free_prep_resources": [
+      "ETS Official GRE Prep — https://www.ets.org/gre/test-takers/general-test/prepare",
+      "ETS POWERPREP Online (2 free full-length official practice tests)",
+      "GregMAT+ — https://www.gregmat.com ($5/month, widely considered the best affordable GRE prep)",
+      "Magoosh GRE Blog — https://magoosh.com/gre/",
+      "YouTube: GregMAT (Quant and Verbal strategies), Magoosh GRE, Manhattan Prep",
+      "ETS Official Verbal and Quant Practice Questions (free PDFs)",
+      "Vince Kotchian's GRE resources"
+    ],
+    "tips": [
+      "CHECK FIRST: Many graduate programs have dropped the GRE requirement — don't prep unnecessarily",
+      "If needed, Quant section is most important for STEM/engineering applicants",
+      "GRE at Home is available — take from anywhere with stable internet",
+      "ETS POWERPREP free practice tests are the best baseline measure",
+      "GregMAT+ at $5/month is the best affordable prep resource — highly recommended",
+      "Shorter format since September 2023 (~2 hours instead of 4!) — much less exhausting",
+      "ScoreSelect: You can choose which scores to send to schools",
+      "Fee reduction to $100 is available if you demonstrate financial need — apply through ETS",
+      "Many business schools now accept GRE instead of GMAT"
+    ]
+  },
+  "gmat": {
+    "full_name": "Graduate Management Admission Test (GMAT Focus Edition)",
+    "types": ["GMAT Focus Edition (new format since November 2023, replaces old GMAT)"],
+    "format": {
+      "Quantitative Reasoning": "21 questions, 45 minutes (problem solving, no data sufficiency)",
+      "Verbal Reasoning": "23 questions, 45 minutes (critical reasoning, reading comprehension — no sentence correction)",
+      "Data Insights": "20 questions, 45 minutes (data sufficiency, multi-source reasoning, graphics/table interpretation, two-part analysis)",
+      "Total": "2 hours 15 minutes (choose your section order)"
+    },
+    "scoring": "Total: 205-805 (in 10-point increments). Each section: 60-90. No separate AWA score.",
+    "common_requirements": {
+      "Good score": "615+",
+      "Competitive (top 50 MBA)": "665+",
+      "Top MBA programs (M7)": "705+",
+      "Average at top schools": "700-740"
+    },
+    "cost": "$275 USD (online) / $300 USD (test center). Includes sending scores to 5 programs free.",
+    "validity": "5 years from test date",
+    "test_centers_ghana": "Pearson VUE test centers in Accra. GMAT Online (at home) also available.",
+    "free_prep_resources": [
+      "GMAT Official Prep on mba.com — https://www.mba.com/exams/gmat-focus-edition/prepare",
+      "GMAT Official Practice (free practice questions and mini quiz)",
+      "GMAT Club Forums — https://gmatclub.com (free community, strategies, score reports)",
+      "YouTube: GMAT Ninja, Magoosh GMAT, Manhattan Prep",
+      "Target Test Prep Blog — https://blog.targettestprep.com",
+      "Magoosh GMAT Blog — https://magoosh.com/gmat/"
+    ],
+    "tips": [
+      "The GMAT Focus Edition (Nov 2023) is completely different from the old GMAT — use updated materials only",
+      "No more Sentence Correction or AWA essay — the test is more data-focused now",
+      "You choose your section order — start with your strongest section for confidence",
+      "Data Insights is a new section combining data sufficiency with data analysis — practice this extensively",
+      "You can retake up to 5 times in a 12-month period",
+      "Score preview: You see your unofficial score before deciding to accept or cancel it",
+      "Many business schools now also accept the GRE — compare both before deciding which to take",
+      "Essential for MBA applications at top business schools (Harvard, Wharton, INSEAD, LBS)"
+    ]
+  }
+}

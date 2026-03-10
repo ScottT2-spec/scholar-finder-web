@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pid
+*.tar.gz
+.env
+.secret_key
+uploads/
+PyPDF2/
+scholarweb.db
+data/scholarships.json.bak
+logs/
+*.log

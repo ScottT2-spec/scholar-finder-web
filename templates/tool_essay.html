@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}AI Essay Rater — ScholarFinder{% endblock %}
+{% block content %}
+<section class="section">
+    <div class="container" style="max-width:700px;">
+        <h2 class="section-title">✍️ AI Essay Rater</h2>
+        <p style="color:var(--text2);margin-bottom:24px;">Get professional-grade feedback on your essay powered by AI. Analyzes structure, voice, impact, and more.</p>
+        
+        <div class="card">
+            <div class="form-group">
+                <label>Essay Type</label>
+                <select id="essayType" class="form-input">
+                    <option value="personal_statement">Personal Statement</option>
+                    <option value="sop">Statement of Purpose</option>
+                    <option value="motivation">Motivation Letter</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Paste Your Essay <span class="required">*</span></label>
+                <textarea id="essayText" class="form-input" style="min-height:250px;" placeholder="Paste your essay here..."></textarea>
+            </div>
+            <button onclick="rateEssay()" class="btn btn-primary" id="rateBtn" style="width:100%;">
+                <span id="btnText">✨ Analyze My Essay</span>
+            </button>
+        </div>
+
+        <div id="results" style="display:none;margin-top:24px;">
+            <div class="card">
+                <div style="text-align:center;margin-bottom:20px;">
+                    <div id="scoreCircle" style="width:110px;height:110px;border-radius:50%;background:var(--grad);display:inline-flex;align-items:center;justify-content:center;margin-bottom:10px;box-shadow:0 8px 32px rgba(139,92,246,0.3);">
+                        <span id="scoreNum" style="color:#fff;font-size:2.2rem;font-weight:800;"></span>
+                    </div>
+                    <div id="scoreLabel" style="font-size:1.2rem;font-weight:700;margin-bottom:4px;"></div>
+                    <div id="wordCount" style="color:var(--text3);font-size:0.85rem;"></div>
+                </div>
+                <div id="summaryBox" style="display:none;background:rgba(139,92,246,0.08);border-left:3px solid var(--accent);padding:14px 18px;border-radius:8px;margin-bottom:20px;">
+                    <div style="font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--accent);margin-bottom:6px;">AI Assessment</div>
+                    <div id="summaryText" style="color:var(--text2);font-size:0.92rem;line-height:1.6;"></div>
+                </div>
+                <div id="feedbackList"></div>
+                <div id="aiBadge" style="display:none;text-align:center;margin-top:18px;padding-top:14px;border-top:1px solid var(--border);">
+                    <span style="font-size:0.75rem;color:var(--text3);background:rgba(139,92,246,0.1);padding:4px 12px;border-radius:20px;">⚡ Powered by AI</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+async function rateEssay() {
+    const essay = document.getElementById('essayText').value;
+    if (!essay.trim()) return;
+    const btn = document.getElementById('rateBtn');
+    document.getElementById('btnText').textContent = '🔍 Analyzing with AI...';
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+    
+    try {
+        const res = await fetch('/api/tools/rate-essay', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({essay, type: document.getElementById('essayType').value})
+        });
+        const data = await res.json();
+        
+        if (data.error) { alert(data.error); return; }
+        
+        document.getElementById('scoreNum').textContent = data.score + '/10';
+        document.getElementById('scoreLabel').textContent = data.label;
+        document.getElementById('scoreLabel').style.color = data.score >= 7 ? 'var(--success)' : data.score >= 5 ? 'var(--warning)' : 'var(--danger)';
+        document.getElementById('wordCount').textContent = `${data.word_count} words · ${data.sentence_count} sentences · ${data.paragraph_count} paragraphs`;
+        
+        if (data.summary) {
+            document.getElementById('summaryText').textContent = data.summary;
+            document.getElementById('summaryBox').style.display = 'block';
+        }
+        
+        const list = document.getElementById('feedbackList');
+        list.innerHTML = data.feedback.map(([icon, text]) =>
+            `<div style="display:flex;gap:10px;padding:12px 0;border-bottom:1px solid var(--border);align-items:flex-start;">
+                <span style="font-size:1.1rem;flex-shrink:0;">${icon}</span>
+                <span style="color:var(--text2);font-size:0.9rem;line-height:1.55;">${text}</span>
+            </div>`
+        ).join('');
+        
+        if (data.ai_powered) {
+            document.getElementById('aiBadge').style.display = 'block';
+        }
+        
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('results').scrollIntoView({behavior:'smooth'});
+    } catch(e) {
+        alert('Something went wrong. Please try again.');
+    } finally {
+        document.getElementById('btnText').textContent = '✨ Analyze My Essay';
+        btn.disabled = false;
+        btn.style.opacity = '1';
+    }
+}
+</script>
+{% endblock %}

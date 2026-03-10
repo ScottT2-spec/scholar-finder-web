@@ -1,0 +1,39 @@
+name: Daily Scholarship Scraper
+
+on:
+  schedule:
+    # Run daily at 6:00 AM UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger ScholarFinder Scraper
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -X POST \
+            -H "X-Webhook-Secret: ${{ secrets.WEBHOOK_SECRET }}" \
+            "https://scholarfinder.pythonanywhere.com/webhook/scraper/run")
+          
+          http_code=$(echo "$response" | tail -1)
+          body=$(echo "$response" | head -n -1)
+          
+          echo "Status: $http_code"
+          echo "Response: $body"
+          
+          if [ "$http_code" != "200" ]; then
+            echo "::error::Scraper failed with HTTP $http_code"
+            exit 1
+          fi
+          
+          echo "$body" | python3 -c "
+          import json, sys
+          d = json.load(sys.stdin)
+          r = d.get('result', {})
+          print(f\"✅ Scraper complete\")
+          print(f\"   Before: {r.get('before', '?')}\")
+          print(f\"   Added: {r.get('added', '?')}\")
+          print(f\"   Expired: {r.get('expired', '?')}\")
+          print(f\"   Final: {r.get('final', '?')}\")
+          "

@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+{% block title %}Verify Email{% endblock %}
+{% block content %}
+<div class="auth-page">
+    <div class="auth-box" style="max-width: 440px;">
+        <div style="text-align:center;margin-bottom:8px;">
+            <div style="width:72px;height:72px;background:var(--accent-lighter, #f3e8ff);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:16px;">📧</div>
+            <h1 style="margin-bottom:4px;">Verify Your Email</h1>
+            <p class="sub" style="margin-bottom:4px;">We sent a 6-digit code to</p>
+            <p style="color:var(--accent);font-weight:600;font-size:0.95rem;word-break:break-all;">{{ email }}</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <div id="verifyError" style="display:none;background:rgba(220,38,38,0.1);border:1px solid rgba(220,38,38,0.3);color:#dc2626;padding:10px 16px;border-radius:10px;font-size:0.85rem;text-align:center;margin-bottom:16px;"></div>
+        <div id="verifySuccess" style="display:none;background:rgba(22,163,74,0.1);border:1px solid rgba(22,163,74,0.3);color:#16a34a;padding:10px 16px;border-radius:10px;font-size:0.85rem;text-align:center;margin-bottom:16px;"></div>
+
+        <form id="verifyForm" method="POST" autocomplete="off">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+            <!-- OTP Input Boxes -->
+            <div id="otpContainer" style="display:flex;gap:10px;justify-content:center;margin:24px 0 28px;">
+                <input type="text" name="digit1" maxlength="1" inputmode="numeric" pattern="[0-9]" class="otp-digit" autocomplete="off" autofocus>
+                <input type="text" name="digit2" maxlength="1" inputmode="numeric" pattern="[0-9]" class="otp-digit" autocomplete="off">
+                <input type="text" name="digit3" maxlength="1" inputmode="numeric" pattern="[0-9]" class="otp-digit" autocomplete="off">
+                <div style="display:flex;align-items:center;color:var(--text3, #999);font-size:1.2rem;">—</div>
+                <input type="text" name="digit4" maxlength="1" inputmode="numeric" pattern="[0-9]" class="otp-digit" autocomplete="off">
+                <input type="text" name="digit5" maxlength="1" inputmode="numeric" pattern="[0-9]" class="otp-digit" autocomplete="off">
+                <input type="text" name="digit6" maxlength="1" inputmode="numeric" pattern="[0-9]" class="otp-digit" autocomplete="off">
+            </div>
+
+            <!-- Timer -->
+            <div style="text-align:center;margin-bottom:20px;">
+                <span style="color:var(--text3, #888);font-size:0.85rem;">
+                    Code expires in <span id="countdown" style="color:var(--accent);font-weight:700;">0:30</span>
+                </span>
+            </div>
+
+            <button type="submit" id="verifyBtn" class="btn btn-primary" style="width:100%;justify-content:center;" disabled>
+                <span id="verifyBtnText">Verify Email</span>
+                <span id="verifySpinner" style="display:none;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" style="animation:spin 0.8s linear infinite;"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="31.42" stroke-dashoffset="10" stroke-linecap="round"/></svg>
+                </span>
+            </button>
+        </form>
+
+        <!-- Resend -->
+        <div style="text-align:center;margin-top:20px;">
+            <p style="color:var(--text3, #888);font-size:0.85rem;">
+                Didn't receive the code?
+                <button id="resendBtn" onclick="resendCode()" style="background:none;border:none;color:var(--accent);font-weight:600;cursor:pointer;font-size:0.85rem;text-decoration:underline;">Resend Code</button>
+            </p>
+            <p id="resendCooldown" style="display:none;color:var(--text3);font-size:0.8rem;margin-top:4px;">
+                Wait <span id="resendTimer">60</span>s before resending
+            </p>
+        </div>
+
+        <div style="text-align:center;margin-top:16px;">
+            <a href="/signup" style="color:var(--text3, #888);font-size:0.85rem;">← Back to Sign Up</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .otp-digit {
+        width: 52px;
+        height: 62px;
+        text-align: center;
+        font-size: 26px;
+        font-weight: 700;
+        font-family: 'Inter', monospace;
+        border: 2px solid var(--border, #333);
+        border-radius: 14px;
+        background: var(--card, #1a1a2e);
+        color: var(--text, #fff);
+        outline: none;
+        transition: all 0.2s ease;
+        caret-color: var(--accent, #6B21A8);
+    }
+    .otp-digit:focus {
+        border-color: var(--accent, #6B21A8);
+        box-shadow: 0 0 0 3px rgba(107, 33, 168, 0.25);
+        transform: scale(1.05);
+    }
+    .otp-digit.filled {
+        border-color: var(--accent, #6B21A8);
+        background: rgba(107, 33, 168, 0.08);
+    }
+    .otp-digit.error {
+        border-color: #dc2626;
+        animation: shake 0.4s ease;
+    }
+    .otp-digit.success {
+        border-color: #16a34a;
+        background: rgba(22, 163, 74, 0.08);
+    }
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-6px); }
+        75% { transform: translateX(6px); }
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    @media (max-width: 480px) {
+        .otp-digit { width: 44px; height: 54px; font-size: 22px; border-radius: 12px; }
+        #otpContainer { gap: 7px; }
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+    const digits = document.querySelectorAll('.otp-digit');
+    const form = document.getElementById('verifyForm');
+    const verifyBtn = document.getElementById('verifyBtn');
+    const verifyBtnText = document.getElementById('verifyBtnText');
+    const verifySpinner = document.getElementById('verifySpinner');
+    const errorEl = document.getElementById('verifyError');
+    const successEl = document.getElementById('verifySuccess');
+
+    // ===== OTP Input Logic =====
+    digits.forEach((input, index) => {
+        input.addEventListener('input', (e) => {
+            const val = e.target.value.replace(/[^0-9]/g, '');
+            e.target.value = val.charAt(0) || '';
+
+            if (val && index < digits.length - 1) {
+                digits[index + 1].focus();
+            }
+            updateFilled();
+            checkComplete();
+        });
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace') {
+                if (!input.value && index > 0) {
+                    digits[index - 1].focus();
+                    digits[index - 1].value = '';
+                }
+                updateFilled();
+            } else if (e.key === 'ArrowLeft' && index > 0) {
+                digits[index - 1].focus();
+            } else if (e.key === 'ArrowRight' && index < digits.length - 1) {
+                digits[index + 1].focus();
+            }
+        });
+
+        // Handle paste
+        input.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const pasted = (e.clipboardData.getData('text') || '').replace(/[^0-9]/g, '').slice(0, 6);
+            if (pasted.length > 0) {
+                pasted.split('').forEach((char, i) => {
+                    if (digits[i]) {
+                        digits[i].value = char;
+                    }
+                });
+                const focusIdx = Math.min(pasted.length, digits.length - 1);
+                digits[focusIdx].focus();
+                updateFilled();
+                checkComplete();
+            }
+        });
+
+        input.addEventListener('focus', () => input.select());
+    });
+
+    function updateFilled() {
+        digits.forEach(d => {
+            d.classList.toggle('filled', d.value !== '');
+            d.classList.remove('error', 'success');
+        });
+    }
+
+    function checkComplete() {
+        const code = Array.from(digits).map(d => d.value).join('');
+        verifyBtn.disabled = code.length < 6;
+    }
+
+    function getCode() {
+        return Array.from(digits).map(d => d.value).join('');
+    }
+
+    // ===== Submit via AJAX =====
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const code = getCode();
+        if (code.length < 6) return;
+
+        verifyBtn.disabled = true;
+        verifyBtnText.style.display = 'none';
+        verifySpinner.style.display = 'inline-block';
+        errorEl.style.display = 'none';
+
+        try {
+            const resp = await fetch('/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: code })
+            });
+            const data = await resp.json();
+
+            if (data.success) {
+                digits.forEach(d => d.classList.add('success'));
+                successEl.textContent = '✅ Email verified! Redirecting...';
+                successEl.style.display = 'block';
+                setTimeout(() => { window.location.href = data.redirect || '/dashboard?welcome=1'; }, 1000);
+            } else {
+                digits.forEach(d => d.classList.add('error'));
+                errorEl.textContent = data.error || 'Invalid code';
+                errorEl.style.display = 'block';
+                setTimeout(() => digits.forEach(d => d.classList.remove('error')), 600);
+                verifyBtn.disabled = false;
+                verifyBtnText.style.display = 'inline';
+                verifySpinner.style.display = 'none';
+            }
+        } catch (err) {
+            errorEl.textContent = 'Network error. Please try again.';
+            errorEl.style.display = 'block';
+            verifyBtn.disabled = false;
+            verifyBtnText.style.display = 'inline';
+            verifySpinner.style.display = 'none';
+        }
+    });
+
+    // ===== Countdown Timer =====
+    let timeLeft = 30; // 30 seconds
+    const countdownEl = document.getElementById('countdown');
+
+    function updateCountdown() {
+        if (timeLeft <= 0) {
+            countdownEl.textContent = 'Expired';
+            countdownEl.style.color = '#dc2626';
+            verifyBtn.disabled = true;
+            return;
+        }
+        const mins = Math.floor(timeLeft / 60);
+        const secs = timeLeft % 60;
+        countdownEl.textContent = `${mins}:${String(secs).padStart(2, '0')}`;
+        timeLeft--;
+        setTimeout(updateCountdown, 1000);
+    }
+    updateCountdown();
+
+    // ===== Resend with Cooldown =====
+    window.resendCode = async function() {
+        const resendBtn = document.getElementById('resendBtn');
+        const cooldownEl = document.getElementById('resendCooldown');
+        const timerEl = document.getElementById('resendTimer');
+
+        resendBtn.disabled = true;
+        resendBtn.style.opacity = '0.5';
+        errorEl.style.display = 'none';
+
+        try {
+            const resp = await fetch('/verify/resend', { method: 'POST' });
+            const data = await resp.json();
+
+            if (data.success) {
+                successEl.textContent = '📧 New code sent! Check your inbox.';
+                successEl.style.display = 'block';
+                // Reset countdown
+                timeLeft = 10 * 60;
+                // Reset inputs
+                digits.forEach(d => { d.value = ''; d.classList.remove('filled', 'error', 'success'); });
+                digits[0].focus();
+                verifyBtn.disabled = true;
+            } else {
+                errorEl.textContent = data.error || 'Failed to resend';
+                errorEl.style.display = 'block';
+            }
+        } catch (err) {
+            errorEl.textContent = 'Network error. Please try again.';
+            errorEl.style.display = 'block';
+        }
+
+        // Cooldown — 60 seconds
+        let cooldown = 60;
+        cooldownEl.style.display = 'block';
+        resendBtn.style.display = 'none';
+
+        const cooldownInterval = setInterval(() => {
+            cooldown--;
+            timerEl.textContent = cooldown;
+            if (cooldown <= 0) {
+                clearInterval(cooldownInterval);
+                cooldownEl.style.display = 'none';
+                resendBtn.style.display = 'inline';
+                resendBtn.disabled = false;
+                resendBtn.style.opacity = '1';
+            }
+        }, 1000);
+    };
+})();
+</script>
+{% endblock %}
