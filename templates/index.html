@@ -695,33 +695,68 @@
             return html;
         }
 
+        // Store deadline data globally for the AI button handler
+        window._trackerData = { urgent: urgent, upcoming: upcoming, planned: planned, all: all };
+
         tc.innerHTML =
             '<div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center;">' +
             '<div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:8px 14px;font-size:13px;color:var(--danger);font-weight:600;">🔴 '+urgent.length+' Urgent</div>' +
             '<div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:8px 14px;font-size:13px;color:var(--warning);font-weight:600;">🟡 '+upcoming.length+' Coming Up</div>' +
             '<div style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:8px 14px;font-size:13px;color:var(--success);font-weight:600;">🟢 '+planned.length+' Plan Ahead</div>' +
             '<div style="margin-left:auto;font-size:11px;color:var(--text3);">📊 '+all.length+' trackable deadlines · Updated daily</div></div>' +
-            '<div id="trackerAiTip" style="margin-bottom:20px;"></div>' +
             renderSection('Urgent — Apply Now!', '🔴', 'var(--danger)', urgent, 10) +
             renderSection('Coming Up — Prepare Now', '🟡', 'var(--warning)', upcoming, 10) +
             renderSection('Plan Ahead — Start Early', '🟢', 'var(--success)', planned, 8) +
-            '<button class="btn ai-launch-btn" id="trackerAiBtn" style="width:100%;margin-top:12px;">🤖 Get AI Strategy Tips</button>';
-
-        // AI strategy button
-        var aiBtn = $('#trackerAiBtn');
-        if (aiBtn) aiBtn.addEventListener('click', async function() {
-            var tip = $('#trackerAiTip');
-            tip.innerHTML = '<div style="text-align:center;padding:16px;"><div class="ai-loading-spinner"></div><p style="color:var(--text2);margin-top:8px;font-size:13px;">AI analyzing your deadlines...</p></div>';
-            var summary = '🔴 Urgent ('+urgent.length+'): ' + urgent.slice(0,5).map(function(d){return d.name+' ('+d.days+'d)'}).join(', ') +
-                '\n🟡 Coming up ('+upcoming.length+'): ' + upcoming.slice(0,5).map(function(d){return d.name+' ('+d.days+'d)'}).join(', ') +
-                '\n🟢 Plan ahead ('+planned.length+'): ' + planned.slice(0,5).map(function(d){return d.name+' ('+d.days+'d)'}).join(', ');
-            var reply = await callAI([
-                {role:'system', content:'You are Tracker, a scholarship deadline strategist. Give a short, punchy 3-5 bullet action plan based on the deadline overview. Be specific about which scholarships to focus on THIS WEEK. Use markdown. Keep it under 200 words.'},
-                {role:'user', content:'Here are my scholarship deadlines:\n'+summary+'\n\nWhat should I focus on right now?'}
-            ], 600);
-            tip.innerHTML = '<div style="background:linear-gradient(135deg,rgba(139,92,246,0.08),rgba(32,178,170,0.05));border:1px solid rgba(139,92,246,0.2);border-radius:12px;padding:16px 20px;line-height:1.6;color:var(--text);font-size:14px;"><div style="font-size:12px;color:#8B5CF6;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">🤖 Tracker AI — Your Action Plan</div>' + markdownToHtml(reply) + '</div>';
-        });
+            '<button class="btn ai-launch-btn" id="trackerAiBtn" style="width:100%;margin-top:16px;padding:14px 24px;font-size:15px;">🤖 Get AI Strategy Tips</button>' +
+            '<div id="trackerAiTip" style="margin-top:16px;"></div>';
     }
+
+    // Tracker AI button — delegated event listener (same pattern as Scout, Writer, etc.)
+    document.addEventListener('click', async function(e) {
+        if (e.target && e.target.id === 'trackerAiBtn') {
+            var btn = e.target;
+            var tip = document.getElementById('trackerAiTip');
+            var data = window._trackerData;
+            if (!tip || !data) return;
+
+            // Disable button and show loading
+            btn.disabled = true;
+            btn.textContent = '🤖 Analyzing your deadlines...';
+            btn.style.opacity = '0.7';
+
+            tip.innerHTML = '<div style="text-align:center;padding:24px;"><div class="ai-loading-spinner"></div><p style="color:var(--text2);margin-top:12px;font-size:14px;">AI is building your personalized action plan...</p></div>';
+            tip.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            var summary = '🔴 URGENT — Deadline within 7 days (' + data.urgent.length + ' scholarships):\n' +
+                (data.urgent.length ? data.urgent.slice(0,8).map(function(d){ return '  - ' + d.name + ' (' + d.country + ') — ' + d.days + ' days left, deadline: ' + d.deadline + (d.funding ? ', ' + d.funding : '') }).join('\n') : '  None right now') +
+                '\n\n🟡 COMING UP — Deadline in 7-30 days (' + data.upcoming.length + ' scholarships):\n' +
+                (data.upcoming.length ? data.upcoming.slice(0,8).map(function(d){ return '  - ' + d.name + ' (' + d.country + ') — ' + d.days + ' days left, deadline: ' + d.deadline + (d.funding ? ', ' + d.funding : '') }).join('\n') : '  None right now') +
+                '\n\n🟢 PLAN AHEAD — Deadline in 30+ days (' + data.planned.length + ' scholarships):\n' +
+                (data.planned.length ? data.planned.slice(0,8).map(function(d){ return '  - ' + d.name + ' (' + d.country + ') — ' + d.days + ' days left, deadline: ' + d.deadline + (d.funding ? ', ' + d.funding : '') }).join('\n') : '  None right now');
+
+            try {
+                var reply = await callAI([
+                    {role: 'system', content: 'You are Tracker, an elite scholarship deadline strategist powered by AI. You give sharp, actionable advice that helps students maximize their chances.\n\nRules:\n- Be specific — name exact scholarships\n- Prioritize by urgency AND value (fully funded > partial)\n- Give a clear week-by-week action plan\n- Include time management tips\n- Warn about scholarships they might miss\n- Be encouraging but realistic\n- Use markdown with headers, bullets, bold\n- Keep it under 300 words'},
+                    {role: 'user', content: 'Here is my complete scholarship deadline overview:\n\n' + summary + '\n\nToday\'s date: ' + new Date().toLocaleDateString('en-US', {weekday:'long', year:'numeric', month:'long', day:'numeric'}) + '\n\nGive me:\n1. What to do THIS WEEK (urgent actions)\n2. What to prepare for NEXT 2 WEEKS\n3. What to start researching NOW for later\n4. Any deadlines I should be worried about'}
+                ], 1200);
+
+                tip.innerHTML = '<div style="background:linear-gradient(135deg,rgba(139,92,246,0.1),rgba(32,178,170,0.06));border:1px solid rgba(139,92,246,0.25);border-radius:16px;padding:24px;line-height:1.7;color:var(--text);font-size:14px;">' +
+                    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid rgba(139,92,246,0.15);">' +
+                    '<span style="font-size:24px;">🤖</span>' +
+                    '<div><div style="font-size:14px;font-weight:700;color:#8B5CF6;">Tracker AI — Your Action Plan</div>' +
+                    '<div style="font-size:11px;color:var(--text3);">Personalized strategy based on ' + data.all.length + ' deadlines · Generated just now</div></div></div>' +
+                    markdownToHtml(reply) + '</div>';
+            } catch(err) {
+                tip.innerHTML = '<div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:16px;color:var(--danger);font-size:14px;">⚠️ AI analysis failed. Please try again.</div>';
+            }
+
+            // Re-enable button
+            btn.disabled = false;
+            btn.textContent = '🤖 Refresh AI Strategy Tips';
+            btn.style.opacity = '1';
+            tip.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    });
 
     // ==================== ADVISOR ====================
     function buildAdvisorUI() {
