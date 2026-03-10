@@ -41,6 +41,34 @@ if os.path.exists(_env_path):
                 os.environ.setdefault(_k.strip(), _v.strip())
 
 app = Flask(__name__)
+
+# Groq API call with retry on 429
+def call_groq(payload_bytes, timeout=30, retries=3):
+    """Call Groq API with automatic retry on rate limit (429)."""
+    import time as _t
+    for attempt in range(retries):
+        req = urllib.request.Request(
+            'https://api.groq.com/openai/v1/chat/completions',
+            data=payload_bytes,
+            headers={
+                'Authorization': 'Bearer ' + GROQ_API_KEY,
+                'Content-Type': 'application/json',
+                'User-Agent': 'ScholarFinder/1.0',
+                'Accept': 'application/json',
+            }
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                result = json.loads(resp.read().decode('utf-8'))
+                return result
+        except urllib.error.HTTPError as e:
+            if e.code == 429 and attempt < retries - 1:
+                retry_after = int(e.headers.get('retry-after', 5))
+                _t.sleep(min(retry_after, 10))
+                continue
+            raise
+    return None
+
 # Persistent secret key (survives restarts)
 _secret_path = os.path.join(os.path.dirname(__file__), '.secret_key')
 if os.path.exists(_secret_path):
@@ -1241,37 +1269,26 @@ Word count: {word_count} | Paragraphs: {len(paragraphs)} | Type: {type_label}"""
             'temperature': 0.3
         }).encode('utf-8')
 
-        req = urllib.request.Request(
-            'https://api.groq.com/openai/v1/chat/completions',
-            data=ai_payload,
-            headers={
-                'Authorization': 'Bearer ' + GROQ_API_KEY,
-                'Content-Type': 'application/json',
-                'User-Agent': 'ScholarFinder/1.0',
-                'Accept': 'application/json',
-            }
-        )
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            result = json.loads(resp.read().decode('utf-8'))
-            ai_text = result['choices'][0]['message']['content'].strip()
+        result = call_groq(ai_payload)
+        ai_text = result['choices'][0]['message']['content'].strip()
 
-            # Clean markdown code blocks if present
-            if ai_text.startswith('```'):
-                ai_text = ai_text.split('\n', 1)[1] if '\n' in ai_text else ai_text[3:]
-            if ai_text.endswith('```'):
-                ai_text = ai_text[:-3]
-            ai_text = ai_text.strip()
+        # Clean markdown code blocks if present
+        if ai_text.startswith('```'):
+            ai_text = ai_text.split('\n', 1)[1] if '\n' in ai_text else ai_text[3:]
+        if ai_text.endswith('```'):
+            ai_text = ai_text[:-3]
+        ai_text = ai_text.strip()
 
-            ai_data = json.loads(ai_text)
+        ai_data = json.loads(ai_text)
 
-            # Ensure score is in range
-            score = max(1, min(10, int(ai_data.get('score', 5))))
+        # Ensure score is in range
+        score = max(1, min(10, int(ai_data.get('score', 5))))
 
-            return jsonify({
-                'score': score,
-                'label': ai_data.get('label', 'Reviewed'),
-                'word_count': word_count,
-                'sentence_count': sentence_count,
+        return jsonify({
+            'score': score,
+            'label': ai_data.get('label', 'Reviewed'),
+            'word_count': word_count,
+            'sentence_count': sentence_count,
                 'paragraph_count': len(paragraphs),
                 'feedback': ai_data.get('feedback', []),
                 'summary': ai_data.get('summary', ''),
@@ -1460,37 +1477,26 @@ Word count: {word_count} | Sections detected: {', '.join(sections_found) if sect
             'temperature': 0.3
         }).encode('utf-8')
 
-        req = urllib.request.Request(
-            'https://api.groq.com/openai/v1/chat/completions',
-            data=ai_payload,
-            headers={
-                'Authorization': 'Bearer ' + GROQ_API_KEY,
-                'Content-Type': 'application/json',
-                'User-Agent': 'ScholarFinder/1.0',
-                'Accept': 'application/json',
-            }
-        )
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            result = json.loads(resp.read().decode('utf-8'))
-            ai_text = result['choices'][0]['message']['content'].strip()
+        result = call_groq(ai_payload)
+        ai_text = result['choices'][0]['message']['content'].strip()
 
-            # Clean markdown code blocks if present
-            if ai_text.startswith('```'):
-                ai_text = ai_text.split('\n', 1)[1] if '\n' in ai_text else ai_text[3:]
-            if ai_text.endswith('```'):
-                ai_text = ai_text[:-3]
-            ai_text = ai_text.strip()
+        # Clean markdown code blocks if present
+        if ai_text.startswith('```'):
+            ai_text = ai_text.split('\n', 1)[1] if '\n' in ai_text else ai_text[3:]
+        if ai_text.endswith('```'):
+            ai_text = ai_text[:-3]
+        ai_text = ai_text.strip()
 
-            ai_data = json.loads(ai_text)
+        ai_data = json.loads(ai_text)
 
-            score = max(1, min(10, int(ai_data.get('score', 5))))
+        score = max(1, min(10, int(ai_data.get('score', 5))))
 
-            return jsonify({
-                'score': score,
-                'label': ai_data.get('label', 'Reviewed'),
-                'word_count': word_count,
-                'sections_found': sections_found,
-                'feedback': ai_data.get('feedback', []),
+        return jsonify({
+            'score': score,
+            'label': ai_data.get('label', 'Reviewed'),
+            'word_count': word_count,
+            'sections_found': sections_found,
+            'feedback': ai_data.get('feedback', []),
                 'summary': ai_data.get('summary', ''),
                 'ai_powered': True
             })
@@ -2218,20 +2224,9 @@ def api_ai_chat():
             'temperature': 0.7
         }).encode('utf-8')
 
-        req = urllib.request.Request(
-            'https://api.groq.com/openai/v1/chat/completions',
-            data=req_data,
-            headers={
-                'Authorization': 'Bearer ' + GROQ_API_KEY,
-                'Content-Type': 'application/json',
-                'User-Agent': 'ScholarFinder/1.0',
-                'Accept': 'application/json',
-            }
-        )
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            result = json.loads(resp.read().decode('utf-8'))
-            content = result['choices'][0]['message']['content']
-            return jsonify({'content': content})
+        result = call_groq(req_data)
+        content = result['choices'][0]['message']['content']
+        return jsonify({'content': content})
     except urllib.error.HTTPError as he:
         error_body = ''
         try:
