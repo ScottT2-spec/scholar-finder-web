@@ -33,7 +33,7 @@
 
 - **Backend:** Python / Flask
 - **Frontend:** Jinja2 templates, vanilla JS, CSS
-- **AI:** Groq API (LLaMA 3.3 70B) with 7-key rotation and smart failover
+- **AI:** Groq API (LLaMA 3.3 70B)
 - **Auth:** Email/password + Google OAuth
 - **Hosting:** PythonAnywhere
 - **Data:** SQLite + JSON
@@ -53,18 +53,6 @@ cd scholar-finder-web
 pip install -r requirements.txt
 ```
 
-### 3. Create `.env`
-```env
-GROQ_KEY_1=your_groq_key_here
-GROQ_KEY_2=your_groq_key_here
-GROQ_KEY_3=your_groq_key_here
-SMTP_EMAIL=your_email@gmail.com
-SMTP_APP_PASSWORD=your_app_password
-ADMIN_EMAIL=your_email@gmail.com
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-GOOGLE_ANALYTICS_ID=your_ga_id
-ADSENSE_ID=your_adsense_id
 ```
 
 ### 4. Run
