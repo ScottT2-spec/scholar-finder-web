@@ -86,6 +86,7 @@ GROQ_API_KEYS = [
     os.environ.get('GROQ_KEY_4', ''),  # account 4
     os.environ.get('GROQ_KEY_5', ''),  # account 5
     os.environ.get('GROQ_KEY_6', ''),  # account 6
+    os.environ.get('GROQ_KEY_7', ''),  # account 7
 ]
 GROQ_API_KEYS = [k for k in GROQ_API_KEYS if k]  # remove empty
 _groq_key_index = 0

@@ -11,15 +11,15 @@
         
         <div class="dash-stats">
             <div class="dash-stat">
-                <div class="num">{{ stats.bookmarks }}</div>
+                <div class="num" id="statSaved">{{ stats.bookmarks }}</div>
                 <div class="label">Saved</div>
             </div>
             <div class="dash-stat">
-                <div class="num">{{ stats.applied }}</div>
+                <div class="num" id="statApplied">{{ stats.applied }}</div>
                 <div class="label">Applied</div>
             </div>
             <div class="dash-stat">
-                <div class="num">{{ stats.interested }}</div>
+                <div class="num" id="statInterested">{{ stats.interested }}</div>
                 <div class="label">Interested</div>
             </div>
         </div>
@@ -64,8 +64,8 @@
 
         <!-- Saved Items -->
         {% if bookmarks %}
-        <h3 style="margin-bottom: 12px;">📌 Your Saved Items</h3>
-        <div>
+        <h3 style="margin-bottom: 12px;">📌 Your Saved Items <span id="savedCount" style="font-size:0.8em;color:var(--text3);">({{ bookmarks|length }})</span></h3>
+        <div id="savedList">
             {% for b in bookmarks %}
             <div class="card" style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                 <div>
@@ -123,4 +123,91 @@ document.querySelectorAll('.remove-btn').forEach(btn => {
     });
 });
 </script>
+
+<script>
+// Live-refresh saved bookmarks every 5 seconds
+(function() {
+    let lastCount = {{ bookmarks|length }};
+    
+    async function refreshSaved() {
+        try {
+            const res = await fetch('/api/bookmarks');
+            if (!res.ok) return;
+            const bookmarks = await res.json();
+            
+            // Only update if count changed
+            if (bookmarks.length === lastCount) return;
+            lastCount = bookmarks.length;
+            
+            // Update all stat counters
+            const statEl = document.getElementById('statSaved');
+            if (statEl) statEl.textContent = bookmarks.length;
+            
+            const appliedCount = bookmarks.filter(b => b.status === 'applied').length;
+            const interestedCount = bookmarks.filter(b => b.status === 'interested').length;
+            const statApplied = document.getElementById('statApplied');
+            const statInterested = document.getElementById('statInterested');
+            if (statApplied) statApplied.textContent = appliedCount;
+            if (statInterested) statInterested.textContent = interestedCount;
+            
+            // Update count in header
+            const countEl = document.getElementById('savedCount');
+            if (countEl) countEl.textContent = '(' + bookmarks.length + ')';
+            
+            // Rebuild saved list
+            const list = document.getElementById('savedList');
+            if (!list) return;
+            
+            if (bookmarks.length === 0) {
+                list.innerHTML = '<p style="color:var(--text3);">No saved items yet. Search scholarships and save ones you like!</p>';
+                return;
+            }
+            
+            list.innerHTML = bookmarks.map(b => `
+                <div class="card" style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; animation: fadeIn 0.3s ease;">
+                    <div>
+                        <strong>${b.item_name}</strong>
+                        <span class="badge ${b.status === 'applied' ? 'badge-green' : b.status === 'accepted' ? 'badge-blue' : 'badge-yellow'}">${b.status}</span>
+                    </div>
+                    <div style="display: flex; gap: 6px;">
+                        <button class="btn btn-sm btn-secondary status-btn" data-id="${b.id}" data-status="interested">🔖</button>
+                        <button class="btn btn-sm btn-secondary status-btn" data-id="${b.id}" data-status="applied">✅</button>
+                        <button class="btn btn-sm btn-secondary delete-btn" data-id="${b.id}" style="color:var(--danger);">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Re-attach event listeners
+            list.querySelectorAll('.status-btn').forEach(btn => {
+                btn.onclick = async () => {
+                    await fetch('/api/bookmarks/' + btn.dataset.id + '/status', {
+                        method: 'PUT',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({status: btn.dataset.status})
+                    });
+                    refreshSaved();
+                };
+            });
+            list.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.onclick = async () => {
+                    await fetch('/api/bookmarks/' + btn.dataset.id, {method: 'DELETE'});
+                    refreshSaved();
+                };
+            });
+        } catch(e) {}
+    }
+    
+    // Poll every 5 seconds
+    setInterval(refreshSaved, 1000);
+    
+    // Also refresh when tab becomes visible (user switches back)
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) refreshSaved();
+    });
+})();
+</script>
+<style>
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
 {% endblock %}
