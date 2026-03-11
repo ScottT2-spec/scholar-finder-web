@@ -41,34 +41,6 @@ if os.path.exists(_env_path):
                 os.environ.setdefault(_k.strip(), _v.strip())
 
 app = Flask(__name__)
-
-# Groq API call with retry on 429
-def call_groq(payload_bytes, timeout=30, retries=3):
-    """Call Groq API with automatic retry on rate limit (429)."""
-    import time as _t
-    for attempt in range(retries):
-        req = urllib.request.Request(
-            'https://api.groq.com/openai/v1/chat/completions',
-            data=payload_bytes,
-            headers={
-                'Authorization': 'Bearer ' + GROQ_API_KEY,
-                'Content-Type': 'application/json',
-                'User-Agent': 'ScholarFinder/1.0',
-                'Accept': 'application/json',
-            }
-        )
-        try:
-            with urllib.request.urlopen(req, timeout=timeout) as resp:
-                result = json.loads(resp.read().decode('utf-8'))
-                return result
-        except urllib.error.HTTPError as e:
-            if e.code == 429 and attempt < retries - 1:
-                retry_after = int(e.headers.get('retry-after', 5))
-                _t.sleep(min(retry_after, 10))
-                continue
-            raise
-    return None
-
 # Persistent secret key (survives restarts)
 _secret_path = os.path.join(os.path.dirname(__file__), '.secret_key')
 if os.path.exists(_secret_path):
@@ -103,11 +75,122 @@ ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'scottantwi930@gmail.com')
 
 # Email verification config
 SMTP_EMAIL = os.environ.get('SMTP_EMAIL', 'scottantwi930@gmail.com')
-SMTP_APP_PASSWORD = os.environ.get('SMTP_APP_PASSWORD', 'nxlw dwge odbk hcgo')
+SMTP_APP_PASSWORD = os.environ.get('SMTP_APP_PASSWORD', '')
 VERIFICATION_EXPIRY_MINUTES = 0.5  # 30 seconds
 
-# Groq AI config
-GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
+# Groq AI config — keys loaded from .env, with automatic rotation on 429
+GROQ_API_KEYS = [
+    os.environ.get('GROQ_KEY_1', ''),  # account 2 (primary)
+    os.environ.get('GROQ_KEY_2', ''),  # account 3
+    os.environ.get('GROQ_KEY_3', ''),  # account 3
+    os.environ.get('GROQ_KEY_4', ''),  # account 4
+    os.environ.get('GROQ_KEY_5', ''),  # account 5
+    os.environ.get('GROQ_KEY_6', ''),  # account 6
+]
+GROQ_API_KEYS = [k for k in GROQ_API_KEYS if k]  # remove empty
+_groq_key_index = 0
+_groq_dead_keys = {}  # key -> timestamp when it will be available again
+
+def get_groq_key():
+    """Round-robin key selection."""
+    global _groq_key_index
+    key = GROQ_API_KEYS[_groq_key_index % len(GROQ_API_KEYS)]
+    _groq_key_index += 1
+    return key
+
+def _make_groq_request(key, payload_bytes, timeout):
+    """Make a single Groq API call with the given key."""
+    req = urllib.request.Request(
+        'https://api.groq.com/openai/v1/chat/completions',
+        data=payload_bytes,
+        headers={
+            'Authorization': 'Bearer ' + key,
+            'Content-Type': 'application/json',
+            'User-Agent': 'ScholarFinder/1.0',
+            'Accept': 'application/json',
+        }
+    )
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        return json.loads(resp.read().decode('utf-8'))
+
+def _parse_retry_after(e):
+    """Extract retry-after seconds from a 429 response."""
+    try:
+        val = e.headers.get('retry-after', '')
+        if val:
+            return float(val)
+    except (ValueError, TypeError):
+        pass
+    return 60  # default cooldown if header missing
+
+def call_groq(payload_bytes, timeout=30):
+    """Call Groq API with automatic key rotation on 429.
+    
+    How it works:
+    1. Tries all keys round-robin, instantly skipping to the next on 429.
+    2. Reads Groq's retry-after header to know exactly when each key recovers.
+    3. If all keys are limited, waits for the soonest one to recover and retries.
+    4. Keeps retrying up to 30 seconds total — catches keys that come back mid-wait.
+    5. Works with any number of keys (1 to 100).
+    """
+    import time as _t
+    start = _t.time()
+    max_wait = 30  # total seconds we're willing to wait
+
+    # Clean up recovered keys
+    now = _t.time()
+    for k in list(_groq_dead_keys):
+        if now >= _groq_dead_keys[k]:
+            del _groq_dead_keys[k]
+
+    last_error = None
+
+    while (_t.time() - start) < max_wait:
+        # Try every key once this round
+        tried_any = False
+        for _ in range(len(GROQ_API_KEYS)):
+            key = get_groq_key()
+
+            # Skip keys that are still cooling down
+            now = _t.time()
+            if key in _groq_dead_keys and now < _groq_dead_keys[key]:
+                continue
+
+            # Key is available — try it
+            tried_any = True
+            try:
+                return _make_groq_request(key, payload_bytes, timeout)
+            except urllib.error.HTTPError as e:
+                if e.code == 429:
+                    # Mark key as dead until retry-after expires
+                    retry_after = _parse_retry_after(e)
+                    _groq_dead_keys[key] = _t.time() + retry_after
+                    last_error = e
+                    continue  # immediately try next key
+                raise  # non-429 errors bubble up
+
+        # All keys were either skipped or returned 429
+        # Find the soonest key to recover
+        if _groq_dead_keys:
+            soonest = min(_groq_dead_keys.values())
+            wait_needed = soonest - _t.time()
+            if wait_needed > 0 and (_t.time() - start + wait_needed) < max_wait:
+                _t.sleep(min(wait_needed + 0.5, 5))  # wait for it, cap at 5s per sleep
+                # Remove recovered keys
+                now = _t.time()
+                for k in list(_groq_dead_keys):
+                    if now >= _groq_dead_keys[k]:
+                        del _groq_dead_keys[k]
+                continue  # retry the loop
+            else:
+                break  # would exceed max_wait
+        else:
+            break  # no dead keys but nothing worked — shouldn't happen
+
+    # All keys exhausted and max wait exceeded
+    raise last_error or Exception('All Groq API keys are rate-limited. Please try again shortly.')
+
+GROQ_API_KEY = GROQ_API_KEYS[0] if GROQ_API_KEYS else ''
 GROQ_MODEL = 'llama-3.3-70b-versatile'
 
 # Google OAuth config
@@ -1289,11 +1372,11 @@ Word count: {word_count} | Paragraphs: {len(paragraphs)} | Type: {type_label}"""
             'label': ai_data.get('label', 'Reviewed'),
             'word_count': word_count,
             'sentence_count': sentence_count,
-                'paragraph_count': len(paragraphs),
-                'feedback': ai_data.get('feedback', []),
-                'summary': ai_data.get('summary', ''),
-                'ai_powered': True
-            })
+            'paragraph_count': len(paragraphs),
+            'feedback': ai_data.get('feedback', []),
+            'summary': ai_data.get('summary', ''),
+            'ai_powered': True
+        })
 
     except Exception as e:
         import traceback; print(f'Essay AI analysis failed: {e}'); traceback.print_exc()
@@ -1497,9 +1580,9 @@ Word count: {word_count} | Sections detected: {', '.join(sections_found) if sect
             'word_count': word_count,
             'sections_found': sections_found,
             'feedback': ai_data.get('feedback', []),
-                'summary': ai_data.get('summary', ''),
-                'ai_powered': True
-            })
+            'summary': ai_data.get('summary', ''),
+            'ai_powered': True
+        })
 
     except Exception as e:
         import traceback; print(f'Resume AI analysis failed: {e}'); traceback.print_exc()
@@ -2243,5 +2326,6 @@ def api_ai_chat():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
 
 
