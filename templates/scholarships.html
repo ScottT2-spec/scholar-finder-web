@@ -94,7 +94,18 @@ async function search(reset = true) {
 
 document.getElementById('searchInput').addEventListener('input', debounce(() => search(), 300));
 document.getElementById('levelFilter').addEventListener('change', () => search());
-document.getElementById('loadMore').addEventListener('click', () => { page++; search(false); });
+document.getElementById('loadMore').addEventListener('click', () => {
+    // Mark where new content starts
+    const container = document.getElementById('results');
+    const scrollTarget = container.lastElementChild;
+    page++;
+    search(false).then(() => {
+        // Scroll to first new card
+        if (scrollTarget && scrollTarget.nextElementSibling) {
+            scrollTarget.nextElementSibling.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    });
+});
 
 function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
 
