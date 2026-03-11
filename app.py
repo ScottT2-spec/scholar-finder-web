@@ -76,7 +76,7 @@ ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', '')
 # Email verification config
 SMTP_EMAIL = os.environ.get('SMTP_EMAIL', '')
 SMTP_APP_PASSWORD = os.environ.get('SMTP_APP_PASSWORD', '')
-VERIFICATION_EXPIRY_MINUTES = 0.5  # 30 seconds
+VERIFICATION_EXPIRY_MINUTES = 1  # 1 minute
 
 # Groq AI config — keys loaded from .env, with automatic rotation on 429
 GROQ_API_KEYS = [
@@ -87,6 +87,8 @@ GROQ_API_KEYS = [
     os.environ.get('GROQ_KEY_5', ''),  # account 5
     os.environ.get('GROQ_KEY_6', ''),  # account 6
     os.environ.get('GROQ_KEY_7', ''),  # account 7
+    os.environ.get('GROQ_KEY_8', ''),  # account 8
+    os.environ.get('GROQ_KEY_9', ''),  # account 9
 ]
 GROQ_API_KEYS = [k for k in GROQ_API_KEYS if k]  # remove empty
 _groq_key_index = 0
@@ -258,14 +260,14 @@ def send_verification_email(to_email, code, full_name=''):
                 <div style="background: #6B21A8; color: white; font-size: 36px; font-weight: 800; letter-spacing: 12px; padding: 20px 32px; border-radius: 12px; display: inline-block; font-family: monospace;">
                     {code}
                 </div>
-                <p style="color: #888; font-size: 13px; margin-top: 24px;">This code expires in 30 seconds.</p>
+                <p style="color: #888; font-size: 13px; margin-top: 24px;">This code expires in 1 minute.</p>
             </div>
             <p style="color: #999; font-size: 12px; text-align: center; margin-top: 24px;">
                 If you didn't sign up for ScholarFinder, you can safely ignore this email.
             </p>
         </div>
         """
-        text = f"Your ScholarFinder verification code is: {code}\nIt expires in 30 seconds."
+        text = f"Your ScholarFinder verification code is: {code}\nIt expires in 1 minute."
 
         msg.attach(MIMEText(text, 'plain'))
         msg.attach(MIMEText(html, 'html'))
@@ -619,10 +621,6 @@ def signup_page():
         education_level = request.form.get('education_level', '').strip()
         field_of_study = request.form.get('field_of_study', '').strip()
 
-        if not country or not education_level or not field_of_study:
-            flash('All fields are required', 'error')
-            return render_template('signup.html')
-
         if not request.form.get('terms'):
             flash('You must agree to the Terms & Conditions', 'error')
             return render_template('signup.html')
@@ -952,13 +950,28 @@ def dashboard_page():
 
     matched = match_scholarships(user)[:10]
 
+    # Collect deadlines from user's SAVED scholarships only
+    deadlines = []
+    all_scholarships = get_scholarships()
+    saved_names = {b['item_name'].lower() for b in bookmarks if b['item_type'] == 'scholarship'}
+    for s in all_scholarships:
+        name = s.get('name', s.get('title', ''))
+        if name.lower() in saved_names:
+            dl = s.get('deadline', '')
+            if dl and dl.lower() not in ('varies', 'rolling', 'varies by university', 'ongoing', 'n/a', ''):
+                deadlines.append({
+                    'name': name,
+                    'deadline': dl,
+                    'country': s.get('country', ''),
+                    'link': s.get('link', s.get('url', '')),
+                })
+
     stats = {
         'bookmarks': len(bookmarks),
-        'applied': len([b for b in bookmarks if b['status'] == 'applied']),
-        'interested': len([b for b in bookmarks if b['status'] == 'interested']),
+        'deadlines': len(deadlines),
     }
 
-    return render_template('dashboard.html', user=user, bookmarks=bookmarks, matched=matched, stats=stats)
+    return render_template('dashboard.html', user=user, bookmarks=bookmarks, matched=matched, stats=stats, deadlines=deadlines)
 
 @app.route('/scholarships')
 def scholarships_page():
@@ -1762,6 +1775,198 @@ def google_callback():
 # ============================================
 # AI CHATBOT API
 # ============================================
+# DASHBOARD SEARCH — unified search across categories
+# ============================================
+@app.route('/api/dashboard-search')
+def api_dashboard_search():
+    q = request.args.get('q', '').strip().lower()
+    cat = request.args.get('cat', 'scholarships').lower()
+    page = int(request.args.get('page', 1))
+    per_page = 10
+
+    results = []
+
+    if cat == 'scholarships':
+        for s in get_scholarships():
+            s_str = json.dumps(s).lower()
+            if q and q not in s_str:
+                continue
+            results.append({
+                'name': s.get('name', s.get('title', 'Scholarship')),
+                'sub': ' · '.join(filter(None, [s.get('country', ''), s.get('funding', '')])),
+                'meta': s.get('deadline', ''),
+                'link': s.get('link', s.get('url', '')),
+                'type': 'scholarship',
+            })
+    elif cat == 'universities':
+        for u in get_universities():
+            u_str = json.dumps(u).lower()
+            if q and q not in u_str:
+                continue
+            results.append({
+                'name': u.get('name', u.get('university', 'University')),
+                'sub': ' · '.join(filter(None, [u.get('country', ''), f"Rank: {u.get('ranking', 'N/A')}"])),
+                'meta': u.get('tuition', ''),
+                'link': u.get('link', u.get('url', '')),
+                'type': 'university',
+            })
+    elif cat == 'opportunities':
+        for o in get_opportunities():
+            o_str = json.dumps(o).lower()
+            if q and q not in o_str:
+                continue
+            results.append({
+                'name': o.get('name', o.get('title', 'Opportunity')),
+                'sub': ' · '.join(filter(None, [o.get('type', ''), o.get('country', '')])),
+                'meta': o.get('deadline', ''),
+                'link': o.get('link', o.get('url', '')),
+                'type': 'opportunity',
+            })
+    elif cat == 'internships':
+        for o in get_opportunities():
+            o_str = json.dumps(o).lower()
+            o_type = (o.get('type', '') or '').lower()
+            if 'intern' not in o_str and 'intern' not in o_type:
+                continue
+            if q and q not in o_str:
+                continue
+            results.append({
+                'name': o.get('name', o.get('title', 'Internship')),
+                'sub': ' · '.join(filter(None, [o.get('type', ''), o.get('country', '')])),
+                'meta': o.get('deadline', ''),
+                'link': o.get('link', o.get('url', '')),
+                'type': 'internship',
+            })
+
+    total = len(results)
+    start = (page - 1) * per_page
+    return jsonify({
+        'total': total,
+        'page': page,
+        'results': results[start:start + per_page],
+    })
+
+
+# AI-POWERED PERSONALIZED RECOMMENDATIONS
+# ============================================
+@app.route('/api/ai-recommendations')
+@login_required
+def api_ai_recommendations():
+    user = get_current_user()
+    if not user:
+        return jsonify({'error': 'Login required'}), 401
+
+    profile_country = user['country'] or ''
+    profile_field = user['field_of_study'] or ''
+    profile_level = user['education_level'] or ''
+    profile_interests = user['interests'] or ''
+    profile_gpa = user['gpa'] or ''
+
+    if not profile_country and not profile_field:
+        return jsonify({'error': 'incomplete_profile', 'message': 'Complete your profile first'})
+
+    # Gather top candidates from data
+    scholarships = get_scholarships()[:50]
+    universities = get_universities()[:30]
+
+    schol_summaries = []
+    for s in scholarships:
+        schol_summaries.append(f"- {s.get('name','?')} | {s.get('country','')} | {s.get('level','')} | {s.get('field','')} | {s.get('funding','')}")
+
+    uni_summaries = []
+    for u in universities:
+        uni_summaries.append(f"- {u.get('name', u.get('university','?'))} | {u.get('country','')} | Rank: {u.get('ranking','N/A')} | {u.get('tuition','')}")
+
+    system_prompt = f"""You are ScholarFinder's AI matching engine. Given a student profile and available scholarships/universities, pick the BEST matches.
+
+STUDENT PROFILE:
+- Country: {profile_country}
+- Field: {profile_field}
+- Level: {profile_level}
+- GPA: {profile_gpa}
+- Interests: {profile_interests}
+
+AVAILABLE SCHOLARSHIPS:
+{chr(10).join(schol_summaries[:30])}
+
+AVAILABLE UNIVERSITIES:
+{chr(10).join(uni_summaries[:20])}
+
+Return ONLY valid JSON (no markdown, no code blocks):
+{{
+    "scholarships": [
+        {{"name": "<exact scholarship name from list>", "reason": "<1 sentence why this matches>"}},
+        ... (pick 5-8 best matches)
+    ],
+    "universities": [
+        {{"name": "<exact university name from list>", "reason": "<1 sentence why this matches>"}},
+        ... (pick 4-6 best matches)
+    ],
+    "summary": "<1 sentence about their overall profile strength>"
+}}
+
+RULES:
+- Only pick scholarships/universities from the lists above — use EXACT names
+- Match based on country, field, education level, and interests
+- Rank by relevance — best match first
+- Be specific in reasons — reference actual profile details
+- If field is broad like "any", prioritize country and level matches"""
+
+    try:
+        ai_payload = json.dumps({
+            'model': GROQ_MODEL,
+            'messages': [
+                {'role': 'system', 'content': system_prompt},
+                {'role': 'user', 'content': 'Match me with the best scholarships and universities.'}
+            ],
+            'max_tokens': 1200,
+            'temperature': 0.3
+        }).encode('utf-8')
+
+        result = call_groq(ai_payload)
+        ai_text = result['choices'][0]['message']['content'].strip()
+
+        if ai_text.startswith('```'):
+            ai_text = ai_text.split('\n', 1)[1] if '\n' in ai_text else ai_text[3:]
+        if ai_text.endswith('```'):
+            ai_text = ai_text[:-3]
+        ai_text = ai_text.strip()
+
+        ai_data = json.loads(ai_text)
+
+        # Enrich with links from actual data
+        schol_map = {s.get('name','').lower(): s for s in scholarships}
+        uni_map = {u.get('name', u.get('university','')).lower(): u for u in universities}
+
+        for item in ai_data.get('scholarships', []):
+            src = schol_map.get(item['name'].lower(), {})
+            item['country'] = src.get('country', '')
+            item['funding'] = src.get('funding', '')
+            item['deadline'] = src.get('deadline', '')
+            item['link'] = src.get('link', src.get('url', ''))
+            item['level'] = src.get('level', '')
+
+        for item in ai_data.get('universities', []):
+            src = uni_map.get(item['name'].lower(), {})
+            item['country'] = src.get('country', '')
+            item['ranking'] = src.get('ranking', '')
+            item['link'] = src.get('link', src.get('url', ''))
+
+        ai_data['ai_powered'] = True
+        return jsonify(ai_data)
+
+    except Exception as e:
+        print(f'AI Recommendations error: {e}')
+        import traceback; traceback.print_exc()
+        # Fallback to basic matching
+        matched_s = match_scholarships(user)[:6]
+        return jsonify({
+            'scholarships': [{'name': s.get('name', ''), 'reason': 'Matched by profile', 'country': s.get('country',''), 'funding': s.get('funding',''), 'deadline': s.get('deadline',''), 'link': s.get('link', s.get('url','')), 'level': s.get('level','')} for s in matched_s],
+            'universities': [],
+            'summary': 'Showing basic matches. AI matching temporarily unavailable.',
+            'ai_powered': False
+        })
+
 @app.route('/api/chat', methods=['POST'])
 def api_chat():
     """Smart chatbot — searches all data to answer questions"""
