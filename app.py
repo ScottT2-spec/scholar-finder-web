@@ -71,10 +71,10 @@ _local_data = os.path.join(os.path.dirname(__file__), 'data')
 _bot_data = os.path.join(os.path.dirname(__file__), '..', 'scholarbot')
 DATA_DIR = _local_data if os.path.isdir(_local_data) else _bot_data
 
-ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'scottantwi930@gmail.com')
+ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', '')
 
 # Email verification config
-SMTP_EMAIL = os.environ.get('SMTP_EMAIL', 'scottantwi930@gmail.com')
+SMTP_EMAIL = os.environ.get('SMTP_EMAIL', '')
 SMTP_APP_PASSWORD = os.environ.get('SMTP_APP_PASSWORD', '')
 VERIFICATION_EXPIRY_MINUTES = 0.5  # 30 seconds
 
@@ -196,6 +196,8 @@ GROQ_MODEL = 'llama-3.3-70b-versatile'
 # Google OAuth config
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
 GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET', '')
+GOOGLE_ANALYTICS_ID = os.environ.get('GOOGLE_ANALYTICS_ID', '')
+ADSENSE_ID = os.environ.get('ADSENSE_ID', '')
 GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth'
 GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
 GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v2/userinfo'
@@ -559,6 +561,10 @@ def csrf_protect():
 def generate_csrf():
     if 'csrf_token' not in session:
         session['csrf_token'] = secrets.token_hex(16)
+
+@app.context_processor
+def inject_tracking():
+    return {"ga_id": GOOGLE_ANALYTICS_ID, "adsense_id": ADSENSE_ID}
 
 @app.context_processor
 def inject_csrf():
