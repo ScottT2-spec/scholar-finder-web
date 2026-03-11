@@ -10,17 +10,13 @@
         <h2 class="section-title">👋 Hey, {{ user.full_name or user.username }}!</h2>
         
         <div class="dash-stats">
-            <div class="dash-stat">
+            <div class="dash-stat stat-clickable active" data-panel="saved" onclick="showPanel('saved')">
                 <div class="num" id="statSaved">{{ stats.bookmarks }}</div>
-                <div class="label">Saved</div>
+                <div class="label">📌 Saved</div>
             </div>
-            <div class="dash-stat">
-                <div class="num" id="statApplied">{{ stats.applied }}</div>
-                <div class="label">Applied</div>
-            </div>
-            <div class="dash-stat">
-                <div class="num" id="statInterested">{{ stats.interested }}</div>
-                <div class="label">Interested</div>
+            <div class="dash-stat stat-clickable" data-panel="deadlines" onclick="showPanel('deadlines')">
+                <div class="num" id="statDeadlines">{{ stats.deadlines }}</div>
+                <div class="label">📅 Deadlines</div>
             </div>
         </div>
 
@@ -30,10 +26,68 @@
             {% if user.is_admin %}<a href="/admin" class="btn btn-secondary btn-sm">⚙️ Admin</a>{% endif %}
         </div>
 
-        <!-- Matched Scholarships -->
-        {% if matched %}
-        <h3 style="margin-bottom: 12px;">🎯 Top Matches For You</h3>
-        <div style="margin-bottom: 32px;">
+        <!-- PANEL: SAVED -->
+        <div id="panel-saved" class="dash-panel">
+            <div class="panel-header">
+                <h3>📌 Your Saved Items <span id="savedCount" style="font-size:0.8em;color:var(--text3);">({{ bookmarks|length }})</span></h3>
+                <button class="panel-close" onclick="closePanel()">✕</button>
+            </div>
+            {% if bookmarks %}
+            <div id="savedList">
+                {% for b in bookmarks %}
+                <div class="card" style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <strong>{{ b.item_name }}</strong>
+                        <div style="color: var(--text3); font-size: 0.8rem;">{{ b.item_type }} · Saved {{ b.created_at }}</div>
+                    </div>
+                    <button class="btn btn-sm btn-danger remove-btn" data-id="{{ b.id }}">✕ Remove</button>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="card" style="text-align: center; padding: 40px;">
+                <p style="font-size: 1.1rem; color: var(--text2);">📌 No saved items yet</p>
+                <p style="color: var(--text3); margin-top: 8px;">Search scholarships and save the ones you like!</p>
+                <a href="/scholarships" class="btn btn-primary" style="margin-top: 16px;">Browse Scholarships →</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- PANEL: DEADLINES -->
+        <div id="panel-deadlines" class="dash-panel" style="display:none;">
+            <div class="panel-header">
+                <h3>📅 Upcoming Deadlines</h3>
+                <button class="panel-close" onclick="closePanel()">✕</button>
+            </div>
+            {% if deadlines %}
+            {% for d in deadlines %}
+            <div class="card" style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div style="flex:1;">
+                    <strong>{{ d.name }}</strong>
+                    {% if d.country %}<span style="color:var(--text3);font-size:0.85rem;"> · 📍 {{ d.country }}</span>{% endif %}
+                    <div style="margin-top:4px;">
+                        <span class="deadline-badge">⏰ {{ d.deadline }}</span>
+                    </div>
+                </div>
+                {% if d.link %}
+                <a href="{{ d.link }}" target="_blank" class="btn btn-sm btn-primary">View →</a>
+                {% endif %}
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="card" style="text-align: center; padding: 40px;">
+                <p style="font-size: 1.1rem; color: var(--text2);">📅 No deadlines to show</p>
+                <p style="color: var(--text3); margin-top: 8px;">Save scholarships to track their deadlines here!</p>
+                <a href="/scholarships" class="btn btn-primary" style="margin-top: 16px;">Browse Scholarships →</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Top Matches -->
+        <h3 style="margin: 24px 0 12px;">🎯 Top Matches For You</h3>
+        <div id="matchedSection" style="margin-bottom: 32px;">
+            <!-- Server-rendered fallback, replaced by AI results -->
+            {% if matched %}
             {% for s in matched %}
             <div class="card scholarship-card" style="margin-bottom: 10px;">
                 <h3>{{ s.get('name', s.get('title', 'Scholarship')) }}</h3>
@@ -49,165 +103,162 @@
                 <div class="actions">
                     <button class="btn btn-sm btn-primary bookmark-btn" data-type="scholarship" data-name="{{ s.get('name', s.get('title', '')) }}">📌 Save</button>
                     {% if s.get('link') or s.get('url') %}
-                    <a href="{{ s.get('link', s.get('url', '#')) }}" target="_blank" class="btn btn-sm btn-secondary">Apply →</a>
+                    <a href="{{ s.get('link', s.get('url', '#')) }}" target="_blank" class="btn btn-sm btn-secondary">View →</a>
                     {% endif %}
                 </div>
             </div>
             {% endfor %}
-        </div>
-        {% elif not user.country and not user.field_of_study %}
-        <div class="card" style="text-align: center; padding: 40px;">
-            <p style="font-size: 1.2rem;">🎯 Complete your profile to get matched scholarships!</p>
-            <a href="/profile" class="btn btn-primary" style="margin-top: 16px;">Set Up Profile →</a>
-        </div>
-        {% endif %}
-
-        <!-- Saved Items -->
-        {% if bookmarks %}
-        <h3 style="margin-bottom: 12px;">📌 Your Saved Items <span id="savedCount" style="font-size:0.8em;color:var(--text3);">({{ bookmarks|length }})</span></h3>
-        <div id="savedList">
-            {% for b in bookmarks %}
-            <div class="card" style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                <div>
-                    <strong>{{ b.item_name }}</strong>
-                    <span class="badge {% if b.status == 'applied' %}badge-green{% elif b.status == 'accepted' %}badge-blue{% else %}badge-yellow{% endif %}">{{ b.status }}</span>
-                    <div style="color: var(--text3); font-size: 0.8rem;">{{ b.item_type }} · Saved {{ b.created_at }}</div>
-                </div>
-                <div style="display: flex; gap: 6px;">
-                    <button class="btn btn-sm btn-success status-btn" data-id="{{ b.id }}" data-status="applied">✓ Applied</button>
-                    <button class="btn btn-sm btn-danger remove-btn" data-id="{{ b.id }}">✕</button>
-                </div>
+            {% elif not user.country and not user.field_of_study %}
+            <div class="card" style="text-align: center; padding: 40px;">
+                <p style="font-size: 1.2rem;">🎯 Complete your profile to get matched scholarships!</p>
+                <a href="/profile" class="btn btn-primary" style="margin-top: 16px;">Set Up Profile →</a>
             </div>
-            {% endfor %}
+            {% endif %}
         </div>
-        {% endif %}
     </div>
 </section>
 {% endblock %}
 
 {% block scripts %}
+<style>
+.stat-clickable { cursor:pointer; transition:all 0.25s ease; border:2px solid transparent; }
+.stat-clickable:hover { transform:translateY(-2px); box-shadow:var(--shadow-lg); }
+.stat-clickable.active { border-color:var(--accent); background:var(--card); box-shadow:0 0 0 3px rgba(107,33,168,0.15); }
+.panel-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.panel-header h3 { margin:0; }
+.panel-close { background:var(--border); border:none; width:32px; height:32px; border-radius:50%; font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--text2); transition:all 0.2s; }
+.panel-close:hover { background:var(--danger,#dc2626); color:#fff; }
+.dash-panel { animation:panelIn 0.3s ease; }
+@keyframes panelIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.deadline-badge { display:inline-block; background:#fef3c7; color:#92400e; font-size:0.82rem; font-weight:600; padding:3px 10px; border-radius:20px; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+</style>
+
 <script>
-// Welcome animation
 if (window.location.search.includes('welcome=1')) {
     document.getElementById('welcomeBanner').style.display = 'block';
     setTimeout(() => document.getElementById('welcomeBanner').style.display = 'none', 8000);
 }
 
+let activePanel = 'saved';
+function showPanel(name) {
+    document.querySelectorAll('.dash-panel').forEach(p => p.style.display = 'none');
+    document.querySelectorAll('.stat-clickable').forEach(s => s.classList.remove('active'));
+    const panel = document.getElementById('panel-' + name);
+    if (panel) { panel.style.display = 'block'; panel.style.animation = 'none'; panel.offsetHeight; panel.style.animation = 'panelIn 0.3s ease'; }
+    const stat = document.querySelector(`.stat-clickable[data-panel="${name}"]`);
+    if (stat) stat.classList.add('active');
+    activePanel = name;
+}
+function closePanel() {
+    document.querySelectorAll('.dash-panel').forEach(p => p.style.display = 'none');
+    document.querySelectorAll('.stat-clickable').forEach(s => s.classList.remove('active'));
+    activePanel = null;
+}
+
+// Bookmark & remove
 document.querySelectorAll('.bookmark-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
-        const res = await fetch('/api/bookmarks', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({type: btn.dataset.type, name: btn.dataset.name})
-        });
+        const res = await fetch('/api/bookmarks', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({type:btn.dataset.type, name:btn.dataset.name}) });
         if (res.ok) { btn.textContent = '✅ Saved'; btn.disabled = true; }
         else if (res.status === 409) { btn.textContent = '✅ Already saved'; btn.disabled = true; }
     });
 });
-
-document.querySelectorAll('.status-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-        await fetch(`/api/bookmarks/${btn.dataset.id}/status`, {
-            method: 'PUT',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({status: btn.dataset.status})
-        });
-        location.reload();
-    });
-});
-
 document.querySelectorAll('.remove-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-        await fetch(`/api/bookmarks/${btn.dataset.id}`, {method: 'DELETE'});
-        location.reload();
-    });
+    btn.addEventListener('click', async () => { await fetch(`/api/bookmarks/${btn.dataset.id}`, {method:'DELETE'}); location.reload(); });
 });
-</script>
 
-<script>
-// Live-refresh saved bookmarks every 5 seconds
+// AI-powered recommendations (silent, replaces server-rendered matches)
+(async function() {
+    try {
+        const res = await fetch('/api/ai-recommendations');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.error) return; // incomplete profile, keep server fallback
+
+        const container = document.getElementById('matchedSection');
+        let html = '';
+
+        if (data.scholarships && data.scholarships.length) {
+            html += data.scholarships.map(s => `
+                <div class="card scholarship-card" style="margin-bottom:10px;animation:fadeIn 0.3s ease;">
+                    <h3>${s.name}</h3>
+                    <div class="meta">
+                        ${s.country ? '<span>📍 '+s.country+'</span>' : ''}
+                        ${s.level ? '<span>📚 '+s.level+'</span>' : ''}
+                        ${s.funding ? '<span>💰 '+s.funding+'</span>' : ''}
+                        ${s.deadline ? '<span>⏰ '+s.deadline+'</span>' : ''}
+                    </div>
+                    <div class="actions" style="margin-top:8px;">
+                        <button class="btn btn-sm btn-primary ai-save-btn" data-type="scholarship" data-name="${s.name}">📌 Save</button>
+                        ${s.link ? '<a href="'+s.link+'" target="_blank" class="btn btn-sm btn-secondary">View →</a>' : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        if (data.universities && data.universities.length) {
+            html += '<h3 style="margin:20px 0 12px;">🏫 Universities For You</h3>';
+            html += data.universities.map(u => `
+                <div class="card scholarship-card" style="margin-bottom:10px;animation:fadeIn 0.3s ease;">
+                    <h3>${u.name}</h3>
+                    <div class="meta">
+                        ${u.country ? '<span>📍 '+u.country+'</span>' : ''}
+                        ${u.ranking ? '<span>🏆 Rank: '+u.ranking+'</span>' : ''}
+                    </div>
+                    <div class="actions" style="margin-top:8px;">
+                        <button class="btn btn-sm btn-primary ai-save-btn" data-type="university" data-name="${u.name}">📌 Save</button>
+                        ${u.link ? '<a href="'+u.link+'" target="_blank" class="btn btn-sm btn-secondary">View →</a>' : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        if (html) {
+            container.innerHTML = html;
+            container.querySelectorAll('.ai-save-btn').forEach(btn => {
+                btn.onclick = async () => {
+                    const r = await fetch('/api/bookmarks', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({type:btn.dataset.type, name:btn.dataset.name}) });
+                    if (r.ok) { btn.textContent = '✅ Saved'; btn.disabled = true; }
+                    else if (r.status === 409) { btn.textContent = '✅ Already saved'; btn.disabled = true; }
+                };
+            });
+        }
+    } catch(e) {
+        // Silently fail — server-rendered matches stay as fallback
+    }
+})();
+
+// Live-refresh saved
 (function() {
     let lastCount = {{ bookmarks|length }};
-    
     async function refreshSaved() {
         try {
             const res = await fetch('/api/bookmarks');
             if (!res.ok) return;
             const bookmarks = await res.json();
-            
-            // Only update if count changed
             if (bookmarks.length === lastCount) return;
             lastCount = bookmarks.length;
-            
-            // Update all stat counters
-            const statEl = document.getElementById('statSaved');
-            if (statEl) statEl.textContent = bookmarks.length;
-            
-            const appliedCount = bookmarks.filter(b => b.status === 'applied').length;
-            const interestedCount = bookmarks.filter(b => b.status === 'interested').length;
-            const statApplied = document.getElementById('statApplied');
-            const statInterested = document.getElementById('statInterested');
-            if (statApplied) statApplied.textContent = appliedCount;
-            if (statInterested) statInterested.textContent = interestedCount;
-            
-            // Update count in header
+            document.getElementById('statSaved').textContent = bookmarks.length;
             const countEl = document.getElementById('savedCount');
             if (countEl) countEl.textContent = '(' + bookmarks.length + ')';
-            
-            // Rebuild saved list
             const list = document.getElementById('savedList');
             if (!list) return;
-            
             if (bookmarks.length === 0) {
-                list.innerHTML = '<p style="color:var(--text3);">No saved items yet. Search scholarships and save ones you like!</p>';
+                list.innerHTML = '<div class="card" style="text-align:center;padding:40px;"><p style="font-size:1.1rem;color:var(--text2);">📌 No saved items yet</p><p style="color:var(--text3);margin-top:8px;">Search scholarships and save the ones you like!</p><a href="/scholarships" class="btn btn-primary" style="margin-top:16px;">Browse Scholarships →</a></div>';
                 return;
             }
-            
             list.innerHTML = bookmarks.map(b => `
-                <div class="card" style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; animation: fadeIn 0.3s ease;">
-                    <div>
-                        <strong>${b.item_name}</strong>
-                        <span class="badge ${b.status === 'applied' ? 'badge-green' : b.status === 'accepted' ? 'badge-blue' : 'badge-yellow'}">${b.status}</span>
-                    </div>
-                    <div style="display: flex; gap: 6px;">
-                        <button class="btn btn-sm btn-secondary status-btn" data-id="${b.id}" data-status="interested">🔖</button>
-                        <button class="btn btn-sm btn-secondary status-btn" data-id="${b.id}" data-status="applied">✅</button>
-                        <button class="btn btn-sm btn-secondary delete-btn" data-id="${b.id}" style="color:var(--danger);">🗑️</button>
-                    </div>
+                <div class="card" style="margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;animation:fadeIn 0.3s ease;">
+                    <div><strong>${b.item_name}</strong><div style="color:var(--text3);font-size:0.8rem;">${b.item_type} · Saved ${b.created_at}</div></div>
+                    <button class="btn btn-sm btn-danger" onclick="removeBookmark(${b.id})">✕ Remove</button>
                 </div>
             `).join('');
-            
-            // Re-attach event listeners
-            list.querySelectorAll('.status-btn').forEach(btn => {
-                btn.onclick = async () => {
-                    await fetch('/api/bookmarks/' + btn.dataset.id + '/status', {
-                        method: 'PUT',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({status: btn.dataset.status})
-                    });
-                    refreshSaved();
-                };
-            });
-            list.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.onclick = async () => {
-                    await fetch('/api/bookmarks/' + btn.dataset.id, {method: 'DELETE'});
-                    refreshSaved();
-                };
-            });
         } catch(e) {}
     }
-    
-    // Poll every 5 seconds
-    setInterval(refreshSaved, 1000);
-    
-    // Also refresh when tab becomes visible (user switches back)
-    document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) refreshSaved();
-    });
+    setInterval(refreshSaved, 3000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshSaved(); });
 })();
+async function removeBookmark(id) { await fetch('/api/bookmarks/'+id, {method:'DELETE'}); location.reload(); }
 </script>
-<style>
-@keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
-</style>
-
 {% endblock %}
