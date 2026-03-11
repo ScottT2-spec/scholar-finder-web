@@ -37,7 +37,20 @@
             </div>
             <div class="form-group">
                 <label>Password <span class="required">*</span></label>
-                <input type="password" name="password" id="passwordInput" class="form-input" placeholder="At least 6 characters" required minlength="6">
+                <div style="position:relative;">
+                    <input type="password" name="password" id="passwordInput" class="form-input" placeholder="At least 6 characters" required minlength="6">
+                    <button type="button" id="togglePassword" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1rem;padding:4px;color:var(--text3);" tabindex="-1">👁️</button>
+                </div>
+                <div id="strengthMeter" style="display:none;margin-top:8px;">
+                    <div style="display:flex;gap:4px;margin-bottom:6px;">
+                        <div class="str-bar" id="strBar1" style="flex:1;height:4px;border-radius:2px;background:var(--border);transition:all 0.3s;"></div>
+                        <div class="str-bar" id="strBar2" style="flex:1;height:4px;border-radius:2px;background:var(--border);transition:all 0.3s;"></div>
+                        <div class="str-bar" id="strBar3" style="flex:1;height:4px;border-radius:2px;background:var(--border);transition:all 0.3s;"></div>
+                        <div class="str-bar" id="strBar4" style="flex:1;height:4px;border-radius:2px;background:var(--border);transition:all 0.3s;"></div>
+                    </div>
+                    <div id="strengthLabel" style="font-size:0.78rem;font-weight:600;transition:all 0.3s;"></div>
+                    <div id="strengthChecks" style="font-size:0.75rem;color:var(--text3);margin-top:4px;line-height:1.6;"></div>
+                </div>
                 <div class="field-error" id="passwordError"></div>
             </div>
             <div class="form-group">
@@ -131,7 +144,7 @@ document.getElementById('fullNameInput').addEventListener('blur', function() {
     if (v.length < 2) { showError('fullNameError','Name is too short'); return; }
     if (/\d/.test(v)) { showError('fullNameError','Name should not contain numbers'); return; }
     if (!/\s/.test(v)) { showError('fullNameError','Please enter your full name (first and last)'); return; }
-    showOk('fullNameError','Looks good');
+    clearError('fullNameError');
 });
 
 document.getElementById('emailInput').addEventListener('blur', function() {
@@ -142,7 +155,7 @@ document.getElementById('emailInput').addEventListener('blur', function() {
     if (domainTypos[domain]) { showError('emailError','Did you mean '+local+'@'+domainTypos[domain]+'?'); return; }
     const tld = domain.split('.').pop();
     if (['con','cmo','cm','coom','comm','om','xom','vom','cim'].includes(tld)) { showError('emailError','Invalid domain ending ".'+tld+'" — did you mean .com?'); return; }
-    showOk('emailError','Looks good');
+    clearError('emailError');
 });
 document.getElementById('emailInput').addEventListener('input', function() { clearError('emailError'); });
 
@@ -152,15 +165,99 @@ document.getElementById('usernameInput').addEventListener('blur', function() {
     if (v.length < 3) { showError('usernameError','Username must be at least 3 characters'); return; }
     if (/\s/.test(v)) { showError('usernameError','Username cannot contain spaces'); return; }
     if (/[^a-zA-Z0-9_\-]/.test(v)) { showError('usernameError','Only letters, numbers, _ and - allowed'); return; }
-    showOk('usernameError','Looks good');
+    clearError('usernameError');
+});
+
+// Password strength checker
+const commonPasswords = ['password','123456','12345678','qwerty','abc123','monkey','master','dragon','111111','baseball','iloveyou','trustno1','sunshine','letmein','football','shadow','michael','password1','123456789','welcome'];
+
+function checkPasswordStrength(pw) {
+    const checks = {
+        length8: pw.length >= 8,
+        length12: pw.length >= 12,
+        upper: /[A-Z]/.test(pw),
+        lower: /[a-z]/.test(pw),
+        number: /[0-9]/.test(pw),
+        special: /[^A-Za-z0-9]/.test(pw),
+        noRepeat: !/(.)\1{2,}/.test(pw),
+        noSequence: !/(abc|bcd|cde|def|efg|123|234|345|456|567|678|789|qwe|wer|ert|asd|sdf|zxc)/i.test(pw),
+        notCommon: !commonPasswords.includes(pw.toLowerCase()),
+    };
+
+    let score = 0;
+    if (checks.length8) score++;
+    if (checks.length12) score++;
+    if (checks.upper) score++;
+    if (checks.lower) score++;
+    if (checks.number) score++;
+    if (checks.special) score++;
+    if (checks.noRepeat) score++;
+    if (checks.noSequence) score++;
+    if (checks.notCommon) score++; else score -= 3;
+
+    let level, label, color;
+    if (pw.length < 6 || !checks.notCommon) { level = 0; label = '❌ Too weak'; color = '#dc2626'; }
+    else if (score <= 4) { level = 1; label = '🔴 Weak'; color = '#dc2626'; }
+    else if (score <= 6) { level = 2; label = '🟡 Medium'; color = '#f59e0b'; }
+    else if (score <= 7) { level = 3; label = '🟢 Strong'; color = '#16a34a'; }
+    else { level = 4; label = '🛡️ Very strong'; color = '#059669'; }
+
+    return { level, label, color, checks };
+}
+
+function renderStrength(pw) {
+    const meter = document.getElementById('strengthMeter');
+    const bars = [document.getElementById('strBar1'),document.getElementById('strBar2'),document.getElementById('strBar3'),document.getElementById('strBar4')];
+    const labelEl = document.getElementById('strengthLabel');
+    const checksEl = document.getElementById('strengthChecks');
+
+    if (!pw) { meter.style.display = 'none'; return; }
+    meter.style.display = 'block';
+
+    const { level, label, color, checks } = checkPasswordStrength(pw);
+
+    bars.forEach((bar, i) => {
+        bar.style.background = i < level ? color : 'var(--border)';
+    });
+
+    labelEl.textContent = label;
+    labelEl.style.color = color;
+
+    const items = [
+        [checks.length8, '8+ characters', 'Length (8+)'],
+        [checks.upper, 'Uppercase letter', 'Uppercase (A-Z)'],
+        [checks.lower, 'Lowercase letter', 'Lowercase (a-z)'],
+        [checks.number, 'Number', 'Number (0-9)'],
+        [checks.special, 'Special character (!@#$...)', 'Special char'],
+        [checks.noRepeat, 'No repeated characters (aaa)', 'No repeats'],
+        [checks.notCommon, 'Not a common password', 'Not common'],
+    ];
+    checksEl.innerHTML = items.map(([ok, desc]) =>
+        `<span style="color:${ok ? '#16a34a' : '#9ca3af'}">${ok ? '✓' : '○'} ${desc}</span>`
+    ).join('<br>');
+}
+
+document.getElementById('passwordInput').addEventListener('input', function() {
+    renderStrength(this.value);
+    clearError('passwordError');
 });
 
 document.getElementById('passwordInput').addEventListener('blur', function() {
     const v = this.value;
-    if (!v) { clearError('passwordError'); return; }
+    if (!v) { clearError('passwordError'); document.getElementById('strengthMeter').style.display = 'none'; return; }
     if (v.length < 6) { showError('passwordError','Password must be at least 6 characters'); return; }
-    if (v.length < 8) { showOk('passwordError','OK — 8+ characters is stronger'); return; }
+    const { level } = checkPasswordStrength(v);
+    if (level === 0) { showError('passwordError','This password is too easy to guess'); return; }
+    if (level === 1) { showError('passwordError','Password is weak — add uppercase, numbers, or symbols'); return; }
+    if (level === 2) { showOk('passwordError','Medium — good enough, but could be stronger'); return; }
     showOk('passwordError','Strong password');
+});
+
+// Toggle password visibility
+document.getElementById('togglePassword').addEventListener('click', function() {
+    const input = document.getElementById('passwordInput');
+    if (input.type === 'password') { input.type = 'text'; this.textContent = '🙈'; }
+    else { input.type = 'password'; this.textContent = '👁️'; }
 });
 
 document.getElementById('signupForm').addEventListener('submit', function(e) {
@@ -169,7 +266,7 @@ document.getElementById('signupForm').addEventListener('submit', function(e) {
     });
     const errors = document.querySelectorAll('.field-error.visible');
     for (const err of errors) {
-        if (err.style.color !== 'rgb(22, 163, 74)') {
+        if (!err.classList.contains('field-success')) {
             e.preventDefault();
             err.scrollIntoView({ behavior:'smooth', block:'center' });
             return;
