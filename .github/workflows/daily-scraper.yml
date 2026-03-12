@@ -101,8 +101,23 @@ jobs:
           active, added = merge_new(active, new_scholarships)
           log.info(f"Added {len(added)} new scholarships after dedup")
 
-          # Save updated data to repo (for commit)
+          # Save updated scholarships
           save_scholarships(active)
+
+          # --- Scrape Opportunities ---
+          from scholarship_scraper import (
+              load_opportunities, save_opportunities,
+              scrape_opportunities, merge_new_opportunities
+          )
+
+          opportunities = load_opportunities()
+          opp_before = len(opportunities)
+          log.info(f"Current opportunities: {opp_before}")
+
+          new_opps = scrape_opportunities()
+          opportunities, opp_added = merge_new_opportunities(opportunities, new_opps)
+          log.info(f"Added {len(opp_added)} new opportunities")
+          save_opportunities(opportunities)
 
           # Write results for next steps
           results = {
@@ -110,12 +125,16 @@ jobs:
               'expired': len(expired),
               'added': len(added),
               'final': len(active),
-              'new_scholarships': added
+              'new_scholarships': added,
+              'opp_before': opp_before,
+              'opp_added': len(opp_added),
+              'opp_final': len(opportunities),
+              'new_opportunities': opp_added,
           }
           with open('/tmp/scraper_results.json', 'w') as f:
               json.dump(results, f)
 
-          log.info(f"SUMMARY: before={len(scholarships)}, expired={len(expired)}, added={len(added)}, final={len(active)}")
+          log.info(f"SUMMARY: scholarships {len(scholarships)}->{len(active)} (+{len(added)}), opportunities {opp_before}->{len(opportunities)} (+{len(opp_added)})")
           SCRAPER_SCRIPT
 
       - name: Push new scholarships to PythonAnywhere
@@ -129,46 +148,63 @@ jobs:
           echo "$RESULTS" | python3 -c "
           import json, sys
           d = json.load(sys.stdin)
-          print(f'  Before:  {d.get(\"before\", \"?\")}')
-          print(f'  Expired: {d.get(\"expired\", \"?\")}')
-          print(f'  Added:   {d.get(\"added\", \"?\")}')
-          print(f'  Final:   {d.get(\"final\", \"?\")}')
+          print(f'  Scholarships: {d.get(\"before\", \"?\")} → {d.get(\"final\", \"?\")} (+{d.get(\"added\", 0)}, -{d.get(\"expired\", 0)} expired)')
+          print(f'  Opportunities: {d.get(\"opp_before\", \"?\")} → {d.get(\"opp_final\", \"?\")} (+{d.get(\"opp_added\", 0)})')
           "
 
+          # Push scholarships
           if [ "$ADDED" -gt 0 ]; then
             echo "🚀 Pushing $ADDED new scholarships to PythonAnywhere..."
-
-            # Send via bulk_add webhook
             NEW_SCHOLS=$(echo "$RESULTS" | python3 -c "
           import json, sys
           d = json.load(sys.stdin)
           print(json.dumps({'action': 'bulk_add', 'scholarships': d['new_scholarships'], 'source': 'github-actions-scraper'}))
           ")
-
             response=$(curl -s -w "\n%{http_code}" -X POST \
               -H "X-Webhook-Secret: $WEBHOOK_SECRET" \
               -H "Content-Type: application/json" \
               -d "$NEW_SCHOLS" \
               "https://scholarfinder.pythonanywhere.com/webhook/scholarships")
-
             http_code=$(echo "$response" | tail -1)
             body=$(echo "$response" | head -n -1)
-            echo "PA Response ($http_code): $body"
+            echo "PA Scholarships ($http_code): $body"
           else
             echo "ℹ️  No new scholarships to push."
+          fi
+
+          # Push opportunities
+          OPP_ADDED=$(echo "$RESULTS" | python3 -c "import json,sys; print(json.load(sys.stdin).get('opp_added',0))")
+          if [ "$OPP_ADDED" -gt 0 ]; then
+            echo "🚀 Pushing $OPP_ADDED new opportunities to PythonAnywhere..."
+            NEW_OPPS=$(echo "$RESULTS" | python3 -c "
+          import json, sys
+          d = json.load(sys.stdin)
+          print(json.dumps({'action': 'bulk_add', 'opportunities': d['new_opportunities'], 'source': 'github-actions-scraper'}))
+          ")
+            response=$(curl -s -w "\n%{http_code}" -X POST \
+              -H "X-Webhook-Secret: $WEBHOOK_SECRET" \
+              -H "Content-Type: application/json" \
+              -d "$NEW_OPPS" \
+              "https://scholarfinder.pythonanywhere.com/webhook/opportunities")
+            http_code=$(echo "$response" | tail -1)
+            body=$(echo "$response" | head -n -1)
+            echo "PA Opportunities ($http_code): $body"
+          else
+            echo "ℹ️  No new opportunities to push."
           fi
 
       - name: Commit updated data
         run: |
           git config user.name "ScholarFinder Bot"
           git config user.email "bot@scholarfinder.pythonanywhere.com"
-          git add data/scholarships.json data/scholarships_archived.json 2>/dev/null || true
+          git add data/scholarships.json data/scholarships_archived.json data/opportunities.json 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "No data changes to commit."
           else
             ADDED=$(cat /tmp/scraper_results.json 2>/dev/null | python3 -c "import json,sys; print(json.load(sys.stdin).get('added',0))" 2>/dev/null || echo "0")
             EXPIRED=$(cat /tmp/scraper_results.json 2>/dev/null | python3 -c "import json,sys; print(json.load(sys.stdin).get('expired',0))" 2>/dev/null || echo "0")
-            git commit -m "📚 Scraper: +${ADDED} new, -${EXPIRED} expired scholarships [skip ci]"
+            OPP_ADDED=$(cat /tmp/scraper_results.json 2>/dev/null | python3 -c "import json,sys; print(json.load(sys.stdin).get('opp_added',0))" 2>/dev/null || echo "0")
+            git commit -m "📚 Scraper: +${ADDED} scholarships, +${OPP_ADDED} opportunities, -${EXPIRED} expired [skip ci]"
             git push
           fi
 
