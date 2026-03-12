@@ -2,38 +2,189 @@ name: Daily Scholarship Scraper
 
 on:
   schedule:
-    # Run daily at 6:00 AM UTC
-    - cron: '0 6 * * *'
-  workflow_dispatch:  # Allow manual trigger
+    - cron: '0 6 * * *'     # Daily at 6:00 AM UTC
+    - cron: '0 18 * * *'    # Also at 6:00 PM UTC (twice daily)
+  workflow_dispatch:          # Allow manual trigger
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+
     steps:
-      - name: Trigger ScholarFinder Scraper
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
         run: |
-          response=$(curl -s -w "\n%{http_code}" -X POST \
-            -H "X-Webhook-Secret: ${{ secrets.WEBHOOK_SECRET }}" \
-            "https://scholarfinder.pythonanywhere.com/webhook/scraper/run")
-          
-          http_code=$(echo "$response" | tail -1)
-          body=$(echo "$response" | head -n -1)
-          
-          echo "Status: $http_code"
-          echo "Response: $body"
-          
-          if [ "$http_code" != "200" ]; then
-            echo "::error::Scraper failed with HTTP $http_code"
-            exit 1
-          fi
-          
-          echo "$body" | python3 -c "
+          pip install requests beautifulsoup4
+
+      - name: Run scraper locally
+        id: scrape
+        env:
+          GROQ_KEY_1: ${{ secrets.GROQ_KEY_1 }}
+          GROQ_KEY_2: ${{ secrets.GROQ_KEY_2 }}
+          GROQ_KEY_3: ${{ secrets.GROQ_KEY_3 }}
+          GROQ_KEY_4: ${{ secrets.GROQ_KEY_4 }}
+          GROQ_KEY_5: ${{ secrets.GROQ_KEY_5 }}
+          GROQ_KEY_6: ${{ secrets.GROQ_KEY_6 }}
+          GROQ_KEY_7: ${{ secrets.GROQ_KEY_7 }}
+          GROQ_KEY_8: ${{ secrets.GROQ_KEY_8 }}
+          GROQ_KEY_9: ${{ secrets.GROQ_KEY_9 }}
+        run: |
+          python3 << 'SCRAPER_SCRIPT'
+          import os, sys, json
+
+          # Run the scraper
+          sys.path.insert(0, '.')
+          from scholarship_scraper import (
+              SOURCES, fetch_page, extract_links_from_html,
+              extract_scholarship_from_page, load_scholarships,
+              deduplicate, clean_expired, merge_new, save_scholarships,
+              log
+          )
+          import time
+
+          log.info("=" * 60)
+          log.info("ScholarFinder Scraper — Running on GitHub Actions")
+          log.info("=" * 60)
+
+          # Load current scholarship data from repo
+          scholarships = load_scholarships()
+          log.info(f"Current scholarships: {len(scholarships)}")
+
+          # Clean expired
+          from scholarship_scraper import clean_expired, load_archive, save_archive
+          active, expired = clean_expired(scholarships)
+          if expired:
+              archive = load_archive()
+              archive.extend(expired)
+              save_archive(archive)
+              log.info(f"Archived {len(expired)} expired scholarships")
+
+          # Deduplicate
+          active = deduplicate(active)
+
+          # Scrape all sources
+          new_scholarships = []
+          total_links = 0
+
+          for source in SOURCES:
+              log.info(f"Scraping: {source['name']} ({source['url']})")
+              html = fetch_page(source['url'])
+              if not html:
+                  continue
+
+              links = extract_links_from_html(html, source['url'], source.get('selector', 'article'))
+              log.info(f"  Found {len(links)} article links")
+              total_links += len(links)
+
+              for link_info in links[:8]:
+                  log.info(f"  Processing: {link_info['title'][:60]}...")
+                  scholarship = extract_scholarship_from_page(link_info['url'], link_info['title'])
+                  if scholarship:
+                      new_scholarships.append(scholarship)
+                      log.info(f"  ✓ Extracted: {scholarship['name']}")
+                  else:
+                      log.info(f"  ✗ Skipped")
+                  time.sleep(2)  # Rate limit
+              time.sleep(1)
+
+          log.info(f"Scraped {len(SOURCES)} sources, {total_links} links, extracted {len(new_scholarships)} new candidates")
+
+          # Merge
+          active, added = merge_new(active, new_scholarships)
+          log.info(f"Added {len(added)} new scholarships after dedup")
+
+          # Save updated data to repo (for commit)
+          save_scholarships(active)
+
+          # Write results for next steps
+          results = {
+              'before': len(scholarships),
+              'expired': len(expired),
+              'added': len(added),
+              'final': len(active),
+              'new_scholarships': added
+          }
+          with open('/tmp/scraper_results.json', 'w') as f:
+              json.dump(results, f)
+
+          log.info(f"SUMMARY: before={len(scholarships)}, expired={len(expired)}, added={len(added)}, final={len(active)}")
+          SCRAPER_SCRIPT
+
+      - name: Push new scholarships to PythonAnywhere
+        env:
+          WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
+        run: |
+          RESULTS=$(cat /tmp/scraper_results.json 2>/dev/null || echo '{"added":0,"new_scholarships":[]}')
+          ADDED=$(echo "$RESULTS" | python3 -c "import json,sys; print(json.load(sys.stdin).get('added',0))")
+
+          echo "📊 Scraper Results:"
+          echo "$RESULTS" | python3 -c "
           import json, sys
           d = json.load(sys.stdin)
-          r = d.get('result', {})
-          print(f\"✅ Scraper complete\")
-          print(f\"   Before: {r.get('before', '?')}\")
-          print(f\"   Added: {r.get('added', '?')}\")
-          print(f\"   Expired: {r.get('expired', '?')}\")
-          print(f\"   Final: {r.get('final', '?')}\")
+          print(f'  Before:  {d.get(\"before\", \"?\")}')
+          print(f'  Expired: {d.get(\"expired\", \"?\")}')
+          print(f'  Added:   {d.get(\"added\", \"?\")}')
+          print(f'  Final:   {d.get(\"final\", \"?\")}')
           "
+
+          if [ "$ADDED" -gt 0 ]; then
+            echo "🚀 Pushing $ADDED new scholarships to PythonAnywhere..."
+
+            # Send via bulk_add webhook
+            NEW_SCHOLS=$(echo "$RESULTS" | python3 -c "
+          import json, sys
+          d = json.load(sys.stdin)
+          print(json.dumps({'action': 'bulk_add', 'scholarships': d['new_scholarships'], 'source': 'github-actions-scraper'}))
+          ")
+
+            response=$(curl -s -w "\n%{http_code}" -X POST \
+              -H "X-Webhook-Secret: $WEBHOOK_SECRET" \
+              -H "Content-Type: application/json" \
+              -d "$NEW_SCHOLS" \
+              "https://scholarfinder.pythonanywhere.com/webhook/scholarships")
+
+            http_code=$(echo "$response" | tail -1)
+            body=$(echo "$response" | head -n -1)
+            echo "PA Response ($http_code): $body"
+          else
+            echo "ℹ️  No new scholarships to push."
+          fi
+
+      - name: Commit updated data
+        run: |
+          git config user.name "ScholarFinder Bot"
+          git config user.email "bot@scholarfinder.pythonanywhere.com"
+          git add data/scholarships.json data/scholarships_archived.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No data changes to commit."
+          else
+            ADDED=$(cat /tmp/scraper_results.json 2>/dev/null | python3 -c "import json,sys; print(json.load(sys.stdin).get('added',0))" 2>/dev/null || echo "0")
+            EXPIRED=$(cat /tmp/scraper_results.json 2>/dev/null | python3 -c "import json,sys; print(json.load(sys.stdin).get('expired',0))" 2>/dev/null || echo "0")
+            git commit -m "📚 Scraper: +${ADDED} new, -${EXPIRED} expired scholarships [skip ci]"
+            git push
+          fi
+
+      - name: Trigger PA cleanup (expired removal)
+        env:
+          WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
+        run: |
+          # Tell PA to also clean its local data
+          curl -s -X POST \
+            -H "X-Webhook-Secret: $WEBHOOK_SECRET" \
+            "https://scholarfinder.pythonanywhere.com/webhook/scraper/run" | python3 -c "
+          import json, sys
+          try:
+            d = json.load(sys.stdin)
+            r = d.get('result', {})
+            print(f'✅ PA cleanup done — final count: {r.get(\"final\", \"?\")}')
+          except:
+            print('⚠️  PA cleanup response not parseable')
+          " || true
