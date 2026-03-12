@@ -11,12 +11,16 @@ What it does:
 3. Deduplicates entries
 4. Logs all changes
 
-Sources:
+Sources (13 total):
 - Opportunities for Africans
 - After School Africa
 - Scholars4Dev
-- Marvist (scholarship feeds)
-- Custom configurable sources
+- Scholarship Positions (Africa, Europe, USA/Canada, Asia)
+- Opportunity Desk
+- Scholarships Corner
+- Youth Opportunities
+- After School Africa (Grants)
+- Scholars4Dev (Fully Funded)
 """
 
 import os
@@ -67,6 +71,7 @@ log = logging.getLogger('scraper')
 # SCHOLARSHIP SOURCES
 # ============================================
 SOURCES = [
+    # --- Africa-focused ---
     {
         'name': 'Opportunities for Africans',
         'url': 'https://www.opportunitiesforafricans.com/category/scholarships/',
@@ -86,8 +91,64 @@ SOURCES = [
         'selector': 'article',
     },
     {
-        'name': 'Scholarship Positions',
+        'name': 'Scholarship Positions (Africa)',
         'url': 'https://scholarship-positions.com/category/scholarships-for-african-students/',
+        'type': 'html',
+        'selector': 'article',
+    },
+    # --- International / Global ---
+    {
+        'name': 'Opportunity Desk',
+        'url': 'https://opportunitydesk.org/tag/scholarships/',
+        'type': 'html',
+        'selector': 'article',
+    },
+    {
+        'name': 'Scholarships Corner',
+        'url': 'https://scholarshipscorner.website/scholarships/',
+        'type': 'html',
+        'selector': 'article',
+    },
+    {
+        'name': 'Youth Opportunities (Scholarships)',
+        'url': 'https://www.youthop.com/scholarships',
+        'type': 'html',
+        'selector': 'article',
+    },
+    {
+        'name': 'Youth Opportunities (Undergrad)',
+        'url': 'https://www.youthop.com/scholarships/undergraduate',
+        'type': 'html',
+        'selector': 'article',
+    },
+    # --- Region-specific quality sources ---
+    {
+        'name': 'Scholarship Positions (Europe)',
+        'url': 'https://scholarship-positions.com/category/european-scholarships/',
+        'type': 'html',
+        'selector': 'article',
+    },
+    {
+        'name': 'Scholarship Positions (USA/Canada)',
+        'url': 'https://scholarship-positions.com/category/usa-canada-scholarships/',
+        'type': 'html',
+        'selector': 'article',
+    },
+    {
+        'name': 'Scholarship Positions (Asia)',
+        'url': 'https://scholarship-positions.com/category/asia-scholarships/',
+        'type': 'html',
+        'selector': 'article',
+    },
+    {
+        'name': 'After School Africa (Grants)',
+        'url': 'https://www.afterschoolafrica.com/grants/',
+        'type': 'html',
+        'selector': 'article',
+    },
+    {
+        'name': 'Scholars4Dev (Fully Funded)',
+        'url': 'https://www.scholars4dev.com/tag/fully-funded-scholarships/',
         'type': 'html',
         'selector': 'article',
     },
@@ -438,8 +499,9 @@ def scrape_all_sources():
         log.info(f'  Found {len(links)} article links')
         total_links += len(links)
 
-        # Process each article (limit to 5 per source to save API calls)
-        for link_info in links[:5]:
+        # Process each article (limit to 8 per source to save API calls)
+        import time
+        for link_info in links[:8]:
             log.info(f'  Processing: {link_info["title"][:60]}...')
             scholarship = extract_scholarship_from_page(link_info['url'], link_info['title'])
 
@@ -448,6 +510,12 @@ def scrape_all_sources():
                 log.info(f'  ✓ Extracted: {scholarship["name"]}')
             else:
                 log.info(f'  ✗ Skipped (not a scholarship or extraction failed)')
+
+            # Rate-limit: be polite to source sites and Groq API
+            time.sleep(2)
+
+        # Small pause between sources
+        time.sleep(1)
 
     log.info(f'Scraped {len(SOURCES)} sources, {total_links} links, extracted {len(new_scholarships)} scholarships')
     return new_scholarships
