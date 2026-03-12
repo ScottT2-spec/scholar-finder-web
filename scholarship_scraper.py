@@ -46,7 +46,31 @@ if os.path.exists(env_path):
                 k, v = line.split('=', 1)
                 os.environ.setdefault(k.strip(), v.strip())
 
+# Support both GROQ_API_KEY (single) and GROQ_KEY_1..9 (rotation pool)
 GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
+if not GROQ_API_KEY:
+    # Fall back to the key pool used by app.py
+    for i in range(1, 10):
+        k = os.environ.get(f'GROQ_KEY_{i}', '')
+        if k:
+            GROQ_API_KEY = k
+            break
+
+# Groq key pool for rotation (spreads rate limits across accounts)
+_GROQ_KEYS = [os.environ.get(f'GROQ_KEY_{i}', '') for i in range(1, 10)]
+_GROQ_KEYS = [k for k in _GROQ_KEYS if k]
+if GROQ_API_KEY and GROQ_API_KEY not in _GROQ_KEYS:
+    _GROQ_KEYS.insert(0, GROQ_API_KEY)
+_groq_idx = 0
+
+def _get_next_groq_key():
+    """Round-robin through available Groq keys"""
+    global _groq_idx
+    if not _GROQ_KEYS:
+        return GROQ_API_KEY
+    key = _GROQ_KEYS[_groq_idx % len(_GROQ_KEYS)]
+    _groq_idx += 1
+    return key
 
 # Paths
 DATA_DIR = os.path.join(SCRIPT_DIR, 'data')
@@ -349,6 +373,9 @@ def ai_extract_scholarship(text, url, title=''):
     """Use Groq AI to extract scholarship data from page text"""
     import requests
 
+    # Rotate through available Groq keys
+    api_key = _get_next_groq_key()
+
     prompt = f"""Extract scholarship information from this text. Return ONLY valid JSON (no markdown, no explanation).
 If this is NOT about a specific scholarship, return: {{"skip": true}}
 
@@ -386,7 +413,7 @@ Text:
                 'max_tokens': 500,
                 'temperature': 0.1
             },
-            headers={'Authorization': 'Bearer ' + GROQ_API_KEY},
+            headers={'Authorization': 'Bearer ' + api_key},
             timeout=20
         )
 
