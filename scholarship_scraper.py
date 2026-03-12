@@ -77,6 +77,7 @@ def _get_next_groq_key():
 DATA_DIR = os.path.join(SCRIPT_DIR, 'data')
 SCHOLARSHIPS_PATH = os.path.join(DATA_DIR, 'scholarships.json')
 ARCHIVE_PATH = os.path.join(DATA_DIR, 'scholarships_archived.json')
+OPP_ARCHIVE_PATH = os.path.join(DATA_DIR, 'opportunities_archived.json')
 LOG_DIR = os.path.join(SCRIPT_DIR, 'logs')
 os.makedirs(LOG_DIR, exist_ok=True)
 os.makedirs(DATA_DIR, exist_ok=True)
@@ -258,6 +259,34 @@ def save_archive(data):
     """Save archived scholarships"""
     with open(ARCHIVE_PATH, 'w') as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
+
+
+def load_opp_archive():
+    """Load archived (expired) opportunities"""
+    if os.path.exists(OPP_ARCHIVE_PATH):
+        with open(OPP_ARCHIVE_PATH, 'r') as f:
+            return json.load(f)
+    return []
+
+def save_opp_archive(data):
+    """Save archived opportunities"""
+    with open(OPP_ARCHIVE_PATH, 'w') as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+def clean_expired_opportunities(opportunities):
+    """Remove expired opportunities (past deadline + 7 day grace)"""
+    now = datetime.now()
+    grace_period = timedelta(days=7)
+    active = []
+    expired = []
+    for o in opportunities:
+        dl = parse_deadline(o.get('deadline', ''))
+        if dl and dl + grace_period < now:
+            expired.append(o)
+            log.info(f'EXPIRED OPP: {o["name"]} (deadline: {o.get("deadline")})')
+        else:
+            active.append(o)
+    return active, expired
 
 
 def scholarship_id(s):
@@ -853,10 +882,19 @@ def run():
 
     # Step 6: Scrape opportunities
     opp_added = []
+    opp_expired = []
     if GROQ_API_KEY or _GROQ_KEYS:
         opportunities = load_opportunities()
         opp_before = len(opportunities)
         log.info(f'Current opportunities: {opp_before}')
+
+        # Step 6a: Clean expired opportunities
+        opportunities, opp_expired = clean_expired_opportunities(opportunities)
+        if opp_expired:
+            opp_archive = load_opp_archive()
+            opp_archive.extend(opp_expired)
+            save_opp_archive(opp_archive)
+            log.info(f'Archived {len(opp_expired)} expired opportunities')
 
         new_opps = scrape_opportunities()
         opportunities, opp_added = merge_new_opportunities(opportunities, new_opps)
@@ -871,7 +909,7 @@ def run():
     log.info('-' * 40)
     log.info(f'SUMMARY:')
     log.info(f'  Scholarships: {len(scholarships)} → {len(active)} (+{len(added)}, -{len(expired)} expired)')
-    log.info(f'  Opportunities: {opp_before} → {opp_before + len(opp_added)} (+{len(opp_added)})')
+    log.info(f'  Opportunities: {opp_before} → {len(opportunities)} (+{len(opp_added)}, -{len(opp_expired)} expired)')
     log.info('Done!')
 
     return {
@@ -881,7 +919,8 @@ def run():
         'final': len(active),
         'opp_before': opp_before,
         'opp_added': len(opp_added),
-        'opp_final': opp_before + len(opp_added),
+        'opp_final': len(opportunities),
+        'opp_expired': len(opp_expired),
         'new_opportunities': opp_added,
     }
 
