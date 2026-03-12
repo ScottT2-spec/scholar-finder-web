@@ -11,16 +11,17 @@ What it does:
 3. Deduplicates entries
 4. Logs all changes
 
-Sources (13 total):
-- Opportunities for Africans
+Sources (10 total):
+- Opportunities for Africans (+ page 2)
 - After School Africa
 - Scholars4Dev
-- Scholarship Positions (Africa, Europe, USA/Canada, Asia)
-- Opportunity Desk
+- Scholarship Positions
+- Opportunity Desk (+ page 2)
 - Scholarships Corner
-- Youth Opportunities
-- After School Africa (Grants)
-- Scholars4Dev (Fully Funded)
+- Youth Opportunities (general + postgrad)
+
+NOTE: Scraping runs on GitHub Actions (not PA) because
+PythonAnywhere free tier blocks outbound HTTP.
 """
 
 import os
@@ -106,19 +107,13 @@ SOURCES = [
         'name': 'After School Africa',
         'url': 'https://www.afterschoolafrica.com/scholarship/',
         'type': 'html',
-        'selector': 'article',
+        'selector': '.gb-query-loop-item',  # Uses GenerateBlocks grid, not <article>
     },
     {
         'name': 'Scholars4Dev',
-        'url': 'https://www.scholars4dev.com/category/scholarships/',
+        'url': 'https://www.scholars4dev.com/',
         'type': 'html',
-        'selector': 'article',
-    },
-    {
-        'name': 'Scholarship Positions (Africa)',
-        'url': 'https://scholarship-positions.com/category/scholarships-for-african-students/',
-        'type': 'html',
-        'selector': 'article',
+        'selector': '.post',  # Uses .post class, not <article>
     },
     # --- International / Global ---
     {
@@ -137,42 +132,30 @@ SOURCES = [
         'name': 'Youth Opportunities (Scholarships)',
         'url': 'https://www.youthop.com/scholarships',
         'type': 'html',
-        'selector': 'article',
+        'selector': 'article, .card',  # May use card layout
     },
     {
-        'name': 'Youth Opportunities (Undergrad)',
-        'url': 'https://www.youthop.com/scholarships/undergraduate',
+        'name': 'Youth Opportunities (Postgrad)',
+        'url': 'https://www.youthop.com/scholarships/post-graduate',
         'type': 'html',
-        'selector': 'article',
+        'selector': 'article, .card',
     },
-    # --- Region-specific quality sources ---
     {
-        'name': 'Scholarship Positions (Europe)',
-        'url': 'https://scholarship-positions.com/category/european-scholarships/',
+        'name': 'Scholarship Positions',
+        'url': 'https://scholarship-positions.com/',
         'type': 'html',
-        'selector': 'article',
+        'selector': '.gb-query-loop-item, .post',  # Uses GenerateBlocks grid
     },
+    # --- More Africa/developing world sources ---
     {
-        'name': 'Scholarship Positions (USA/Canada)',
-        'url': 'https://scholarship-positions.com/category/usa-canada-scholarships/',
-        'type': 'html',
-        'selector': 'article',
-    },
-    {
-        'name': 'Scholarship Positions (Asia)',
-        'url': 'https://scholarship-positions.com/category/asia-scholarships/',
+        'name': 'Opportunities for Africans (Page 2)',
+        'url': 'https://www.opportunitiesforafricans.com/category/scholarships/page/2/',
         'type': 'html',
         'selector': 'article',
     },
     {
-        'name': 'After School Africa (Grants)',
-        'url': 'https://www.afterschoolafrica.com/grants/',
-        'type': 'html',
-        'selector': 'article',
-    },
-    {
-        'name': 'Scholars4Dev (Fully Funded)',
-        'url': 'https://www.scholars4dev.com/tag/fully-funded-scholarships/',
+        'name': 'Opportunity Desk (Page 2)',
+        'url': 'https://opportunitydesk.org/tag/scholarships/page/2/',
         'type': 'html',
         'selector': 'article',
     },
@@ -306,24 +289,46 @@ def extract_links_from_html(html, base_url, selector='article'):
     """Extract scholarship article links from an HTML page"""
     try:
         from bs4 import BeautifulSoup
+        from urllib.parse import urljoin
         soup = BeautifulSoup(html, 'html.parser')
         links = []
+        seen_urls = set()
 
         articles = soup.select(selector)
-        for article in articles[:15]:  # Limit to 15 articles per source
-            a_tag = article.find('a', href=True)
+        for article in articles[:20]:  # Limit to 20 articles per source
+            # Strategy: prefer heading link (h2/h3/h4 > a), fall back to first non-category link
+            a_tag = None
+            title = ''
+
+            # Try heading links first (most reliable for article URLs)
+            h_tag = article.find(['h2', 'h3', 'h4'])
+            if h_tag:
+                a_tag = h_tag.find('a', href=True)
+                title = h_tag.get_text(strip=True)
+
+            # Fall back to first link that looks like an article (not a category/tag)
+            if not a_tag:
+                for candidate in article.find_all('a', href=True):
+                    href = candidate['href']
+                    # Skip category, tag, author, and pagination links
+                    if any(skip in href for skip in ['/category/', '/tag/', '/author/', '/page/', '#']):
+                        continue
+                    a_tag = candidate
+                    if not title:
+                        title = candidate.get_text(strip=True)
+                    break
+
             if a_tag:
                 href = a_tag['href']
                 if not href.startswith('http'):
-                    from urllib.parse import urljoin
                     href = urljoin(base_url, href)
 
-                title = a_tag.get_text(strip=True)
                 if not title:
-                    h_tag = article.find(['h2', 'h3', 'h4'])
-                    title = h_tag.get_text(strip=True) if h_tag else ''
+                    title = a_tag.get_text(strip=True)
 
-                if title and len(title) > 10:
+                # Skip duplicates and short/generic titles
+                if title and len(title) > 10 and href not in seen_urls:
+                    seen_urls.add(href)
                     links.append({'title': title, 'url': href})
 
         return links
