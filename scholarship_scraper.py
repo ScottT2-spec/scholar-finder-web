@@ -161,6 +161,65 @@ SOURCES = [
     },
 ]
 
+# Sources for opportunities (internships, fellowships, competitions, summer programs, exchanges)
+OPPORTUNITY_SOURCES = [
+    # --- Internships ---
+    {
+        'name': 'Youth Opportunities (Internships)',
+        'url': 'https://www.youthop.com/internships',
+        'selector': 'article, .card',
+    },
+    {
+        'name': 'Opportunities for Africans (Internships)',
+        'url': 'https://www.opportunitiesforafricans.com/category/internships/',
+        'selector': 'article',
+    },
+    # --- Fellowships ---
+    {
+        'name': 'Youth Opportunities (Fellowships)',
+        'url': 'https://www.youthop.com/fellowships',
+        'selector': 'article, .card',
+    },
+    {
+        'name': 'Opportunities for Africans (Fellowships)',
+        'url': 'https://www.opportunitiesforafricans.com/category/fellowships/',
+        'selector': 'article',
+    },
+    # --- Competitions & Awards ---
+    {
+        'name': 'Youth Opportunities (Competitions)',
+        'url': 'https://www.youthop.com/competitions',
+        'selector': 'article, .card',
+    },
+    {
+        'name': 'Opportunities for Africans (Competitions)',
+        'url': 'https://www.opportunitiesforafricans.com/category/competitions/',
+        'selector': 'article',
+    },
+    # --- Exchange / Summer Programs ---
+    {
+        'name': 'Youth Opportunities (Exchange)',
+        'url': 'https://www.youthop.com/exchange-programs',
+        'selector': 'article, .card',
+    },
+    {
+        'name': 'Youth Opportunities (Workshops)',
+        'url': 'https://www.youthop.com/workshops',
+        'selector': 'article, .card',
+    },
+    # --- Grants ---
+    {
+        'name': 'Youth Opportunities (Grants)',
+        'url': 'https://www.youthop.com/competitions/grants',
+        'selector': 'article, .card',
+    },
+    {
+        'name': 'Opportunities for Africans (Grants)',
+        'url': 'https://www.opportunitiesforafricans.com/category/grants/',
+        'selector': 'article',
+    },
+]
+
 # ============================================
 # UTILITIES
 # ============================================
@@ -461,6 +520,182 @@ Text:
         return None
 
 
+def ai_extract_opportunity(text, url, title=''):
+    """Use Groq AI to extract opportunity data from page text"""
+    import requests
+
+    api_key = _get_next_groq_key()
+
+    prompt = f"""Extract opportunity information from this text. Return ONLY valid JSON (no markdown, no explanation).
+If this is NOT about a specific opportunity/internship/fellowship/competition/program, return: {{"skip": true}}
+
+Required JSON format:
+{{
+  "name": "Opportunity Name",
+  "type": "internship|fellowship|competition|research|summer_school|exchange|grant|workshop",
+  "organization": "Organization or Company",
+  "country": "Country (or 'Remote' or 'Multiple')",
+  "field": "field of study or 'any'",
+  "level": "undergraduate|masters|phd|professionals|any",
+  "funding": "What's covered or compensation",
+  "deadline": "Month Day, Year (e.g., March 15, 2026)",
+  "link": "{url}",
+  "description": "One sentence summary",
+  "eligibility": "Key eligibility requirements"
+}}
+
+For "type", pick the BEST match from: internship, fellowship, competition, research, summer_school, exchange, grant, workshop
+For "deadline", if not clear, use "Varies"
+
+Page title: {title}
+Page URL: {url}
+
+Text:
+{text}"""
+
+    try:
+        resp = requests.post(
+            'https://api.groq.com/openai/v1/chat/completions',
+            json={
+                'model': 'llama-3.3-70b-versatile',
+                'messages': [
+                    {'role': 'system', 'content': 'You extract opportunity/program data into JSON. Return ONLY valid JSON.'},
+                    {'role': 'user', 'content': prompt}
+                ],
+                'max_tokens': 500,
+                'temperature': 0.1
+            },
+            headers={'Authorization': 'Bearer ' + api_key},
+            timeout=20
+        )
+
+        if resp.status_code != 200:
+            log.error(f'Groq API error: {resp.status_code}')
+            return None
+
+        content = resp.json()['choices'][0]['message']['content'].strip()
+        content = re.sub(r'^```(?:json)?\s*', '', content)
+        content = re.sub(r'\s*```$', '', content)
+
+        data = json.loads(content)
+
+        if data.get('skip'):
+            return None
+
+        if not data.get('name') or len(data['name']) < 5:
+            return None
+
+        # Normalize type
+        valid_types = ['internship', 'fellowship', 'competition', 'research', 'summer_school', 'exchange', 'grant', 'workshop']
+        if data.get('type', '').lower() not in valid_types:
+            data['type'] = 'fellowship'  # default
+
+        data['link'] = url
+        return data
+
+    except json.JSONDecodeError as e:
+        log.error(f'Failed to parse AI response as JSON: {e}')
+        return None
+    except Exception as e:
+        log.error(f'AI extraction error: {e}')
+        return None
+
+
+def extract_opportunity_from_page(url, title=''):
+    """Fetch an opportunity page and extract details using AI"""
+    html = fetch_page(url)
+    if not html:
+        return None
+
+    try:
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(html, 'html.parser')
+        for tag in soup(['script', 'style', 'nav', 'footer', 'header', 'aside']):
+            tag.decompose()
+        main = soup.find('main') or soup.find('article') or soup.find('div', class_=re.compile(r'content|entry|post'))
+        text = main.get_text(separator='\n', strip=True) if main else soup.get_text(separator='\n', strip=True)
+        text = text[:3000]
+    except Exception:
+        text = ''
+
+    if not text or len(text) < 100:
+        return None
+
+    if not GROQ_API_KEY and not _GROQ_KEYS:
+        log.warning('No GROQ API key — skipping AI extraction')
+        return None
+
+    return ai_extract_opportunity(text, url, title)
+
+
+def scrape_opportunities():
+    """Scrape all opportunity sources and return new opportunities"""
+    import time
+    new_opportunities = []
+    total_links = 0
+
+    for source in OPPORTUNITY_SOURCES:
+        log.info(f'Scraping opportunities: {source["name"]} ({source["url"]})')
+
+        html = fetch_page(source['url'])
+        if not html:
+            continue
+
+        links = extract_links_from_html(html, source['url'], source.get('selector', 'article'))
+        log.info(f'  Found {len(links)} article links')
+        total_links += len(links)
+
+        for link_info in links[:6]:  # 6 per source to balance coverage vs API usage
+            log.info(f'  Processing: {link_info["title"][:60]}...')
+            opp = extract_opportunity_from_page(link_info['url'], link_info['title'])
+            if opp:
+                new_opportunities.append(opp)
+                log.info(f'  ✓ Extracted: {opp["name"]} ({opp.get("type", "?")})')
+            else:
+                log.info(f'  ✗ Skipped')
+            time.sleep(2)
+        time.sleep(1)
+
+    log.info(f'Scraped {len(OPPORTUNITY_SOURCES)} opportunity sources, {total_links} links, extracted {len(new_opportunities)} candidates')
+    return new_opportunities
+
+
+def load_opportunities():
+    """Load current opportunity data"""
+    opp_path = os.path.join(DATA_DIR, 'opportunities.json')
+    if os.path.exists(opp_path):
+        with open(opp_path, 'r') as f:
+            return json.load(f)
+    return []
+
+
+def save_opportunities(data):
+    """Save opportunity data"""
+    opp_path = os.path.join(DATA_DIR, 'opportunities.json')
+    with open(opp_path, 'w') as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+    log.info(f'Saved {len(data)} opportunities')
+
+
+def merge_new_opportunities(existing, new_opps):
+    """Add new opportunities that don't already exist"""
+    existing_names = set()
+    for o in existing:
+        norm = re.sub(r'[^a-z0-9]', '', o.get('name', '').lower())
+        existing_names.add(norm)
+
+    added = []
+    for o in new_opps:
+        norm = re.sub(r'[^a-z0-9]', '', o.get('name', '').lower())
+        if norm not in existing_names:
+            existing.append(o)
+            added.append(o)
+            existing_names.add(norm)
+            log.info(f'NEW OPP: {o["name"]} ({o.get("type", "?")})')
+
+    return existing, added
+
+
 # ============================================
 # CLEANUP — Remove expired scholarships
 # ============================================
@@ -613,23 +848,41 @@ def run():
         log.warning('No GROQ_API_KEY — skipping web scraping (only cleanup ran)')
         added = []
 
-    # Step 5: Save
+    # Step 5: Save scholarships
     save_scholarships(active)
+
+    # Step 6: Scrape opportunities
+    opp_added = []
+    if GROQ_API_KEY or _GROQ_KEYS:
+        opportunities = load_opportunities()
+        opp_before = len(opportunities)
+        log.info(f'Current opportunities: {opp_before}')
+
+        new_opps = scrape_opportunities()
+        opportunities, opp_added = merge_new_opportunities(opportunities, new_opps)
+        log.info(f'Added {len(opp_added)} new opportunities')
+
+        save_opportunities(opportunities)
+    else:
+        opp_before = len(load_opportunities())
+        log.warning('No GROQ API key — skipping opportunity scraping')
 
     # Summary
     log.info('-' * 40)
     log.info(f'SUMMARY:')
-    log.info(f'  Before: {len(scholarships)}')
-    log.info(f'  Expired & archived: {len(expired)}')
-    log.info(f'  New added: {len(added)}')
-    log.info(f'  Final count: {len(active)}')
+    log.info(f'  Scholarships: {len(scholarships)} → {len(active)} (+{len(added)}, -{len(expired)} expired)')
+    log.info(f'  Opportunities: {opp_before} → {opp_before + len(opp_added)} (+{len(opp_added)})')
     log.info('Done!')
 
     return {
         'before': len(scholarships),
         'expired': len(expired),
         'added': len(added),
-        'final': len(active)
+        'final': len(active),
+        'opp_before': opp_before,
+        'opp_added': len(opp_added),
+        'opp_final': opp_before + len(opp_added),
+        'new_opportunities': opp_added,
     }
 
 
