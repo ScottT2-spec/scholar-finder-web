@@ -401,7 +401,7 @@
     "notes": "Very low tuition in France. Strong math and CS traditions."
   },
   {
-    "name": "Universit\u00e9 Paris-Saclay",
+    "name": "Université Paris-Saclay",
     "country": "France",
     "ranking_tier": "top50",
     "tuition": "low",
@@ -788,7 +788,7 @@
     "notes": "Full scholarships for international students at Turkey's top private university."
   },
   {
-    "name": "Ko\u00e7 University",
+    "name": "Koç University",
     "country": "Turkey",
     "ranking_tier": "top200",
     "tuition": "free",
@@ -801,7 +801,7 @@
     "notes": "Full tuition + stipend scholarships available."
   },
   {
-    "name": "Sabanc\u0131 University",
+    "name": "Sabancı University",
     "country": "Turkey",
     "ranking_tier": "top200",
     "tuition": "free",
@@ -1035,7 +1035,7 @@
     "notes": "NZ's top-ranked. International Excellence Scholarship available."
   },
   {
-    "name": "Pontificia Universidad Cat\u00f3lica de Chile",
+    "name": "Pontificia Universidad Católica de Chile",
     "country": "Chile",
     "ranking_tier": "top200",
     "tuition": "low",
@@ -1048,7 +1048,7 @@
     "notes": "Latin America's top-ranked. Scholarships for graduate students."
   },
   {
-    "name": "University of S\u00e3o Paulo",
+    "name": "University of São Paulo",
     "country": "Brazil",
     "ranking_tier": "top100",
     "tuition": "free",
@@ -2237,7 +2237,7 @@
     "notes": "Ireland's largest."
   },
   {
-    "name": "Tecnol\u00f3gico de Monterrey",
+    "name": "Tecnológico de Monterrey",
     "country": "Mexico",
     "ranking_tier": "top200",
     "tuition": "medium",
@@ -2259,5 +2259,344 @@
     ],
     "website": "https://uniandes.edu.co/",
     "notes": "Colombia's top."
+  },
+  {
+    "name": "Indian Institute of Technology Bombay (IIT Bombay)",
+    "country": "India",
+    "ranking_tier": "top100",
+    "tuition": "low",
+    "fields": [
+      "engineering",
+      "computer science",
+      "mathematics",
+      "physics"
+    ],
+    "website": "https://www.iitb.ac.in",
+    "notes": "India's premier engineering institute. ICCR scholarships available."
+  },
+  {
+    "name": "Universiti Malaya",
+    "country": "Malaysia",
+    "ranking_tier": "top100",
+    "tuition": "low",
+    "fields": [
+      "engineering",
+      "medicine",
+      "business",
+      "sciences",
+      "arts"
+    ],
+    "website": "https://www.um.edu.my",
+    "notes": "Malaysia's oldest and top-ranked university. Very affordable for international students."
+  },
+  {
+    "name": "Chulalongkorn University",
+    "country": "Thailand",
+    "ranking_tier": "top200",
+    "tuition": "low",
+    "fields": [
+      "engineering",
+      "medicine",
+      "business",
+      "sciences",
+      "arts"
+    ],
+    "website": "https://www.chula.ac.th/en/",
+    "notes": "Thailand's most prestigious university. Low tuition with scholarship opportunities."
+  },
+  {
+    "name": "National Taiwan University",
+    "country": "Taiwan",
+    "ranking_tier": "top100",
+    "tuition": "low",
+    "fields": [
+      "engineering",
+      "medicine",
+      "sciences",
+      "law",
+      "business"
+    ],
+    "website": "https://www.ntu.edu.tw/english/",
+    "notes": "Taiwan's top university. MOE Taiwan Scholarship offers full funding."
+  },
+  {
+    "name": "University of the Philippines Diliman",
+    "country": "Philippines",
+    "ranking_tier": "top500",
+    "tuition": "low",
+    "fields": [
+      "engineering",
+      "sciences",
+      "arts",
+      "law",
+      "business"
+    ],
+    "website": "https://upd.edu.ph",
+    "notes": "Philippines' flagship university. Very affordable English-medium education."
+  },
+  {
+    "name": "Vietnam National University Hanoi",
+    "country": "Vietnam",
+    "ranking_tier": "top500",
+    "tuition": "low",
+    "fields": [
+      "sciences",
+      "engineering",
+      "humanities",
+      "economics"
+    ],
+    "website": "https://vnu.edu.vn/eng/",
+    "notes": "Vietnam's leading research university. Extremely affordable."
+  },
+  {
+    "name": "KU Leuven",
+    "country": "Belgium",
+    "ranking_tier": "top100",
+    "tuition": "medium",
+    "fields": [
+      "engineering",
+      "sciences",
+      "medicine",
+      "theology",
+      "law"
+    ],
+    "website": "https://www.kuleuven.be/english/",
+    "notes": "Belgium's highest-ranked university. Strong research focus with scholarship programs."
+  },
+  {
+    "name": "University of Lisbon",
+    "country": "Portugal",
+    "ranking_tier": "top200",
+    "tuition": "low",
+    "fields": [
+      "engineering",
+      "sciences",
+      "architecture",
+      "medicine",
+      "law"
+    ],
+    "website": "https://www.ulisboa.pt/en",
+    "notes": "Portugal's largest university. Low tuition with merit-based fee waivers."
+  },
+  {
+    "name": "Tallinn University of Technology (TalTech)",
+    "country": "Estonia",
+    "ranking_tier": "top500",
+    "tuition": "medium",
+    "fields": [
+      "engineering",
+      "IT",
+      "business",
+      "sciences"
+    ],
+    "website": "https://taltech.ee/en/",
+    "notes": "Estonia's tech university. Digital society leader with strong IT programs."
+  },
+  {
+    "name": "University of Tartu",
+    "country": "Estonia",
+    "ranking_tier": "top300",
+    "tuition": "medium",
+    "fields": [
+      "computer science",
+      "medicine",
+      "sciences",
+      "humanities"
+    ],
+    "website": "https://ut.ee/en",
+    "notes": "Estonia's top research university. Scholarships available through Dora Plus program."
+  },
+  {
+    "name": "Sapienza University of Rome",
+    "country": "Italy",
+    "ranking_tier": "top200",
+    "tuition": "low",
+    "fields": [
+      "medicine",
+      "engineering",
+      "humanities",
+      "law",
+      "sciences"
+    ],
+    "website": "https://www.uniroma1.it/en",
+    "notes": "Europe's largest university by enrollment. Very affordable with DSU scholarships."
+  },
+  {
+    "name": "Lomonosov Moscow State University",
+    "country": "Russia",
+    "ranking_tier": "top100",
+    "tuition": "low",
+    "fields": [
+      "sciences",
+      "mathematics",
+      "engineering",
+      "humanities"
+    ],
+    "website": "https://www.msu.ru/en/",
+    "notes": "Russia's most prestigious university. Russian Government Scholarship covers everything."
+  },
+  {
+    "name": "University of São Paulo (USP)",
+    "country": "Brazil",
+    "ranking_tier": "top100",
+    "tuition": "free",
+    "fields": [
+      "engineering",
+      "medicine",
+      "sciences",
+      "humanities",
+      "business"
+    ],
+    "website": "https://www5.usp.br/english/",
+    "notes": "Latin America's top university. Tuition-free for all students at public universities."
+  },
+  {
+    "name": "Universidad Nacional Autónoma de México (UNAM)",
+    "country": "Mexico",
+    "ranking_tier": "top200",
+    "tuition": "free",
+    "fields": [
+      "engineering",
+      "medicine",
+      "sciences",
+      "humanities",
+      "arts"
+    ],
+    "website": "https://www.unam.mx",
+    "notes": "Latin America's largest university. Essentially free tuition for all students."
+  },
+  {
+    "name": "Pontificia Universidad Católica de Chile (PUC)",
+    "country": "Chile",
+    "ranking_tier": "top200",
+    "tuition": "medium",
+    "fields": [
+      "engineering",
+      "medicine",
+      "business",
+      "law",
+      "arts"
+    ],
+    "website": "https://www.uc.cl/en",
+    "notes": "Chile's top-ranked university. Becas Chile scholarships available."
+  },
+  {
+    "name": "University of Buenos Aires (UBA)",
+    "country": "Argentina",
+    "ranking_tier": "top100",
+    "tuition": "free",
+    "fields": [
+      "medicine",
+      "law",
+      "engineering",
+      "sciences",
+      "economics"
+    ],
+    "website": "https://www.uba.ar/",
+    "notes": "Tuition-free for everyone including international students. Top in Latin America."
+  },
+  {
+    "name": "University of the West Indies",
+    "country": "Caribbean",
+    "ranking_tier": "top500",
+    "tuition": "medium",
+    "fields": [
+      "medicine",
+      "law",
+      "sciences",
+      "engineering",
+      "humanities"
+    ],
+    "website": "https://www.uwi.edu",
+    "notes": "Leading Caribbean university with campuses in Jamaica, Trinidad, and Barbados."
+  },
+  {
+    "name": "University of Dar es Salaam",
+    "country": "Tanzania",
+    "ranking_tier": "top500",
+    "tuition": "low",
+    "fields": [
+      "sciences",
+      "engineering",
+      "humanities",
+      "business",
+      "law"
+    ],
+    "website": "https://www.udsm.ac.tz",
+    "notes": "Tanzania's oldest and largest public university."
+  },
+  {
+    "name": "Mohammed V University",
+    "country": "Morocco",
+    "ranking_tier": "top500",
+    "tuition": "low",
+    "fields": [
+      "sciences",
+      "medicine",
+      "law",
+      "engineering",
+      "humanities"
+    ],
+    "website": "http://www.um5.ac.ma/um5/",
+    "notes": "Morocco's top university. AMCI scholarship covers international students."
+  },
+  {
+    "name": "Cairo University",
+    "country": "Egypt",
+    "ranking_tier": "top500",
+    "tuition": "low",
+    "fields": [
+      "medicine",
+      "engineering",
+      "sciences",
+      "law",
+      "humanities"
+    ],
+    "website": "https://cu.edu.eg/Home",
+    "notes": "Egypt's largest university. Very affordable with government scholarships available."
+  },
+  {
+    "name": "University of Mauritius",
+    "country": "Mauritius",
+    "ranking_tier": "top500",
+    "tuition": "low",
+    "fields": [
+      "engineering",
+      "sciences",
+      "business",
+      "law",
+      "agriculture"
+    ],
+    "website": "https://www.uom.ac.mu",
+    "notes": "Main university of Mauritius. Growing international student programs."
+  },
+  {
+    "name": "American University of Beirut",
+    "country": "Lebanon",
+    "ranking_tier": "top200",
+    "tuition": "high",
+    "fields": [
+      "medicine",
+      "engineering",
+      "business",
+      "sciences",
+      "arts"
+    ],
+    "website": "https://www.aub.edu.lb",
+    "notes": "One of the oldest universities in the Middle East. Need-based financial aid available."
+  },
+  {
+    "name": "University of Otago",
+    "country": "New Zealand",
+    "ranking_tier": "top200",
+    "tuition": "high",
+    "fields": [
+      "medicine",
+      "sciences",
+      "humanities",
+      "business"
+    ],
+    "website": "https://www.otago.ac.nz",
+    "notes": "New Zealand's oldest university. Known for health sciences. Scholarship opportunities."
   }
 ]
