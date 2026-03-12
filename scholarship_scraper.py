@@ -58,7 +58,7 @@ if not GROQ_API_KEY:
             break
 
 # Groq key pool for rotation (spreads rate limits across accounts)
-_GROQ_KEYS = [os.environ.get(f'GROQ_KEY_{i}', '') for i in range(1, 11)]
+_GROQ_KEYS = [os.environ.get(f'GROQ_KEY_{i}', '') for i in range(1, 13)]
 _GROQ_KEYS = [k for k in _GROQ_KEYS if k]
 if GROQ_API_KEY and GROQ_API_KEY not in _GROQ_KEYS:
     _GROQ_KEYS.insert(0, GROQ_API_KEY)
@@ -160,6 +160,121 @@ SOURCES = [
         'type': 'html',
         'selector': 'article',
     },
+    # --- Highly Trusted Global Sources ---
+    {
+        'name': 'DAAD Scholarships',
+        'url': 'https://www.daad.de/en/study-and-research-in-germany/scholarships/',
+        'type': 'html',
+        'selector': 'article, .teaser, .c-result-list__item, .listing-item',
+    },
+    {
+        'name': 'Chevening Scholarships',
+        'url': 'https://www.chevening.org/scholarships/',
+        'type': 'html',
+        'selector': 'article, .card, .content-block',
+    },
+    {
+        'name': 'Commonwealth Scholarships',
+        'url': 'https://cscuk.fcdo.gov.uk/scholarships/',
+        'type': 'html',
+        'selector': 'article, .card, .scholarship-card',
+    },
+    {
+        'name': 'Fulbright Foreign Student Program',
+        'url': 'https://foreign.fulbrightonline.org/about/foreign-student-program',
+        'type': 'html',
+        'selector': 'article, .content, .field-item',
+    },
+    {
+        'name': 'StudyPortals Scholarships',
+        'url': 'https://www.scholarshipportal.com/scholarships',
+        'type': 'html',
+        'selector': 'article, .card, .ScholarshipCard, .listing-item',
+    },
+    {
+        'name': 'Marjo Scholarship (Trusted Aggregator)',
+        'url': 'https://www.marjoriefund.org/scholarships',
+        'type': 'html',
+        'selector': 'article, .card, .post',
+    },
+    {
+        'name': 'IIE Scholar Rescue Fund',
+        'url': 'https://www.iie.org/programs/scholar-rescue-fund/',
+        'type': 'html',
+        'selector': 'article, .card, .content-block',
+    },
+    {
+        'name': 'AAUW International Fellowships',
+        'url': 'https://www.aauw.org/resources/programs/fellowships-grants/current-opportunities/international/',
+        'type': 'html',
+        'selector': 'article, .card, .content',
+    },
+    {
+        'name': 'Mastercard Foundation Scholarships',
+        'url': 'https://mastercardfdn.org/all/scholars/',
+        'type': 'html',
+        'selector': 'article, .card, .post',
+    },
+    {
+        'name': 'OPEC Fund Scholarships',
+        'url': 'https://opecfund.org/operations/grants/scholarship',
+        'type': 'html',
+        'selector': 'article, .card, .content-block',
+    },
+    {
+        'name': 'Australia Awards (DFAT)',
+        'url': 'https://www.dfat.gov.au/people-to-people/australia-awards',
+        'type': 'html',
+        'selector': 'article, .card, .views-row',
+    },
+    {
+        'name': 'MEXT Japan Scholarships',
+        'url': 'https://www.studyinjapan.go.jp/en/planning/scholarship/',
+        'type': 'html',
+        'selector': 'article, .card, .content',
+    },
+    {
+        'name': 'Erasmus Mundus Joint Masters',
+        'url': 'https://www.eacea.ec.europa.eu/scholarships/erasmus-mundus-catalogue_en',
+        'type': 'html',
+        'selector': 'article, .card, .views-row, .listing-item',
+    },
+    {
+        'name': 'Gates Cambridge Scholarship',
+        'url': 'https://www.gatescambridge.org/',
+        'type': 'html',
+        'selector': 'article, .card, .post',
+    },
+    {
+        'name': 'Rhodes Scholarship',
+        'url': 'https://www.rhodeshouse.ox.ac.uk/scholarships/',
+        'type': 'html',
+        'selector': 'article, .card, .content-block',
+    },
+    {
+        'name': 'Vanier Canada Graduate Scholarships',
+        'url': 'https://vanier.gc.ca/en/home-accueil.html',
+        'type': 'html',
+        'selector': 'article, .card, .content',
+    },
+    {
+        'name': 'Swiss Government Excellence Scholarships',
+        'url': 'https://www.sbfi.admin.ch/sbfi/en/home/education/scholarships-and-grants/swiss-government-excellence-scholarships.html',
+        'type': 'html',
+        'selector': 'article, .card, .mod-text',
+    },
+    {
+        'name': 'Korean Government Scholarship (KGSP)',
+        'url': 'https://www.studyinkorea.go.kr/en/sub/gks/allnew_invite.do',
+        'type': 'html',
+        'selector': 'article, .card, .board-list, .content',
+    },
+    {
+        'name': 'Chinese Government Scholarship (CSC)',
+        'url': 'https://www.campuschina.org/scholarships/index.html',
+        'type': 'html',
+        'selector': 'article, .card, .news-list, .content',
+    },
 ]
 
 # Sources for opportunities (internships, fellowships, competitions, summer programs, exchanges)
@@ -218,6 +333,102 @@ OPPORTUNITY_SOURCES = [
         'name': 'Opportunities for Africans (Grants)',
         'url': 'https://www.opportunitiesforafricans.com/category/grants/',
         'selector': 'article',
+    },
+    # --- Highly Trusted Internship & Exchange Sources ---
+    {
+        'name': 'UN Internships',
+        'url': 'https://www.un.org/en/careers/internships',
+        'selector': 'article, .card, .content-block, .field-item',
+    },
+    {
+        'name': 'World Bank Young Professionals',
+        'url': 'https://www.worldbank.org/en/about/careers/programs-and-internships',
+        'selector': 'article, .card, .content',
+    },
+    {
+        'name': 'UNDP Internships',
+        'url': 'https://www.undp.org/careers/types-of-opportunities/internships',
+        'selector': 'article, .card, .content',
+    },
+    {
+        'name': 'WHO Internships',
+        'url': 'https://www.who.int/careers/internships',
+        'selector': 'article, .card, .content',
+    },
+    {
+        'name': 'UNICEF Internships',
+        'url': 'https://www.unicef.org/careers/internships',
+        'selector': 'article, .card, .content',
+    },
+    {
+        'name': 'Opportunity Desk (Internships)',
+        'url': 'https://opportunitydesk.org/tag/internships/',
+        'selector': 'article',
+    },
+    {
+        'name': 'Opportunity Desk (Fellowships)',
+        'url': 'https://opportunitydesk.org/tag/fellowships/',
+        'selector': 'article',
+    },
+    {
+        'name': 'Opportunity Desk (Competitions)',
+        'url': 'https://opportunitydesk.org/tag/competitions/',
+        'selector': 'article',
+    },
+    {
+        'name': 'Opportunity Desk (Exchange Programs)',
+        'url': 'https://opportunitydesk.org/tag/exchange-programs/',
+        'selector': 'article',
+    },
+    {
+        'name': 'AIESEC Opportunities',
+        'url': 'https://aiesec.org/search?type=opportunity',
+        'selector': 'article, .card, .opportunity-card',
+    },
+    {
+        'name': 'Idealist Internships',
+        'url': 'https://www.idealist.org/en/internships',
+        'selector': 'article, .card, .listing',
+    },
+    {
+        'name': 'After School Africa (Internships)',
+        'url': 'https://www.afterschoolafrica.com/internships/',
+        'selector': '.gb-query-loop-item, article',
+    },
+    {
+        'name': 'After School Africa (Fellowships)',
+        'url': 'https://www.afterschoolafrica.com/fellowships/',
+        'selector': '.gb-query-loop-item, article',
+    },
+    {
+        'name': 'After School Africa (Competitions)',
+        'url': 'https://www.afterschoolafrica.com/competitions/',
+        'selector': '.gb-query-loop-item, article',
+    },
+    {
+        'name': 'Youth Opportunities (Summer Programs)',
+        'url': 'https://www.youthop.com/summer-programs',
+        'selector': 'article, .card',
+    },
+    {
+        'name': 'Youth Opportunities (Conferences)',
+        'url': 'https://www.youthop.com/conferences',
+        'selector': 'article, .card',
+    },
+    {
+        'name': 'Scholars4Dev (Fellowships)',
+        'url': 'https://www.scholars4dev.com/category/fellowships/',
+        'selector': '.post, article',
+    },
+    {
+        'name': 'Google Summer of Code',
+        'url': 'https://summerofcode.withgoogle.com/',
+        'selector': 'article, .card, .content',
+    },
+    {
+        'name': 'MLH Fellowships',
+        'url': 'https://fellowship.mlh.io/',
+        'selector': 'article, .card, .content',
     },
 ]
 
