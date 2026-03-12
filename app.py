@@ -2187,6 +2187,11 @@ def save_scholarships(data):
     with open(path, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
+def save_opportunities(data):
+    path = os.path.join(DATA_DIR, 'opportunities.json')
+    with open(path, 'w', encoding='utf-8') as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
 
 # ============================================
 # WEBHOOK — Scholarship Management
@@ -2385,6 +2390,55 @@ def get_webhook_secret():
 
 
 # ============================================
+# WEBHOOK — Opportunities Management
+# ============================================
+@app.route('/webhook/opportunities', methods=['POST'])
+def webhook_opportunities():
+    if not verify_webhook(request):
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'No JSON body'}), 400
+
+    action = data.get('action', '')
+    opportunities = get_opportunities()
+
+    if action == 'bulk_add':
+        new_opps = data.get('opportunities', [])
+        if not new_opps:
+            return jsonify({'error': 'No opportunities provided'}), 400
+
+        added = 0
+        skipped = 0
+        existing_names = {o.get('name', '').lower() for o in opportunities}
+
+        for o in new_opps:
+            if not o.get('name'):
+                skipped += 1
+                continue
+            if o['name'].lower() in existing_names:
+                skipped += 1
+                continue
+            opportunities.append(o)
+            existing_names.add(o['name'].lower())
+            added += 1
+
+        if added:
+            save_opportunities(opportunities)
+
+        return jsonify({
+            'action': 'bulk_add',
+            'success': True,
+            'added': added,
+            'skipped': skipped,
+            'total': len(opportunities)
+        })
+
+    return jsonify({'error': f'Unknown action: {action}'}), 400
+
+
+# ============================================
 # DAILY SCRAPER TRIGGER
 # ============================================
 @app.route('/webhook/scraper/run', methods=['POST'])
@@ -2392,13 +2446,29 @@ def webhook_scraper_run():
     if not verify_webhook(request):
         return jsonify({'error': 'Unauthorized'}), 401
     try:
-        from scholarship_scraper import run as run_scraper
-        result = run_scraper()
-        return jsonify({'success': True, 'result': result})
+        import importlib, io, logging as _log
+        import scholarship_scraper
+        importlib.reload(scholarship_scraper)  # Always pick up latest code
+
+        # Capture log output for debug
+        debug = request.args.get('debug') == '1'
+        log_capture = io.StringIO()
+        if debug:
+            handler = _log.StreamHandler(log_capture)
+            handler.setLevel(_log.DEBUG)
+            scholarship_scraper.log.addHandler(handler)
+
+        result = scholarship_scraper.run()
+        resp = {'success': True, 'result': result}
+
+        if debug:
+            scholarship_scraper.log.removeHandler(handler)
+            resp['log'] = log_capture.getvalue()[-5000:]  # Last 5KB of logs
+
+        return jsonify(resp)
     except Exception as e:
         import traceback
-        traceback.print_exc()
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': str(e), 'traceback': traceback.format_exc()}), 500
 
 
 # ============================================
