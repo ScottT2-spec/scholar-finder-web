@@ -3,3 +3,10 @@ __pycache__/
 *.pyc
 PyPDF2/
 *.log
+scholarweb.db
+uploads/
+logs/
+*.bak
+*.tar.gz
+web.pid
+download_logos.py

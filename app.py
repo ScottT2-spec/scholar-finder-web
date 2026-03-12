@@ -89,6 +89,7 @@ GROQ_API_KEYS = [
     os.environ.get('GROQ_KEY_7', ''),  # account 7
     os.environ.get('GROQ_KEY_8', ''),  # account 8
     os.environ.get('GROQ_KEY_9', ''),  # account 9
+    os.environ.get('GROQ_KEY_10', ''), # account 10
 ]
 GROQ_API_KEYS = [k for k in GROQ_API_KEYS if k]  # remove empty
 _groq_key_index = 0
@@ -585,7 +586,14 @@ def index():
         'opportunities': len(get_opportunities()),
         'cities': len(get_cost_of_living()),
     }
-    return render_template('index.html', user=user, stats=stats)
+    # Last updated timestamp from scholarships data file
+    try:
+        schol_path = os.path.join(DATA_DIR, 'scholarships.json')
+        mtime = os.path.getmtime(schol_path)
+        last_updated = datetime.fromtimestamp(mtime).strftime('%B %d, %Y')
+    except Exception:
+        last_updated = None
+    return render_template('index.html', user=user, stats=stats, last_updated=last_updated)
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup_page():
@@ -991,12 +999,12 @@ def opportunities_page():
 @app.route('/cost-of-living')
 def cost_page():
     user = get_current_user()
-    return render_template('cost.html', user=user)
+    return render_template('cost.html', user=user, costs=get_cost_of_living())
 
 @app.route('/visa-guide')
 def visa_page():
     user = get_current_user()
-    return render_template('visa.html', user=user)
+    return render_template('visa.html', user=user, visas=get_visa_guides())
 
 @app.route('/test-prep')
 def testprep_page():
@@ -1866,8 +1874,8 @@ def api_ai_recommendations():
         return jsonify({'error': 'incomplete_profile', 'message': 'Complete your profile first'})
 
     # Gather top candidates from data
-    scholarships = get_scholarships()[:50]
-    universities = get_universities()[:30]
+    scholarships = get_scholarships()[:200]
+    universities = get_universities()[:100]
 
     schol_summaries = []
     for s in scholarships:
@@ -1887,10 +1895,10 @@ STUDENT PROFILE:
 - Interests: {profile_interests}
 
 AVAILABLE SCHOLARSHIPS:
-{chr(10).join(schol_summaries[:30])}
+{chr(10).join(schol_summaries[:80])}
 
 AVAILABLE UNIVERSITIES:
-{chr(10).join(uni_summaries[:20])}
+{chr(10).join(uni_summaries[:50])}
 
 Return ONLY valid JSON (no markdown, no code blocks):
 {{
@@ -1919,7 +1927,7 @@ RULES:
                 {'role': 'system', 'content': system_prompt},
                 {'role': 'user', 'content': 'Match me with the best scholarships and universities.'}
             ],
-            'max_tokens': 1200,
+            'max_tokens': 2000,
             'temperature': 0.3
         }).encode('utf-8')
 
@@ -1949,8 +1957,8 @@ RULES:
         for item in ai_data.get('universities', []):
             src = uni_map.get(item['name'].lower(), {})
             item['country'] = src.get('country', '')
-            item['ranking'] = src.get('ranking', '')
-            item['link'] = src.get('link', src.get('url', ''))
+            item['ranking'] = src.get('ranking', src.get('ranking_tier', ''))
+            item['link'] = src.get('website', src.get('link', src.get('url', '')))
 
         ai_data['ai_powered'] = True
         return jsonify(ai_data)

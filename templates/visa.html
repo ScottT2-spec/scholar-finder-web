@@ -1,24 +1,46 @@
 {% extends "base.html" %}
 {% block title %}Visa Guide{% endblock %}
+{% block body_class %}{% endblock %}
 {% block content %}
 <section class="section">
     <div class="container">
         <h2 class="section-title">🛂 Visa Guide</h2>
-        <p style="color:var(--text2);margin-bottom:20px;">Student visa info for 26 countries</p>
+        <p style="color:var(--text2);margin-bottom:20px;">Student visa info for {{ visas|length }}+ countries</p>
         <input type="text" id="visaSearch" placeholder="🔍 Search by country..." class="form-input" style="max-width:300px;margin-bottom:20px;">
-        <div id="visaGrid" class="scroll-container" style="max-height:calc(100vh - 280px);"></div>
+        <div id="visaGrid"></div>
     </div>
 </section>
 {% endblock %}
 {% block scripts %}
 <script>
 (async () => {
+    const FLAGS = {
+        'USA':'🇺🇸','UK':'🇬🇧','Canada':'🇨🇦','Germany':'🇩🇪','France':'🇫🇷',
+        'Netherlands':'🇳🇱','Sweden':'🇸🇪','Switzerland':'🇨🇭','Australia':'🇦🇺',
+        'Japan':'🇯🇵','South Korea':'🇰🇷','China':'🇨🇳','Turkey':'🇹🇷','UAE':'🇦🇪',
+        'Saudi Arabia':'🇸🇦','Singapore':'🇸🇬','India':'🇮🇳','South Africa':'🇿🇦',
+        'Hungary':'🇭🇺','Ireland':'🇮🇪','Denmark':'🇩🇰','Finland':'🇫🇮','Italy':'🇮🇹',
+        'Norway':'🇳🇴','New Zealand':'🇳🇿','Qatar':'🇶🇦','Spain':'🇪🇸','Belgium':'🇧🇪',
+        'Poland':'🇵🇱','Czech Republic':'🇨🇿','Austria':'🇦🇹','Portugal':'🇵🇹',
+        'Malaysia':'🇲🇾','Thailand':'🇹🇭','Mexico':'🇲🇽','Brazil':'🇧🇷','Russia':'🇷🇺',
+        'Taiwan':'🇹🇼','Egypt':'🇪🇬','Morocco':'🇲🇦','Ghana':'🇬🇭','Kenya':'🇰🇪',
+        'Rwanda':'🇷🇼','Estonia':'🇪🇪','Argentina':'🇦🇷','Colombia':'🇨🇴',
+        'Philippines':'🇵🇭','Chile':'🇨🇱','Mauritius':'🇲🇺'
+    };
+    function getFlag(country) { return FLAGS[country] || '🏳️'; }
+
     const data = await fetch('/api/visa').then(r => r.json());
     const grid = document.getElementById('visaGrid');
     function render(list) {
         grid.innerHTML = list.map(v => `
             <div class="card" style="margin-bottom:12px;">
-                <h3 style="margin-bottom:8px;">🛂 ${v.country} — ${v.visa_type}</h3>
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                    <span style="font-size:2.2rem;line-height:1;">${getFlag(v.country)}</span>
+                    <div>
+                        <h3 style="margin:0;font-size:1.05rem;">${v.country}</h3>
+                        <span style="font-size:0.8rem;color:var(--text3);">${v.visa_type}</span>
+                    </div>
+                </div>
                 <div class="grid-2" style="margin:12px 0;">
                     <div style="background:var(--bg2);padding:10px;border-radius:6px;"><div style="font-size:0.75rem;color:var(--text3);text-transform:uppercase;">Processing Time</div><div>⏱️ ${v.processing_time}</div></div>
                     <div style="background:var(--bg2);padding:10px;border-radius:6px;"><div style="font-size:0.75rem;color:var(--text3);text-transform:uppercase;">Cost</div><div>💰 ${v.cost_estimate}</div></div>

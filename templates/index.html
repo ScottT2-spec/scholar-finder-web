@@ -65,6 +65,8 @@
     background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
     z-index: 9999; display: flex; align-items: center; justify-content: center;
     padding: 20px; animation: aiFadeIn 0.2s ease;
+    touch-action: none;
+    overscroll-behavior: contain;
 }
 @keyframes aiFadeIn { from { opacity: 0; } to { opacity: 1; } }
 .ai-modal {
@@ -73,6 +75,8 @@
     width: 100%; max-width: 800px; max-height: 85vh;
     display: flex; flex-direction: column;
     animation: aiSlideUp 0.3s ease; overflow: hidden;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
 }
 @keyframes aiSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 .ai-modal-header {
@@ -90,7 +94,7 @@
     transition: 0.2s; display: flex; align-items: center; justify-content: center;
 }
 .ai-modal-close:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
-.ai-modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+.ai-modal-body { padding: 24px; overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
 
 /* Scout */
 .scout-form { display: flex; flex-direction: column; gap: 16px; }
@@ -184,7 +188,7 @@
 .advisor-metric span { font-weight: 700; color: var(--text2); }
 
 /* Prep */
-.prep-chat { display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; margin-bottom: 16px; }
+.prep-chat { display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; margin-bottom: 16px; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
 .prep-msg { max-width: 80%; padding: 12px 16px; border-radius: 16px; font-size: 14px; line-height: 1.5; }
 .prep-msg.agent {
     background: linear-gradient(135deg, rgba(139,92,246,0.15), rgba(32,178,170,0.1));
@@ -208,12 +212,34 @@
     .writer-container { grid-template-columns: 1fr; }
     .profiler-form { grid-template-columns: 1fr; }
 }
+/* Scroll Indicator */
+.scroll-mouse {
+    width: 28px; height: 46px;
+    border: 2px solid rgba(46, 204, 113, 0.6);
+    border-radius: 14px;
+    margin: 0 auto;
+    position: relative;
+}
+.scroll-wheel {
+    width: 4px; height: 8px;
+    background: #2ECC71;
+    border-radius: 2px;
+    position: absolute;
+    top: 8px; left: 50%;
+    transform: translateX(-50%);
+    animation: scrollBounce 1.8s ease-in-out infinite;
+}
+@keyframes scrollBounce {
+    0% { opacity: 1; top: 8px; }
+    50% { opacity: 0.4; top: 24px; }
+    100% { opacity: 1; top: 8px; }
+}
 </style>
 {% endblock %}
 
 {% block content %}
 <section class="hero">
-    <h1>Discover Your Next<br><span class="grad-text" id="heroTypewriter">Scholarship Match</span><span id="twCursor" style="font-weight:100;color:#00E5C3;">|</span></h1>
+    <h1>Discover Your Next<br><span class="grad-text" id="heroTypewriter">Scholarship Match</span><span id="twCursor" style="font-weight:100;color:#2ECC71;">|</span></h1>
     <p>Search {{ stats.scholarships }}+ scholarships, {{ stats.universities }}+ universities, and {{ stats.opportunities }}+ opportunities worldwide — matched to your profile, for free.</p>
     
     <div class="stat-row">
@@ -221,6 +247,9 @@
         <div class="stat-item"><div class="stat-num" data-count="{{ stats.universities }}">0+</div><div class="stat-label">Universities</div></div>
         <div class="stat-item"><div class="stat-num" data-count="{{ stats.opportunities }}">0+</div><div class="stat-label">Opportunities</div></div>
         <div class="stat-item"><div class="stat-num" data-count="{{ stats.cities }}">0+</div><div class="stat-label">Cities</div></div>
+        {% if false %}
+        <div style="display:none;">{{ last_updated }}</div>
+        {% endif %}
     </div>
 
     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
@@ -231,6 +260,53 @@
             <a href="/scholarships" class="btn btn-secondary">Browse Scholarships</a>
         {% endif %}
     </div>
+
+    <!-- University Logo Ticker -->
+    <div class="uni-ticker-wrap">
+        <div class="uni-ticker">
+            <div class="uni-ticker-track">
+                <div class="uni-ticker-set">
+                    <img src="/static/logos/mit.png" alt="MIT" title="Massachusetts Institute of Technology">
+                    <img src="/static/logos/mbzuai.png" alt="MBZUAI" title="Mohamed bin Zayed University of AI">
+                    <img src="/static/logos/stanford.png" alt="Stanford" title="Stanford University">
+                    <img src="/static/logos/harvard.png" alt="Harvard" title="Harvard University">
+                    <img src="/static/logos/oxford.png" alt="Oxford" title="University of Oxford">
+                    <img src="/static/logos/cambridge.png" alt="Cambridge" title="University of Cambridge">
+                    <img src="/static/logos/caltech.png" alt="Caltech" title="California Institute of Technology">
+                    <img src="/static/logos/princeton.png" alt="Princeton" title="Princeton University">
+                    <img src="/static/logos/berkeley.png" alt="UC Berkeley" title="University of California, Berkeley">
+                    <img src="/static/logos/eth.png" alt="ETH Zurich" title="ETH Zurich">
+                    <img src="/static/logos/imperial.png" alt="Imperial" title="Imperial College London">
+                    <img src="/static/logos/cmu.png" alt="CMU" title="Carnegie Mellon University">
+                    <img src="/static/logos/columbia.png" alt="Columbia" title="Columbia University">
+                    <img src="/static/logos/toronto.png" alt="U of Toronto" title="University of Toronto">
+                    <img src="/static/logos/yale.png" alt="Yale" title="Yale University">
+                </div>
+                <div class="uni-ticker-set">
+                    <img src="/static/logos/mit.png" alt="MIT" title="Massachusetts Institute of Technology">
+                    <img src="/static/logos/mbzuai.png" alt="MBZUAI" title="Mohamed bin Zayed University of AI">
+                    <img src="/static/logos/stanford.png" alt="Stanford" title="Stanford University">
+                    <img src="/static/logos/harvard.png" alt="Harvard" title="Harvard University">
+                    <img src="/static/logos/oxford.png" alt="Oxford" title="University of Oxford">
+                    <img src="/static/logos/cambridge.png" alt="Cambridge" title="University of Cambridge">
+                    <img src="/static/logos/caltech.png" alt="Caltech" title="California Institute of Technology">
+                    <img src="/static/logos/princeton.png" alt="Princeton" title="Princeton University">
+                    <img src="/static/logos/berkeley.png" alt="UC Berkeley" title="University of California, Berkeley">
+                    <img src="/static/logos/eth.png" alt="ETH Zurich" title="ETH Zurich">
+                    <img src="/static/logos/imperial.png" alt="Imperial" title="Imperial College London">
+                    <img src="/static/logos/cmu.png" alt="CMU" title="Carnegie Mellon University">
+                    <img src="/static/logos/columbia.png" alt="Columbia" title="Columbia University">
+                    <img src="/static/logos/toronto.png" alt="U of Toronto" title="University of Toronto">
+                    <img src="/static/logos/yale.png" alt="Yale" title="Yale University">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div style="text-align:center;padding:24px 0 0;">
+        <div class="scroll-mouse">
+            <div class="scroll-wheel"></div>
+        </div>
+    </div>
 </section>
 
 <!-- Image Carousel -->
@@ -238,23 +314,23 @@
     <div class="carousel-wrapper">
         <div class="carousel-track" id="carouselTrack">
             <div class="carousel-slide">
-                <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=900&h=550&fit=crop&q=90" alt="Scholarships — students celebrating academic success">
+                <img src="https://images.unsplash.com/photo-1627556704302-624286467c65?w=1200&h=700&fit=crop&q=95" alt="Scholarship winner — student holding award on campus" loading="eager">
                 <div class="carousel-label">🎯 Scholarships</div>
             </div>
             <div class="carousel-slide">
-                <img src="https://images.unsplash.com/photo-1531482615713-2afd69097998?w=900&h=550&fit=crop&q=90" alt="Internships — young professionals collaborating">
+                <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=1200&h=700&fit=crop&q=95" alt="Internship — diverse team collaborating in modern workspace" loading="lazy">
                 <div class="carousel-label">💼 Internships</div>
             </div>
             <div class="carousel-slide">
-                <img src="https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=900&h=550&fit=crop&q=90" alt="Competitions — students presenting ideas">
+                <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&h=700&fit=crop&q=95" alt="Competition — students presenting at international conference" loading="lazy">
                 <div class="carousel-label">🏆 Competitions</div>
             </div>
             <div class="carousel-slide">
-                <img src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=900&h=550&fit=crop&q=90" alt="Graduation — students in caps and gowns">
+                <img src="https://images.unsplash.com/photo-1562774053-701939374585?w=1200&h=700&fit=crop&q=95" alt="Study abroad — iconic university campus with historic architecture" loading="lazy">
                 <div class="carousel-label">🎓 Study Abroad</div>
             </div>
             <div class="carousel-slide">
-                <img src="https://images.unsplash.com/photo-1509062522246-3755977927d7?w=900&h=550&fit=crop&q=90" alt="Workshops — students learning together">
+                <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&h=700&fit=crop&q=95" alt="Opportunities — diverse students working together on laptops" loading="lazy">
                 <div class="carousel-label">🚀 Opportunities</div>
             </div>
         </div>
@@ -283,7 +359,7 @@
 </section>
 
 <!-- AI Agents Section -->
-<section class="section" style="background:var(--accent-lighter);padding:48px 0;">
+<section id="ai-agents" class="section" style="background:var(--accent-lighter);padding:48px 0;">
     <div class="container">
         <h2 class="section-title" style="text-align:center;margin-bottom:8px;">🤖 AI Agents</h2>
         <p style="text-align:center;color:var(--text2);margin-bottom:8px;">6 intelligent agents working together to guide your scholarship journey</p>
@@ -488,12 +564,12 @@
             case 'prep': body.innerHTML = buildPrepUI(); prepMessages = []; initPrepStart(); break;
         }
         $('#aiModalOverlay').style.display = 'flex';
-        document.body.style.overflow = 'hidden';
+        lockBodyScroll();
     }
 
     function closeAgentModal() {
         $('#aiModalOverlay').style.display = 'none';
-        document.body.style.overflow = '';
+        unlockBodyScroll();
     }
 
     function showLoading(el) {

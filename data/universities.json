@@ -914,7 +914,7 @@
       "computer science",
       "engineering"
     ],
-    "website": "https://www.ur.ac.rw",
+    "website": "https://www.ur.ac.rw/",
     "notes": "Rwanda's national university. Very affordable."
   },
   {
@@ -2395,7 +2395,7 @@
   {
     "name": "University of Tartu",
     "country": "Estonia",
-    "ranking_tier": "top300",
+    "ranking_tier": "top200",
     "tuition": "medium",
     "fields": [
       "computer science",
@@ -2537,7 +2537,7 @@
       "engineering",
       "humanities"
     ],
-    "website": "http://www.um5.ac.ma/um5/",
+    "website": "https://www.um5.ac.ma/",
     "notes": "Morocco's top university. AMCI scholarship covers international students."
   },
   {

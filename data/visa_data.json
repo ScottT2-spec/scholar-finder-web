@@ -8,7 +8,7 @@
       "DS-160 online application confirmation page",
       "SEVIS I-901 fee receipt ($350)",
       "Passport-style photos (2x2 inches)",
-      "Financial proof (bank statements showing funds for full program — amount shown on I-20)",
+      "Financial proof (bank statements showing funds for full program \u2014 amount shown on I-20)",
       "University admission/acceptance letter",
       "Academic transcripts and diplomas",
       "English test scores (TOEFL/IELTS/Duolingo)",
@@ -18,9 +18,10 @@
     "processing_time": "3-8 weeks (schedule interview 3-4 months before program start)",
     "cost_estimate": "$185 (MRV visa application fee) + $350 (SEVIS I-901 fee) = ~$535 total",
     "embassy_link": "https://gh.usembassy.gov/visas/",
-    "financial_proof": "Amount varies — check your I-20 form for exact amount required. Generally $25,000-$65,000/year depending on school and location. Must show funds for at least first year.",
+    "financial_proof": "Amount varies \u2014 check your I-20 form for exact amount required. Generally $25,000-$65,000/year depending on school and location. Must show funds for at least first year.",
     "work_rights": "On-campus: 20 hrs/week during school, full-time during breaks. Off-campus: Only through CPT (Curricular Practical Training) or OPT (Optional Practical Training). OPT: 12 months post-graduation (36 months for STEM fields).",
-    "tips": "Apply early (3-4 months before program start). Prepare thoroughly for visa interview — be concise, confident, and honest. Show strong ties to Ghana. Demonstrate sufficient funding for entire program. Common denial reason: failing to prove non-immigrant intent. Bring ALL original documents to interview."
+    "tips": "Apply early (3-4 months before program start). Prepare thoroughly for visa interview \u2014 be concise, confident, and honest. Show strong ties to Ghana. Demonstrate sufficient funding for entire program. Common denial reason: failing to prove non-immigrant intent. Bring ALL original documents to interview.",
+    "audience_note": "Information tailored for Ghanaian applicants \u2014 embassy links, costs, and tips may differ for other nationalities."
   },
   {
     "country": "UK",
@@ -29,19 +30,20 @@
       "Valid passport",
       "CAS (Confirmation of Acceptance for Studies) number from university",
       "TB test results from approved clinic in Ghana",
-      "Financial proof (£1,529/month for London or £1,171/month outside London, held for 28 consecutive days)",
+      "Financial proof (\u00a31,529/month for London or \u00a31,171/month outside London, held for 28 consecutive days)",
       "English language proof (IELTS UKVI / equivalent)",
       "Academic documents and transcripts",
       "Passport photos",
       "Immigration Health Surcharge (IHS) payment confirmation"
     ],
     "processing_time": "3 weeks (standard from outside UK). Priority service available for faster processing.",
-    "cost_estimate": "£524 (visa fee) + £776/year (Immigration Health Surcharge) = ~£1,300 first year. Example for 1-year masters: £524 + £776 = £1,300 (~$1,650)",
+    "cost_estimate": "\u00a3524 (visa fee) + \u00a3776/year (Immigration Health Surcharge) = ~\u00a31,300 first year. Example for 1-year masters: \u00a3524 + \u00a3776 = \u00a31,300 (~$1,650)",
     "embassy_link": "https://www.gov.uk/government/world/organisations/british-high-commission-accra",
-    "financial_proof": "£1,529/month (London) or £1,171/month (outside London) for up to 9 months, plus course fees for first year. Must hold funds for 28 consecutive days ending within 31 days of application date.",
+    "financial_proof": "\u00a31,529/month (London) or \u00a31,171/month (outside London) for up to 9 months, plus course fees for first year. Must hold funds for 28 consecutive days ending within 31 days of application date.",
     "work_rights": "20 hrs/week during term time, full-time during official holidays. Cannot be self-employed.",
     "post_study": "Graduate Route visa: 2 years post-study work (if applied by Dec 31, 2026). Reducing to 18 months from Jan 1, 2027. PhD graduates get 3 years.",
-    "tips": "Apply up to 6 months before course start. IHS (£776/year) covers full NHS healthcare access. Apply online then visit VFS Global centre in Accra for biometrics. The Graduate Route visa is being reduced — plan accordingly if starting studies in 2026/2027."
+    "tips": "Apply up to 6 months before course start. IHS (\u00a3776/year) covers full NHS healthcare access. Apply online then visit VFS Global centre in Accra for biometrics. The Graduate Route visa is being reduced \u2014 plan accordingly if starting studies in 2026/2027.",
+    "audience_note": "Information tailored for Ghanaian applicants \u2014 embassy links, costs, and tips may differ for other nationalities."
   },
   {
     "country": "Canada",
@@ -57,13 +59,14 @@
       "Digital photo (per IRCC specifications)",
       "Biometrics (fingerprints and photo)"
     ],
-    "processing_time": "4-16 weeks (varies significantly — check IRCC processing times tool for Ghana)",
+    "processing_time": "4-16 weeks (varies significantly \u2014 check IRCC processing times tool for Ghana)",
     "cost_estimate": "CAD $150 (study permit) + CAD $85 (biometrics) = CAD $235 (~$170 USD)",
     "embassy_link": "https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada.html",
     "financial_proof": "CAD $20,636/year for living expenses + full tuition fees. Must show funds are readily available (not locked). Bank statements, GIC (Guaranteed Investment Certificate), scholarships, or sponsor letters accepted.",
     "work_rights": "20 hrs/week off-campus during academic sessions, full-time during scheduled breaks. On-campus work: no hour restriction. Co-op/internship work permits available for programs with work component.",
     "post_study": "Post-Graduation Work Permit (PGWP): Up to 3 years depending on program length. Pathway to permanent residency through Express Entry.",
-    "tips": "Apply online through IRCC portal. Processing times from Ghana can be lengthy — apply as early as possible (up to 5 months before program start). GIC (from designated Canadian banks) is a strong way to show financial proof. PGWP is one of the best post-study work options globally."
+    "tips": "Apply online through IRCC portal. Processing times from Ghana can be lengthy \u2014 apply as early as possible (up to 5 months before program start). GIC (from designated Canadian banks) is a strong way to show financial proof. PGWP is one of the best post-study work options globally.",
+    "audience_note": "Information tailored for Ghanaian applicants \u2014 embassy links, costs, and tips may differ for other nationalities."
   },
   {
     "country": "Germany",
@@ -71,7 +74,7 @@
     "documents": [
       "Valid passport (valid for duration of intended stay)",
       "University admission letter or conditional offer",
-      "Blocked account confirmation (€11,904/year as of 2024 — check for 2026 updates)",
+      "Blocked account confirmation (\u20ac11,904/year as of 2024 \u2014 check for 2026 updates)",
       "Health insurance proof (German statutory or private)",
       "Academic certificates and transcripts (apostilled)",
       "Language proficiency proof (German B1/B2 or English, depending on program)",
@@ -80,13 +83,14 @@
       "CV/Resume",
       "Proof of accommodation (for first months)"
     ],
-    "processing_time": "4-12 weeks (book appointment at German Embassy Accra well in advance — slots fill up months ahead)",
-    "cost_estimate": "€75 (visa fee) — one of the cheapest student visas!",
+    "processing_time": "4-12 weeks (book appointment at German Embassy Accra well in advance \u2014 slots fill up months ahead)",
+    "cost_estimate": "\u20ac75 (visa fee) \u2014 one of the cheapest student visas!",
     "embassy_link": "https://accra.diplo.de/gh-en",
-    "financial_proof": "Blocked account with €11,904/year (€992/month released monthly). Open through Expatrio (www.expatrio.com) or Fintiba (www.fintiba.com). Scholarship letters also accepted.",
+    "financial_proof": "Blocked account with \u20ac11,904/year (\u20ac992/month released monthly). Open through Expatrio (www.expatrio.com) or Fintiba (www.fintiba.com). Scholarship letters also accepted.",
     "work_rights": "120 full days or 240 half days per year. Student assistant (HiWi) jobs at university don't count toward this limit. Freelance work generally not permitted.",
     "post_study": "18-month job-seeking visa after graduation. Can work any job during this period. Germany has strong demand for STEM graduates.",
-    "tips": "NO TUITION at most public universities — just semester fees (~€150-350/semester covering transport, student services). Open your blocked account early — it takes 1-2 weeks. Book embassy appointment ASAP — Accra embassy has very limited slots. Learn basic German even for English programs — it helps enormously with daily life and jobs."
+    "tips": "NO TUITION at most public universities \u2014 just semester fees (~\u20ac150-350/semester covering transport, student services). Open your blocked account early \u2014 it takes 1-2 weeks. Book embassy appointment ASAP \u2014 Accra embassy has very limited slots. Learn basic German even for English programs \u2014 it helps enormously with daily life and jobs.",
+    "audience_note": "Information tailored for Ghanaian applicants \u2014 embassy links, costs, and tips may differ for other nationalities."
   },
   {
     "country": "France",
@@ -95,8 +99,8 @@
       "Valid passport",
       "Campus France registration and interview completion",
       "University acceptance letter",
-      "Financial proof (€615/month minimum)",
-      "Accommodation proof (or attestation d'hébergement)",
+      "Financial proof (\u20ac615/month minimum)",
+      "Accommodation proof (or attestation d'h\u00e9bergement)",
       "Health insurance (European Health Insurance Card or private)",
       "Academic transcripts and diplomas",
       "Language test results (TCF/DELF for French programs or IELTS/TOEFL for English)",
@@ -104,12 +108,12 @@
       "Birth certificate (translated and apostilled)"
     ],
     "processing_time": "2-6 weeks after Campus France interview",
-    "cost_estimate": "€99 (visa fee) + €50 (Campus France processing fee) = €149",
+    "cost_estimate": "\u20ac99 (visa fee) + \u20ac50 (Campus France processing fee) = \u20ac149",
     "embassy_link": "https://gh.ambafrance.org/",
-    "financial_proof": "€615/month minimum (about €7,380/year). Bank statements, scholarship letters, or sponsor guarantees accepted.",
+    "financial_proof": "\u20ac615/month minimum (about \u20ac7,380/year). Bank statements, scholarship letters, or sponsor guarantees accepted.",
     "work_rights": "Up to 964 hours per year (roughly 20 hrs/week). No separate work permit needed.",
-    "post_study": "APS (Autorisation Provisoire de Séjour): 2 years to seek employment. Can switch to work visa if you find a job. Carte de séjour pluriannuelle available for those earning 1.5x minimum wage.",
-    "tips": "Campus France registration (Études en France platform) is MANDATORY — start early, it has multiple steps. Public university tuition: ~€243/year (some programs now charge higher for non-EU — check specific school). Student meals at CROUS university restaurants for ~€3.30. Apply for CAF housing assistance once in France (€100-200/month off rent)."
+    "post_study": "APS (Autorisation Provisoire de S\u00e9jour): 2 years to seek employment. Can switch to work visa if you find a job. Carte de s\u00e9jour pluriannuelle available for those earning 1.5x minimum wage.",
+    "tips": "Campus France registration (\u00c9tudes en France platform) is MANDATORY \u2014 start early, it has multiple steps. Public university tuition: ~\u20ac243/year (some programs now charge higher for non-EU \u2014 check specific school). Student meals at CROUS university restaurants for ~\u20ac3.30. Apply for CAF housing assistance once in France (\u20ac100-200/month off rent)."
   },
   {
     "country": "Netherlands",
@@ -117,19 +121,20 @@
     "documents": [
       "Valid passport",
       "University admission letter",
-      "Proof of sufficient funds (€13,392/year or scholarship proof)",
+      "Proof of sufficient funds (\u20ac13,392/year or scholarship proof)",
       "Health insurance",
       "Academic certificates and transcripts",
       "Passport photos",
       "TB screening certificate (if required)"
     ],
     "processing_time": "2-8 weeks (university typically applies for MVV on your behalf through IND)",
-    "cost_estimate": "€210 (residence permit fee) — MVV fee usually waived for students when university sponsors",
+    "cost_estimate": "\u20ac210 (residence permit fee) \u2014 MVV fee usually waived for students when university sponsors",
     "embassy_link": "https://www.netherlandsworldwide.nl/countries/ghana",
-    "financial_proof": "€13,392/year (approximately €1,116/month). Scholarship letters, bank statements, or sponsor letters accepted.",
+    "financial_proof": "\u20ac13,392/year (approximately \u20ac1,116/month). Scholarship letters, bank statements, or sponsor letters accepted.",
     "work_rights": "16 hrs/week during term or full-time in June/July/August. Employer needs TWV work permit. Alternatively, up to 16 hrs/week freelance with own business.",
     "post_study": "Orientation Year (Zoekjaar): 1-year residence permit to find work after graduation. Can work any job during this period.",
-    "tips": "Your university usually applies for your MVV on your behalf — coordinate with their international office. Holland Scholarship (€5,000 one-time) available. English widely spoken — nearly everyone speaks it. Cycling is the main transport — buy a secondhand bike immediately!"
+    "tips": "Your university usually applies for your MVV on your behalf \u2014 coordinate with their international office. Holland Scholarship (\u20ac5,000 one-time) available. English widely spoken \u2014 nearly everyone speaks it. Cycling is the main transport \u2014 buy a secondhand bike immediately!",
+    "audience_note": "Information tailored for Ghanaian applicants \u2014 embassy links, costs, and tips may differ for other nationalities."
   },
   {
     "country": "Sweden",
@@ -142,13 +147,14 @@
       "Passport photos",
       "Proof of paid tuition fees"
     ],
-    "processing_time": "4-12 weeks (apply via Swedish Migration Agency — Migrationsverket)",
+    "processing_time": "4-12 weeks (apply via Swedish Migration Agency \u2014 Migrationsverket)",
     "cost_estimate": "SEK 1,500 (~$140 USD)",
-    "embassy_link": "https://www.swedenabroad.se/en/embassies/ghana-accra/",
+    "embassy_link": "https://www.swedenabroad.se/ghana",
     "financial_proof": "SEK 9,936/month (~$950/month) for the duration of studies. Bank statements or scholarship letters accepted.",
     "work_rights": "No restriction on working hours for students with residence permit. You can work full-time if you want.",
     "post_study": "12-month residence permit extension to seek employment after graduation.",
-    "tips": "Apply online through Migrationsverket (Swedish Migration Agency). Swedish Institute (SI) Scholarship covers EVERYTHING (tuition, living, flights, insurance) — very competitive but worth applying. Tuition fees apply for non-EU students (SEK 80,000-295,000/year) unless you have a scholarship. Sweden is very progressive and English-friendly."
+    "tips": "Apply online through Migrationsverket (Swedish Migration Agency). Swedish Institute (SI) Scholarship covers EVERYTHING (tuition, living, flights, insurance) \u2014 very competitive but worth applying. Tuition fees apply for non-EU students (SEK 80,000-295,000/year) unless you have a scholarship. Sweden is very progressive and English-friendly.",
+    "audience_note": "Information tailored for Ghanaian applicants \u2014 embassy links, costs, and tips may differ for other nationalities."
   },
   {
     "country": "Switzerland",
@@ -170,7 +176,8 @@
     "financial_proof": "CHF 21,000-24,000/year. Bank statements or scholarship letters. Parents/sponsors can provide guarantee letters.",
     "work_rights": "15 hrs/week during semester, full-time during official holidays. Only after first 6 months of study.",
     "post_study": "6-month extension to seek employment. Can switch to work permit if employed in field of study.",
-    "tips": "ETH Zurich and EPFL have very low tuition (~CHF 730/semester ≈ $1,600/year) but living costs are HIGH (CHF 1,500-2,200/month). Swiss Excellence Government Scholarship available for graduate students. Learn at least basic German/French depending on region. Apply for visa at Swiss Embassy in Accra well in advance."
+    "tips": "ETH Zurich and EPFL have very low tuition (~CHF 730/semester \u2248 $1,600/year) but living costs are HIGH (CHF 1,500-2,200/month). Swiss Excellence Government Scholarship available for graduate students. Learn at least basic German/French depending on region. Apply for visa at Swiss Embassy in Accra well in advance.",
+    "audience_note": "Information tailored for Ghanaian applicants \u2014 embassy links, costs, and tips may differ for other nationalities."
   },
   {
     "country": "Australia",
@@ -180,7 +187,7 @@
       "CoE (Confirmation of Enrolment) from university",
       "Genuine Temporary Entrant (GTE) statement / Genuine Student requirement",
       "Financial proof (AUD $29,710/year for living costs + tuition + travel)",
-      "OSHC (Overseas Student Health Cover — mandatory)",
+      "OSHC (Overseas Student Health Cover \u2014 mandatory)",
       "English test scores (IELTS/TOEFL/PTE)",
       "Academic documents and transcripts",
       "Police clearance certificate",
@@ -188,19 +195,20 @@
       "Passport photos"
     ],
     "processing_time": "4-12 weeks (apply online via ImmiAccount)",
-    "cost_estimate": "AUD $720 (~$470 USD) — visa application charge",
+    "cost_estimate": "AUD $720 (~$470 USD) \u2014 visa application charge",
     "embassy_link": "https://ghana.embassy.gov.au/",
     "financial_proof": "AUD $29,710/year for living costs (updated 2024) + full tuition fees + return airfare. School-age dependants: AUD $8,296/year each. Scholarship letters also accepted.",
     "work_rights": "48 hours per fortnight during term (increased from 40 hrs in 2023). Unlimited hours during scheduled breaks. Masters by research/PhD: unlimited work hours.",
     "post_study": "Temporary Graduate visa (subclass 485): 2-4 years depending on qualification level and location. Bachelor's: 2 years. Masters by coursework: 2 years. Masters by research: 3 years. PhD: 4 years. Regional study bonus: +1-2 years.",
-    "tips": "Apply online via ImmiAccount. OSHC is mandatory — compare providers (Medibank, Bupa, Allianz). Write a strong Genuine Student statement. The financial proof requirement increased significantly — AUD $29,710/year. Post-study work visa is very generous (2-4 years). Consider regional universities for lower costs and extra post-study work time."
+    "tips": "Apply online via ImmiAccount. OSHC is mandatory \u2014 compare providers (Medibank, Bupa, Allianz). Write a strong Genuine Student statement. The financial proof requirement increased significantly \u2014 AUD $29,710/year. Post-study work visa is very generous (2-4 years). Consider regional universities for lower costs and extra post-study work time.",
+    "audience_note": "Information tailored for Ghanaian applicants \u2014 embassy links, costs, and tips may differ for other nationalities."
   },
   {
     "country": "Japan",
-    "visa_type": "Student Visa (College Student / 留学)",
+    "visa_type": "Student Visa (College Student / \u7559\u5b66)",
     "documents": [
       "Valid passport",
-      "Certificate of Eligibility (CoE) — university applies on your behalf",
+      "Certificate of Eligibility (CoE) \u2014 university applies on your behalf",
       "Visa application form",
       "Passport photo (4.5cm x 4.5cm)",
       "University admission documents",
@@ -212,7 +220,8 @@
     "financial_proof": "JPY 2,000,000+ (~$13,500) in bank account, or scholarship letter. Sponsor's financial documents accepted.",
     "work_rights": "28 hrs/week with 'Permission to engage in activities other than those permitted under the status of residence' (apply at immigration after arrival). Full-time during official school breaks.",
     "post_study": "Designated Activities visa: 1 year to seek employment (extendable). High employment rate for international graduates in tech and engineering.",
-    "tips": "Your university applies for CoE first, then you apply for visa — start the process 4-6 months early. MEXT Scholarship covers everything (tuition, ¥144,000-145,000/month, flights). Can work 28hrs/week — many students work at convenience stores, restaurants. Japanese language helpful but not required for English programs. Japan is one of the safest countries in the world."
+    "tips": "Your university applies for CoE first, then you apply for visa \u2014 start the process 4-6 months early. MEXT Scholarship covers everything (tuition, \u00a5144,000-145,000/month, flights). Can work 28hrs/week \u2014 many students work at convenience stores, restaurants. Japanese language helpful but not required for English programs. Japan is one of the safest countries in the world.",
+    "audience_note": "Information tailored for Ghanaian applicants \u2014 embassy links, costs, and tips may differ for other nationalities."
   },
   {
     "country": "South Korea",
@@ -229,7 +238,7 @@
     ],
     "processing_time": "2-4 weeks",
     "cost_estimate": "$60 (single entry) or $90 (multiple entry)",
-    "embassy_link": "https://overseas.mofa.go.kr/gh-en/index.do",
+    "embassy_link": "https://overseas.mofa.go.kr/gh-en/",
     "financial_proof": "$20,000+ in bank account held for at least 1 month. Scholarship letters also accepted. KGSP students have documentation handled by NIIED.",
     "work_rights": "D-2 visa holders: 20 hrs/week after 6 months (language level TOPIK 3+ required for off-campus work). Full-time during vacations.",
     "post_study": "D-10 Job Seeking visa: 6 months (extendable up to 2 years for certain qualifications). E-7 work visa for employment.",
@@ -241,7 +250,7 @@
     "documents": [
       "Valid passport (with 2+ blank pages)",
       "JW201 or JW202 form from university",
-      "University admission notice (录取通知书)",
+      "University admission notice (\u5f55\u53d6\u901a\u77e5\u4e66)",
       "Foreigner Physical Examination Record",
       "Passport photos",
       "Financial proof (if not on CSC scholarship)"
@@ -252,7 +261,7 @@
     "financial_proof": "RMB 60,000-100,000/year (~$8,500-14,000) or CSC scholarship letter. Bank statements from student or sponsor.",
     "work_rights": "Officially, international students cannot work off-campus in China. Some universities allow on-campus work. Internships possible with university approval.",
     "post_study": "Can apply for work visa (Z visa) if employed by a Chinese company. Post-study startup visa available in some cities.",
-    "tips": "CSC (China Scholarship Council) scholarship handles most paperwork and covers everything. Must convert X1 visa to residence permit within 30 days of arrival at local PSB (Public Security Bureau). Very affordable living costs ($400-600/month in most cities). Learn basic Chinese — it helps enormously. Physical exam must be done at approved hospital."
+    "tips": "CSC (China Scholarship Council) scholarship handles most paperwork and covers everything. Must convert X1 visa to residence permit within 30 days of arrival at local PSB (Public Security Bureau). Very affordable living costs ($400-600/month in most cities). Learn basic Chinese \u2014 it helps enormously. Physical exam must be done at approved hospital."
   },
   {
     "country": "Turkey",
@@ -269,11 +278,12 @@
     ],
     "processing_time": "2-8 weeks for visa, then apply for residence permit within 30 days of arrival",
     "cost_estimate": "$50-80 (varies by nationality and visa type)",
-    "embassy_link": "https://accra.be.mfa.gov.tr/",
-    "financial_proof": "$5,000-8,000/year or Türkiye Bursları scholarship letter.",
-    "work_rights": "Part-time work allowed with work permit after first year. Türkiye Bursları students receive stipend.",
+    "embassy_link": "https://accra.be.mfa.gov.tr/tr/",
+    "financial_proof": "$5,000-8,000/year or T\u00fcrkiye Burslar\u0131 scholarship letter.",
+    "work_rights": "Part-time work allowed with work permit after first year. T\u00fcrkiye Burslar\u0131 students receive stipend.",
     "post_study": "Can apply for work permit. Growing job market especially in Istanbul and Ankara.",
-    "tips": "Türkiye Bursları handles entire visa process for scholarship recipients. Very affordable country ($500-700/month). 1-year Turkish language preparation included with TB scholarship. Apply for residence permit (ikamet) within 30 days of arrival. Turkey has excellent, affordable healthcare."
+    "tips": "T\u00fcrkiye Burslar\u0131 handles entire visa process for scholarship recipients. Very affordable country ($500-700/month). 1-year Turkish language preparation included with TB scholarship. Apply for residence permit (ikamet) within 30 days of arrival. Turkey has excellent, affordable healthcare.",
+    "audience_note": "Information tailored for Ghanaian applicants \u2014 embassy links, costs, and tips may differ for other nationalities."
   },
   {
     "country": "UAE",
@@ -289,12 +299,13 @@
       "Attested academic certificates"
     ],
     "processing_time": "2-4 weeks (university usually sponsors and handles process)",
-    "cost_estimate": "AED 500-1,500 (~$135-410) — often covered by university for scholarship students",
+    "cost_estimate": "AED 500-1,500 (~$135-410) \u2014 often covered by university for scholarship students",
     "embassy_link": "https://www.mofaic.gov.ae/en/missions/accra",
     "financial_proof": "Varies by emirate and university. Scholarship students usually have this covered. Self-funded: AED 50,000+ recommended.",
     "work_rights": "Part-time work permitted (up to 25 hrs/week during term) with work permit. Some universities help arrange part-time jobs.",
     "post_study": "5-year Golden Visa for graduates of UAE universities with GPA 3.75+. Job seeker visa also available.",
-    "tips": "NYUAD, MBZUAI, Khalifa University, and KAUST (technically Saudi but nearby) handle visa process for admitted students. No income tax in UAE. Very safe country. Universities are modern and well-funded. Hot climate June-September — campuses are fully air-conditioned."
+    "tips": "NYUAD, MBZUAI, Khalifa University, and KAUST (technically Saudi but nearby) handle visa process for admitted students. No income tax in UAE. Very safe country. Universities are modern and well-funded. Hot climate June-September \u2014 campuses are fully air-conditioned.",
+    "audience_note": "Information tailored for Ghanaian applicants \u2014 embassy links, costs, and tips may differ for other nationalities."
   },
   {
     "country": "Saudi Arabia",
@@ -312,9 +323,10 @@
     "cost_estimate": "Usually free for scholarship students. Self-funded: SAR 300-500 (~$80-135).",
     "embassy_link": "https://embassies.mofa.gov.sa/sites/Ghana/EN/Pages/default.aspx",
     "financial_proof": "Scholarship letter covers this for KAUST/KFUPM scholarship students. Self-funded: SAR 50,000+ in bank.",
-    "work_rights": "Limited — scholarship stipends are generous enough. Some part-time work possible with university approval.",
+    "work_rights": "Limited \u2014 scholarship stipends are generous enough. Some part-time work possible with university approval.",
     "post_study": "Can apply for work visa if employed. KAUST graduates have strong employment connections.",
-    "tips": "KAUST and KFUPM handle everything for scholarship students including visa, flights, and housing. Very generous stipends ($20,000-30,000+/year). KAUST campus is very international and modern with its own beach. Respect local customs and dress codes."
+    "tips": "KAUST and KFUPM handle everything for scholarship students including visa, flights, and housing. Very generous stipends ($20,000-30,000+/year). KAUST campus is very international and modern with its own beach. Respect local customs and dress codes.",
+    "audience_note": "Information tailored for Ghanaian applicants \u2014 embassy links, costs, and tips may differ for other nationalities."
   },
   {
     "country": "Singapore",
@@ -329,12 +341,13 @@
       "Financial proof"
     ],
     "processing_time": "2-4 weeks (university submits through SOLAR+ system)",
-    "cost_estimate": "SGD $90 (~$67 USD) — issuance fee + multiple entry visa fee",
-    "embassy_link": "https://www.mfa.gov.sg/Overseas-Mission/Accra",
+    "cost_estimate": "SGD $90 (~$67 USD) \u2014 issuance fee + multiple entry visa fee",
+    "embassy_link": "https://www.mfa.gov.sg/i-need-help-overseas/find-an-overseas-mission/",
     "financial_proof": "Varies by university. NUS/NTU scholarship students have this covered. Self-funded: SGD $20,000-30,000/year.",
     "work_rights": "16 hrs/week during term at approved institutions (NUS, NTU, SMU, SUTD, etc.). Full-time during official vacation.",
     "post_study": "Long-Term Visit Pass (LTVP) for job seeking. Can apply for Employment Pass or S Pass. Graduates from Singaporean universities have high employability.",
-    "tips": "University applies through SOLAR+ system on your behalf. Very safe city-state. English is the main language. Hawker centres have excellent cheap meals ($3-5 per meal). Public transport is world-class. NUS and NTU are top 15 globally."
+    "tips": "University applies through SOLAR+ system on your behalf. Very safe city-state. English is the main language. Hawker centres have excellent cheap meals ($3-5 per meal). Public transport is world-class. NUS and NTU are top 15 globally.",
+    "audience_note": "Information tailored for Ghanaian applicants \u2014 embassy links, costs, and tips may differ for other nationalities."
   },
   {
     "country": "India",
@@ -355,7 +368,8 @@
     "financial_proof": "$5,000-10,000/year or scholarship letter. India is very affordable, so requirements are relatively low.",
     "work_rights": "International students generally cannot work off-campus. Some universities allow teaching/research assistantships. Internships possible with university sponsorship.",
     "post_study": "Limited formal post-study work visa. Many students transition through employer sponsorship or return home.",
-    "tips": "ICCR (Indian Council for Cultural Relations) scholarship handles visa paperwork. Very affordable country — $400-600/month is comfortable in most cities. IITs are world-class institutions with very low fees. English widely spoken in universities and cities. Apply for e-Student visa online for faster processing."
+    "tips": "ICCR (Indian Council for Cultural Relations) scholarship handles visa paperwork. Very affordable country \u2014 $400-600/month is comfortable in most cities. IITs are world-class institutions with very low fees. English widely spoken in universities and cities. Apply for e-Student visa online for faster processing.",
+    "audience_note": "Information tailored for Ghanaian applicants \u2014 embassy links, costs, and tips may differ for other nationalities."
   },
   {
     "country": "South Africa",
@@ -373,11 +387,12 @@
     ],
     "processing_time": "4-8 weeks (apply at South African High Commission in Accra)",
     "cost_estimate": "ZAR 1,520 (~$80 USD)",
-    "embassy_link": "https://www.dirco.gov.za/accra/",
+    "embassy_link": "https://www.dirco.gov.za/",
     "financial_proof": "Proof of funding for tuition + ZAR 7,000-10,000/month living costs. Scholarship letters or bank statements.",
     "work_rights": "20 hrs/week during term with endorsement from Department of Home Affairs. Full-time during official holiday periods.",
     "post_study": "Can apply for work visa change of status. Relatively straightforward if employed.",
-    "tips": "Apply at South African High Commission in Accra — bring yellow fever vaccination certificate (they're strict about this). UCT (#1 in Africa), Wits, and Stellenbosch are top universities. Relatively affordable ($600-900/month in most cities). Great option for African students wanting to stay on the continent."
+    "tips": "Apply at South African High Commission in Accra \u2014 bring yellow fever vaccination certificate (they're strict about this). UCT (#1 in Africa), Wits, and Stellenbosch are top universities. Relatively affordable ($600-900/month in most cities). Great option for African students wanting to stay on the continent.",
+    "audience_note": "Information tailored for Ghanaian applicants \u2014 embassy links, costs, and tips may differ for other nationalities."
   },
   {
     "country": "Hungary",
@@ -385,7 +400,7 @@
     "documents": [
       "Valid passport (valid 6+ months beyond planned stay)",
       "University admission letter",
-      "Financial proof (approximately HUF 200,000/month ≈ €520)",
+      "Financial proof (approximately HUF 200,000/month \u2248 \u20ac520)",
       "Health insurance (European-compatible)",
       "Accommodation proof",
       "Academic certificates and transcripts",
@@ -393,12 +408,13 @@
       "Medical certificate"
     ],
     "processing_time": "2-4 weeks",
-    "cost_estimate": "€60 (visa fee) + €110 (residence permit) = €170",
+    "cost_estimate": "\u20ac60 (visa fee) + \u20ac110 (residence permit) = \u20ac170",
     "embassy_link": "https://accra.mfa.gov.hu/eng",
-    "financial_proof": "HUF 200,000/month (~€520) or Stipendium Hungaricum scholarship letter.",
+    "financial_proof": "HUF 200,000/month (~\u20ac520) or Stipendium Hungaricum scholarship letter.",
     "work_rights": "24 hrs/week during term (40 hrs/week during holidays). No separate work permit needed for EU-regulated student work.",
     "post_study": "9-month job seeker residence permit after graduation.",
-    "tips": "Stipendium Hungaricum scholarship covers EVERYTHING (tuition, stipend, accommodation, medical insurance) — very popular with African students. Very affordable country (~€500-700/month in Budapest). Budapest is a beautiful, lively student city with excellent public transport. Application period usually January-March."
+    "tips": "Stipendium Hungaricum scholarship covers EVERYTHING (tuition, stipend, accommodation, medical insurance) \u2014 very popular with African students. Very affordable country (~\u20ac500-700/month in Budapest). Budapest is a beautiful, lively student city with excellent public transport. Application period usually January-March.",
+    "audience_note": "Information tailored for Ghanaian applicants \u2014 embassy links, costs, and tips may differ for other nationalities."
   },
   {
     "country": "Ireland",
@@ -407,7 +423,7 @@
       "Valid passport",
       "University admission letter",
       "Proof of fees paid (at least first year)",
-      "Financial proof (€10,000 in bank account)",
+      "Financial proof (\u20ac10,000 in bank account)",
       "Private medical insurance",
       "Academic certificates and transcripts",
       "Passport photos",
@@ -415,12 +431,13 @@
       "Letter from your bank confirming funds"
     ],
     "processing_time": "4-8 weeks (apply online)",
-    "cost_estimate": "€60 (visa fee) + €300 (Immigration Registration / IRP card) = €360",
-    "embassy_link": "https://www.ireland.ie/en/ghana/",
-    "financial_proof": "€10,000 immediately accessible in Irish or Ghanaian bank account (in your name). Plus evidence of tuition fees paid.",
+    "cost_estimate": "\u20ac60 (visa fee) + \u20ac300 (Immigration Registration / IRP card) = \u20ac360",
+    "embassy_link": "https://www.ireland.ie/en/dfa/embassies/",
+    "financial_proof": "\u20ac10,000 immediately accessible in Irish or Ghanaian bank account (in your name). Plus evidence of tuition fees paid.",
     "work_rights": "20 hrs/week during term, 40 hrs/week during official holiday periods (June-September and December 15-January 15).",
     "post_study": "Third Level Graduate Programme: 2 years post-study work for Level 9 (masters) graduates. 1 year for Level 8 (bachelor's) graduates.",
-    "tips": "English-speaking country — no language barrier! 2-year stay-back option after masters graduation. Tech hub (Google, Meta, Apple European HQs). Cost of living in Dublin is high but other cities (Galway, Cork, Limerick) are more affordable. Apply for visa online, register with immigration after arrival."
+    "tips": "English-speaking country \u2014 no language barrier! 2-year stay-back option after masters graduation. Tech hub (Google, Meta, Apple European HQs). Cost of living in Dublin is high but other cities (Galway, Cork, Limerick) are more affordable. Apply for visa online, register with immigration after arrival.",
+    "audience_note": "Information tailored for Ghanaian applicants \u2014 embassy links, costs, and tips may differ for other nationalities."
   },
   {
     "country": "Denmark",
@@ -428,20 +445,21 @@
     "documents": [
       "Valid passport",
       "University admission letter",
-      "Financial proof (DKK 7,464/month or ~€1,000)",
+      "Financial proof (DKK 7,464/month or ~\u20ac1,000)",
       "Health insurance",
       "Passport photos (biometric)",
       "Proof of accommodation",
       "Academic certificates",
       "Proof of tuition payment"
     ],
-    "processing_time": "4-8 weeks (apply through SIRI — Danish Agency for International Recruitment and Integration)",
+    "processing_time": "4-8 weeks (apply through SIRI \u2014 Danish Agency for International Recruitment and Integration)",
     "cost_estimate": "DKK 2,580 (~$370 USD)",
-    "embassy_link": "https://ghana.um.dk/",
-    "financial_proof": "DKK 7,464/month (~€1,000) for the duration of studies. Danish bank account or scholarship letter.",
+    "embassy_link": "https://ghana.um.dk/en",
+    "financial_proof": "DKK 7,464/month (~\u20ac1,000) for the duration of studies. Danish bank account or scholarship letter.",
     "work_rights": "20 hrs/week during term, full-time during June-August. No separate work permit needed.",
     "post_study": "Job seeking residence permit: Up to 3 years (recently extended) to find employment after graduation.",
-    "tips": "Danish Government Scholarships (partial tuition waivers + grant) available. Can work 20hrs/week during studies. World-class work-life balance. Free healthcare once registered. Cycling culture — get a bike! High quality of life but also high cost of living."
+    "tips": "Danish Government Scholarships (partial tuition waivers + grant) available. Can work 20hrs/week during studies. World-class work-life balance. Free healthcare once registered. Cycling culture \u2014 get a bike! High quality of life but also high cost of living.",
+    "audience_note": "Information tailored for Ghanaian applicants \u2014 embassy links, costs, and tips may differ for other nationalities."
   },
   {
     "country": "Finland",
@@ -449,19 +467,19 @@
     "documents": [
       "Valid passport",
       "University admission letter",
-      "Financial proof (€13,440/year or €1,120/month)",
+      "Financial proof (\u20ac13,440/year or \u20ac1,120/month)",
       "Health insurance (comprehensive)",
       "Passport photos",
       "Academic certificates",
       "Proof of tuition payment (if applicable)"
     ],
     "processing_time": "4-8 weeks (apply through Finnish embassy or Enter Finland online service)",
-    "cost_estimate": "€450 (first permit). Renewal: €230.",
+    "cost_estimate": "\u20ac450 (first permit). Renewal: \u20ac230.",
     "embassy_link": "https://finlandabroad.fi/web/gha",
-    "financial_proof": "€13,440/year (€1,120/month) in accessible funds. Scholarship letters accepted.",
+    "financial_proof": "\u20ac13,440/year (\u20ac1,120/month) in accessible funds. Scholarship letters accepted.",
     "work_rights": "30 hrs/week (increased from 25 hrs) during term when work is related to studies. Unlimited during official holidays.",
     "post_study": "2-year residence permit extension (Type A) to seek employment after graduation. One of the most generous in Europe.",
-    "tips": "Many Finnish universities offer full or partial tuition waivers for talented international students. Very safe country (ranked #1 happiest country). Student meals at university restaurants ~€2.95. Public saunas everywhere! Finland gives 2-year post-graduation job-seeking permit — excellent for staying."
+    "tips": "Many Finnish universities offer full or partial tuition waivers for talented international students. Very safe country (ranked #1 happiest country). Student meals at university restaurants ~\u20ac2.95. Public saunas everywhere! Finland gives 2-year post-graduation job-seeking permit \u2014 excellent for staying."
   },
   {
     "country": "Italy",
@@ -469,7 +487,7 @@
     "documents": [
       "Valid passport",
       "University pre-enrollment or admission letter",
-      "Financial proof (€6,000/year minimum or €517/month)",
+      "Financial proof (\u20ac6,000/year minimum or \u20ac517/month)",
       "Accommodation proof (housing contract or declaration)",
       "Health insurance or Form S1",
       "Academic certificates (with Dichiarazione di Valore from Italian Embassy)",
@@ -477,12 +495,13 @@
       "Proof of tuition payment or scholarship"
     ],
     "processing_time": "2-6 weeks",
-    "cost_estimate": "€50 (visa fee)",
+    "cost_estimate": "\u20ac50 (visa fee)",
     "embassy_link": "https://ambaccra.esteri.it/",
-    "financial_proof": "€6,000/year minimum or €517/month. Very affordable threshold compared to other EU countries.",
+    "financial_proof": "\u20ac6,000/year minimum or \u20ac517/month. Very affordable threshold compared to other EU countries.",
     "work_rights": "20 hrs/week (up to 1,040 hrs/year). No separate work permit required.",
     "post_study": "1 year to seek employment (permesso di soggiorno for job seeking). Can convert to work permit.",
-    "tips": "Very low tuition at public universities (€0-4,000/year, based on family income — ISEE calculation). Politecnico di Milano, University of Bologna, and Sapienza Rome are top choices. DSU (Diritto allo Studio Universitario) scholarships cover tuition + meals + housing — apply through regional authorities. Dichiarazione di Valore (academic equivalence document) from Italian Embassy required — request early!"
+    "tips": "Very low tuition at public universities (\u20ac0-4,000/year, based on family income \u2014 ISEE calculation). Politecnico di Milano, University of Bologna, and Sapienza Rome are top choices. DSU (Diritto allo Studio Universitario) scholarships cover tuition + meals + housing \u2014 apply through regional authorities. Dichiarazione di Valore (academic equivalence document) from Italian Embassy required \u2014 request early!",
+    "audience_note": "Information tailored for Ghanaian applicants \u2014 embassy links, costs, and tips may differ for other nationalities."
   },
   {
     "country": "Norway",
@@ -490,20 +509,21 @@
     "documents": [
       "Valid passport",
       "University admission letter",
-      "Financial proof (NOK 146,244/year for 2025/2026 — deposited into Norwegian bank account)",
+      "Financial proof (NOK 146,244/year for 2025/2026 \u2014 deposited into Norwegian bank account)",
       "Accommodation proof",
       "Health insurance",
       "Academic certificates",
       "Passport photos",
       "Proof of full-time enrollment"
     ],
-    "processing_time": "4-8 weeks (apply online through UDI — Norwegian Directorate of Immigration)",
+    "processing_time": "4-8 weeks (apply online through UDI \u2014 Norwegian Directorate of Immigration)",
     "cost_estimate": "NOK 6,800 (~$630 USD)",
     "embassy_link": "https://www.norway.no/en/ghana/",
-    "financial_proof": "NOK 146,244/year (~$13,500) deposited into a Norwegian bank account in your name. This is a strict requirement — funds must be in a Norwegian account.",
+    "financial_proof": "NOK 146,244/year (~$13,500) deposited into a Norwegian bank account in your name. This is a strict requirement \u2014 funds must be in a Norwegian account.",
     "work_rights": "20 hrs/week during term, full-time during official holidays. No separate work permit needed.",
     "post_study": "1-year job-seeking residence permit after graduation. Can switch to work permit.",
-    "tips": "NO TUITION FEES at public universities for ALL students (including international) — this is rare globally! Living costs are HIGH (Norway is expensive), but free education makes it worthwhile. The financial proof must be deposited into a Norwegian bank account — start this process early. Quota Scheme scholarships available for developing country students. Stunning nature and very high quality of life."
+    "tips": "NO TUITION FEES at public universities for ALL students (including international) \u2014 this is rare globally! Living costs are HIGH (Norway is expensive), but free education makes it worthwhile. The financial proof must be deposited into a Norwegian bank account \u2014 start this process early. Quota Scheme scholarships available for developing country students. Stunning nature and very high quality of life.",
+    "audience_note": "Information tailored for Ghanaian applicants \u2014 embassy links, costs, and tips may differ for other nationalities."
   },
   {
     "country": "New Zealand",
@@ -525,7 +545,7 @@
     "financial_proof": "NZD $20,000/year for living expenses + full tuition. Scholarship letters, bank statements, or financial guarantee from sponsor.",
     "work_rights": "20 hrs/week during term. Full-time during official holidays (Christmas, Easter, summer). PhD and masters by research students: unlimited work hours.",
     "post_study": "Post-Study Work Visa: Up to 3 years depending on qualification and location. Bachelor's: 3 years. Level 7-8 (non-degree): 1-2 years. Studying outside Auckland may provide additional benefits.",
-    "tips": "New Zealand Scholarships and MFAT Scholarships cover everything for developing country students. Very safe and beautiful country. English-speaking — no language barrier. Excellent quality of life. Consider studying outside Auckland for lower costs and post-study work advantages."
+    "tips": "New Zealand Scholarships and MFAT Scholarships cover everything for developing country students. Very safe and beautiful country. English-speaking \u2014 no language barrier. Excellent quality of life. Consider studying outside Auckland for lower costs and post-study work advantages."
   },
   {
     "country": "Qatar",
@@ -540,12 +560,13 @@
       "Attested academic certificates"
     ],
     "processing_time": "2-4 weeks (university usually sponsors the application)",
-    "cost_estimate": "QAR 200 (~$55 USD) — often covered by university for scholarship students",
+    "cost_estimate": "QAR 200 (~$55 USD) \u2014 often covered by university for scholarship students",
     "embassy_link": "https://www.mofa.gov.qa",
     "financial_proof": "Usually covered by university sponsorship. Self-funded: QAR 30,000-50,000/year in bank.",
     "work_rights": "Part-time work permitted with NOC from university. Full-time during holidays.",
     "post_study": "Can apply for work visa through employer. Qatar National Vision 2030 is driving job creation.",
-    "tips": "QF (Qatar Foundation) universities — Georgetown, Northwestern, Carnegie Mellon, etc. in Education City — handle full visa process. No income tax in Qatar. Very safe country. Qatar is investing heavily in education and research. Air-conditioned everywhere — essential given 40°C+ summers. Hamad International Airport is a major hub for global travel."
+    "tips": "QF (Qatar Foundation) universities \u2014 Georgetown, Northwestern, Carnegie Mellon, etc. in Education City \u2014 handle full visa process. No income tax in Qatar. Very safe country. Qatar is investing heavily in education and research. Air-conditioned everywhere \u2014 essential given 40\u00b0C+ summers. Hamad International Airport is a major hub for global travel.",
+    "audience_note": "Information tailored for Ghanaian applicants \u2014 embassy links, costs, and tips may differ for other nationalities."
   },
   {
     "country": "Spain",
@@ -556,8 +577,8 @@
       "Passport-sized photos (white background, recent)",
       "University admission/acceptance letter",
       "Proof of accommodation in Spain",
-      "Medical insurance covering full stay in Spain (minimum €30,000 coverage)",
-      "Financial proof (bank statements showing ~€600/month or €7,200/year)",
+      "Medical insurance covering full stay in Spain (minimum \u20ac30,000 coverage)",
+      "Financial proof (bank statements showing ~\u20ac600/month or \u20ac7,200/year)",
       "Criminal background check (apostilled)",
       "Medical certificate",
       "Academic transcripts and certificates",
@@ -565,11 +586,12 @@
       "Return flight reservation (optional but recommended)"
     ],
     "processing_time": "4-8 weeks (apply at least 2 months before travel)",
-    "cost_estimate": "€80 (visa fee) + ~€20 (document legalization)",
+    "cost_estimate": "\u20ac80 (visa fee) + ~\u20ac20 (document legalization)",
     "embassy_link": "https://www.exteriores.gob.es/Consulados/accra/en/",
-    "financial_proof": "Approximately €600/month or IPREM amount (~€7,200/year). Bank statements for last 3-6 months. Scholarship letters accepted.",
-    "work_rights": "Up to 20 hrs/week during studies (must get work authorization from Oficina de Extranjería). Full-time during holidays. Cannot conflict with study schedule.",
-    "tips": "All documents must be apostilled and translated into Spanish by a sworn translator. Apply for NIE (Foreigner Identity Number) upon arrival. Register at local police station within 30 days. Spain is part of Schengen — you can travel freely within the zone."
+    "financial_proof": "Approximately \u20ac600/month or IPREM amount (~\u20ac7,200/year). Bank statements for last 3-6 months. Scholarship letters accepted.",
+    "work_rights": "Up to 20 hrs/week during studies (must get work authorization from Oficina de Extranjer\u00eda). Full-time during holidays. Cannot conflict with study schedule.",
+    "tips": "All documents must be apostilled and translated into Spanish by a sworn translator. Apply for NIE (Foreigner Identity Number) upon arrival. Register at local police station within 30 days. Spain is part of Schengen \u2014 you can travel freely within the zone.",
+    "audience_note": "Information tailored for Ghanaian applicants \u2014 embassy links, costs, and tips may differ for other nationalities."
   },
   {
     "country": "Belgium",
@@ -579,7 +601,7 @@
       "Completed visa application form",
       "Recent passport photos",
       "University enrollment/admission letter",
-      "Proof of sufficient financial means (€7,272/year for 2024-2025)",
+      "Proof of sufficient financial means (\u20ac7,272/year for 2024-2025)",
       "Medical certificate from approved physician",
       "Criminal background check (not older than 6 months)",
       "Proof of health insurance",
@@ -589,11 +611,11 @@
       "Motivation letter"
     ],
     "processing_time": "4-12 weeks (apply 6-8 weeks before travel)",
-    "cost_estimate": "€200 (visa fee)",
+    "cost_estimate": "\u20ac200 (visa fee)",
     "embassy_link": "https://diplomatie.belgium.be/en",
-    "financial_proof": "€7,272/year (2024-2025 rate, adjusted annually). Proof via scholarship letter, bank statements, sponsor letter, or blocked account.",
+    "financial_proof": "\u20ac7,272/year (2024-2025 rate, adjusted annually). Proof via scholarship letter, bank statements, sponsor letter, or blocked account.",
     "work_rights": "20 hrs/week during academic year, full-time during holidays. Need work permit (usually arranged by employer). After graduation, can apply for 12-month job-seeking residence permit.",
-    "tips": "Belgium has 3 regions (Flanders, Wallonia, Brussels) with different languages — check your university's language. Within 8 days of arrival, register at local commune. Student housing is limited — start searching early."
+    "tips": "Belgium has 3 regions (Flanders, Wallonia, Brussels) with different languages \u2014 check your university's language. Within 8 days of arrival, register at local commune. Student housing is limited \u2014 start searching early."
   },
   {
     "country": "Poland",
@@ -612,7 +634,7 @@
       "Proof of language proficiency (English or Polish)"
     ],
     "processing_time": "2-4 weeks",
-    "cost_estimate": "€80 (visa fee)",
+    "cost_estimate": "\u20ac80 (visa fee)",
     "embassy_link": "https://www.gov.pl/web/diplomacy",
     "financial_proof": "Minimum PLN 776/month (~$200). Bank statements, scholarship letter, or sponsor's financial guarantee.",
     "work_rights": "Full-time work allowed for students without a work permit. One of the most flexible in Europe for student employment.",
@@ -634,22 +656,23 @@
       "Proof of tuition payment"
     ],
     "processing_time": "60-90 days (apply early!)",
-    "cost_estimate": "CZK 2,500 (~€100)",
+    "cost_estimate": "CZK 2,500 (~\u20ac100)",
     "embassy_link": "https://www.mzv.cz/accra",
-    "financial_proof": "Minimum CZK 4,205/month (~€170/month) for first year. Show bank statement or scholarship letter covering full amount.",
+    "financial_proof": "Minimum CZK 4,205/month (~\u20ac170/month) for first year. Show bank statement or scholarship letter covering full amount.",
     "work_rights": "Students can work up to 30 days/year or 20 hrs/week without a work permit. No restrictions during summer holidays.",
-    "tips": "Czech Republic has very low tuition for programs taught in Czech (often free at public universities). English programs have tuition. Processing time is long — apply 3-4 months early. Prague is popular but also most expensive — consider Brno or Olomouc."
+    "tips": "Czech Republic has very low tuition for programs taught in Czech (often free at public universities). English programs have tuition. Processing time is long \u2014 apply 3-4 months early. Prague is popular but also most expensive \u2014 consider Brno or Olomouc.",
+    "audience_note": "Information tailored for Ghanaian applicants \u2014 embassy links, costs, and tips may differ for other nationalities."
   },
   {
     "country": "Austria",
-    "visa_type": "Residence Permit – Student (Aufenthaltsbewilligung Studierende)",
+    "visa_type": "Residence Permit \u2013 Student (Aufenthaltsbewilligung Studierende)",
     "documents": [
       "Valid passport",
       "Completed application form",
       "Passport-sized photos (3.5 x 4.5 cm)",
       "University admission letter",
       "Proof of accommodation in Austria",
-      "Proof of financial means (€1,217.96/month if over 24, €624.36 if under 24)",
+      "Proof of financial means (\u20ac1,217.96/month if over 24, \u20ac624.36 if under 24)",
       "Health insurance covering Austria",
       "Criminal background check (not older than 3 months)",
       "Birth certificate (apostilled)",
@@ -657,11 +680,11 @@
       "German or English proficiency proof"
     ],
     "processing_time": "4-8 weeks",
-    "cost_estimate": "€160 (residence permit fee)",
+    "cost_estimate": "\u20ac160 (residence permit fee)",
     "embassy_link": "https://www.bmeia.gv.at/en/",
-    "financial_proof": "Under 24: €624.36/month. Over 24: €1,217.96/month. Must show funds for at least 12 months. Blocked account, scholarship, or sponsor guarantee.",
-    "work_rights": "20 hrs/week during studies. Need work permit (Beschäftigungsbewilligung). After graduation, 12-month job-seeking visa available.",
-    "tips": "Public universities charge €726.72/semester for non-EU students. Vienna is one of the most livable cities worldwide. Learn basic German — even for English programs, daily life is easier with German."
+    "financial_proof": "Under 24: \u20ac624.36/month. Over 24: \u20ac1,217.96/month. Must show funds for at least 12 months. Blocked account, scholarship, or sponsor guarantee.",
+    "work_rights": "20 hrs/week during studies. Need work permit (Besch\u00e4ftigungsbewilligung). After graduation, 12-month job-seeking visa available.",
+    "tips": "Public universities charge \u20ac726.72/semester for non-EU students. Vienna is one of the most livable cities worldwide. Learn basic German \u2014 even for English programs, daily life is easier with German."
   },
   {
     "country": "Portugal",
@@ -672,18 +695,18 @@
       "Passport photos (2)",
       "University acceptance letter",
       "Proof of accommodation",
-      "Financial proof (minimum Portuguese minimum wage ~€820/month)",
+      "Financial proof (minimum Portuguese minimum wage ~\u20ac820/month)",
       "Health insurance",
       "Criminal record certificate (apostilled)",
       "Academic transcripts",
-      "NIF (Portuguese tax number — can be obtained remotely)"
+      "NIF (Portuguese tax number \u2014 can be obtained remotely)"
     ],
     "processing_time": "4-8 weeks",
-    "cost_estimate": "€90 (visa fee) + €50 (residence permit)",
-    "embassy_link": "https://www.portaldascomunidades.mne.gov.pt",
-    "financial_proof": "Minimum wage amount (~€820/month). Bank statements, scholarship letter, or financial sponsor letter.",
+    "cost_estimate": "\u20ac90 (visa fee) + \u20ac50 (residence permit)",
+    "embassy_link": "https://www.portaldascomunidades.mne.gov.pt/pt/",
+    "financial_proof": "Minimum wage amount (~\u20ac820/month). Bank statements, scholarship letter, or financial sponsor letter.",
     "work_rights": "Part-time work allowed. After graduation, can apply for residence permit to seek employment or start a business.",
-    "tips": "Portugal offers some of the lowest tuition in Western Europe. Lisbon and Porto are popular but getting expensive — consider Coimbra or Braga. Portugal's Tech Visa makes it easy to stay for tech jobs after graduation."
+    "tips": "Portugal offers some of the lowest tuition in Western Europe. Lisbon and Porto are popular but getting expensive \u2014 consider Coimbra or Braga. Portugal's Tech Visa makes it easy to stay for tech jobs after graduation."
   },
   {
     "country": "Malaysia",
@@ -696,12 +719,12 @@
       "EMGS medical screening form",
       "Financial proof",
       "Health insurance (provided by university or private)",
-      "Visa Approval Letter (VAL) — university applies through EMGS",
+      "Visa Approval Letter (VAL) \u2014 university applies through EMGS",
       "Completed EMGS application (usually done by university)"
     ],
     "processing_time": "4-8 weeks (university handles EMGS application)",
     "cost_estimate": "RM 2,000-3,500 (~$430-$750) including EMGS processing + visa",
-    "embassy_link": "https://www.kln.gov.my/",
+    "embassy_link": "https://www.kln.gov.my/web/guest",
     "financial_proof": "Varies by institution. Generally show RM 10,000-15,000/year (~$2,150-$3,200). Scholarship letters accepted.",
     "work_rights": "20 hrs/week during semester breaks only. Limited to certain sectors (restaurant, hotel, retail, gas station). Must get approval from immigration.",
     "tips": "Malaysia is very affordable for international students. Your university handles most visa paperwork through EMGS. Medical screening is required upon arrival. English is widely spoken, making it easy to adapt."
@@ -724,7 +747,7 @@
     "embassy_link": "https://www.thaiembassy.org/",
     "financial_proof": "Minimum THB 500,000 (~$14,000) in bank account. Some universities may accept lower amounts with scholarship proof.",
     "work_rights": "Officially not permitted on ED visa. Some universities offer paid internship opportunities as part of the program.",
-    "tips": "Very affordable living costs. Must report to immigration every 90 days (90-day reporting). Visa initially granted for 90 days — extend at local immigration office. Many international programs available in Bangkok and Chiang Mai."
+    "tips": "Very affordable living costs. Must report to immigration every 90 days (90-day reporting). Visa initially granted for 90 days \u2014 extend at local immigration office. Many international programs available in Bangkok and Chiang Mai."
   },
   {
     "country": "Mexico",
@@ -742,7 +765,7 @@
     "processing_time": "2-4 weeks",
     "cost_estimate": "$40-50 (visa fee varies by nationality)",
     "embassy_link": "https://embamex.sre.gob.mx/",
-    "financial_proof": "Bank statements showing steady income or savings for last 3 months. Amount varies — generally $500-1,000/month equivalent.",
+    "financial_proof": "Bank statements showing steady income or savings for last 3 months. Amount varies \u2014 generally $500-1,000/month equivalent.",
     "work_rights": "Can apply for work permit once in Mexico. Some universities help arrange paid research or teaching assistantships.",
     "tips": "Mexico offers tuition-free education at many public universities (UNAM is world-ranked). Spanish proficiency is essential for most programs. Very affordable cost of living. Rich culture and student life."
   },
@@ -766,11 +789,11 @@
     "embassy_link": "https://www.gov.br/mre/en",
     "financial_proof": "Approximately $500-800/month. Bank statements, scholarship letter, or sponsor letter with notarized financial guarantee.",
     "work_rights": "Up to 20 hrs/week with authorization. Must apply to Federal Police for work authorization.",
-    "tips": "Many public universities are tuition-free (USP, UNICAMP, UFRJ are top-ranked). Portuguese is essential — take language courses before going. Register with Federal Police within 30 days of arrival for RNE (foreigner registration)."
+    "tips": "Many public universities are tuition-free (USP, UNICAMP, UFRJ are top-ranked). Portuguese is essential \u2014 take language courses before going. Register with Federal Police within 30 days of arrival for RNE (foreigner registration)."
   },
   {
     "country": "Russia",
-    "visa_type": "Student Visa (Учебная виза)",
+    "visa_type": "Student Visa (\u0423\u0447\u0435\u0431\u043d\u0430\u044f \u0432\u0438\u0437\u0430)",
     "documents": [
       "Valid passport (at least 18 months validity, 2 blank pages)",
       "Visa application form",
@@ -781,12 +804,13 @@
       "Academic certificates (apostilled)",
       "Proof of health insurance valid in Russia"
     ],
-    "processing_time": "2-4 weeks (regular), 3 days (express — higher fee)",
+    "processing_time": "2-4 weeks (regular), 3 days (express \u2014 higher fee)",
     "cost_estimate": "$40-160 (varies by nationality and processing speed)",
     "embassy_link": "https://ghana.mid.ru/en/",
     "financial_proof": "Not strictly required for visa if you have the university invitation. However, show approximately $300-500/month for living expenses.",
     "work_rights": "Can work 20 hrs/week during academic year with work permit. Full-time during holidays.",
-    "tips": "Russian government offers thousands of fully funded scholarships to African students annually. Apply through Rossotrudnichestvo. Many programs in English, but learning Russian opens more opportunities. Very affordable once there."
+    "tips": "Russian government offers thousands of fully funded scholarships to African students annually. Apply through Rossotrudnichestvo. Many programs in English, but learning Russian opens more opportunities. Very affordable once there.",
+    "audience_note": "Information tailored for Ghanaian applicants \u2014 embassy links, costs, and tips may differ for other nationalities."
   },
   {
     "country": "Taiwan",
@@ -807,7 +831,7 @@
     "embassy_link": "https://www.taiwanembassy.org/",
     "financial_proof": "Approximately $7,500-10,000 for one year. Bank statements or scholarship award letter.",
     "work_rights": "Up to 20 hrs/week after 6 months with work permit. During summer/winter breaks, can work full-time with approval.",
-    "tips": "Taiwan offers many government scholarships (ICDF, MOE Taiwan Scholarship — up to NT$25,000/month stipend). Very safe, excellent public transit, affordable food. Mandarin courses available for free at most universities."
+    "tips": "Taiwan offers many government scholarships (ICDF, MOE Taiwan Scholarship \u2014 up to NT$25,000/month stipend). Very safe, excellent public transit, affordable food. Mandarin courses available for free at most universities."
   },
   {
     "country": "Egypt",
@@ -826,9 +850,9 @@
     "processing_time": "2-6 weeks",
     "cost_estimate": "$25-60 (varies by nationality)",
     "embassy_link": "https://www.egyptembassy.net/",
-    "financial_proof": "No strict minimum — scholarship letter or sponsor letter usually sufficient. Living costs are very low (~$200-400/month).",
-    "work_rights": "Generally not permitted on student visa. Focus on studies — living costs are very affordable.",
-    "tips": "Al-Azhar University offers fully funded scholarships for African students. Egyptian government scholarships available through embassies. Very affordable — Cairo is one of the cheapest capital cities for students. Arabic courses widely available."
+    "financial_proof": "No strict minimum \u2014 scholarship letter or sponsor letter usually sufficient. Living costs are very low (~$200-400/month).",
+    "work_rights": "Generally not permitted on student visa. Focus on studies \u2014 living costs are very affordable.",
+    "tips": "Al-Azhar University offers fully funded scholarships for African students. Egyptian government scholarships available through embassies. Very affordable \u2014 Cairo is one of the cheapest capital cities for students. Arabic courses widely available."
   },
   {
     "country": "Morocco",
@@ -848,10 +872,10 @@
     ],
     "processing_time": "2-4 weeks",
     "cost_estimate": "$30-70",
-    "embassy_link": "https://www.diplomatie.ma/en",
+    "embassy_link": "https://www.diplomatie.ma/",
     "financial_proof": "Approximately $300-500/month. Bank statements or scholarship confirmation. AMCI scholarship covers everything.",
     "work_rights": "Limited. Student visa primarily for study. Some part-time opportunities available informally.",
-    "tips": "Morocco offers AMCI (Agence Marocaine de Coopération Internationale) scholarships for African students — covers tuition, accommodation, and monthly stipend. Apply through your country's embassy. French and Arabic are main languages — many programs in French."
+    "tips": "Morocco offers AMCI (Agence Marocaine de Coop\u00e9ration Internationale) scholarships for African students \u2014 covers tuition, accommodation, and monthly stipend. Apply through your country's embassy. French and Arabic are main languages \u2014 many programs in French."
   },
   {
     "country": "Ghana",
@@ -869,10 +893,11 @@
     ],
     "processing_time": "2-4 weeks",
     "cost_estimate": "GHS 200-500 (~$15-40)",
-    "embassy_link": "https://www.gis.gov.gh/",
+    "embassy_link": "https://www.ghana.gov.gh/",
     "financial_proof": "Bank statements showing ability to cover tuition and living expenses. Scholarship letters accepted.",
     "work_rights": "Student permit holders generally cannot work. Some universities offer on-campus work opportunities.",
-    "tips": "Ghana is a major education hub in West Africa. University of Ghana (Legon), KNUST, and Ashesi are top institutions. English is the official language. Very welcoming to international students. Affordable living costs."
+    "tips": "Ghana is a major education hub in West Africa. University of Ghana (Legon), KNUST, and Ashesi are top institutions. English is the official language. Very welcoming to international students. Affordable living costs.",
+    "audience_note": "Information tailored for Ghanaian applicants \u2014 embassy links, costs, and tips may differ for other nationalities."
   },
   {
     "country": "Kenya",
@@ -924,18 +949,18 @@
       "Completed application form",
       "Passport photo",
       "University admission letter",
-      "Health insurance (minimum €30,000 coverage)",
-      "Proof of financial means (€4,704/year or €392/month)",
+      "Health insurance (minimum \u20ac30,000 coverage)",
+      "Proof of financial means (\u20ac4,704/year or \u20ac392/month)",
       "Proof of accommodation",
       "Criminal record extract",
       "Academic certificates"
     ],
     "processing_time": "30 days (D-visa) or 2 months (residence permit)",
-    "cost_estimate": "€80 (D-visa) or €130 (residence permit)",
+    "cost_estimate": "\u20ac80 (D-visa) or \u20ac130 (residence permit)",
     "embassy_link": "https://www.vm.ee/en",
-    "financial_proof": "€4,704/year (€392/month). Bank statements, blocked account, or scholarship letter.",
+    "financial_proof": "\u20ac4,704/year (\u20ac392/month). Bank statements, blocked account, or scholarship letter.",
     "work_rights": "No separate work permit needed. Can work alongside studies without restrictions.",
-    "tips": "Estonia is a digital society leader — e-Residency, digital IDs, everything online. Very tech-forward. University of Tartu and TalTech are top institutions. One of the most startup-friendly countries in Europe (birthplace of Skype)."
+    "tips": "Estonia is a digital society leader \u2014 e-Residency, digital IDs, everything online. Very tech-forward. University of Tartu and TalTech are top institutions. One of the most startup-friendly countries in Europe (birthplace of Skype)."
   },
   {
     "country": "Argentina",
@@ -976,7 +1001,7 @@
     "embassy_link": "https://www.cancilleria.gov.co/en",
     "financial_proof": "Minimum $650/month (approximately 3x Colombian minimum wage). Bank statements for last 3 months or scholarship letter.",
     "work_rights": "Student visa allows work directly related to studies (internships, practicas). Need to apply for work permit for other employment.",
-    "tips": "Colombia is increasingly popular for international students. Medellín is known as a tech and innovation hub. Spanish is essential. Very affordable living costs. Apply for cédula de extranjería upon arrival."
+    "tips": "Colombia is increasingly popular for international students. Medell\u00edn is known as a tech and innovation hub. Spanish is essential. Very affordable living costs. Apply for c\u00e9dula de extranjer\u00eda upon arrival."
   },
   {
     "country": "Philippines",
@@ -997,7 +1022,7 @@
     "embassy_link": "https://dfa.gov.ph/",
     "financial_proof": "Proof of ability to pay tuition and living expenses. Bank statements or scholarship/sponsor letter. Living costs are very low (~$300-500/month).",
     "work_rights": "Student visa holders cannot work. Some universities offer scholarship students allowances or assistantships.",
-    "tips": "Philippines is one of the most affordable English-speaking study destinations. Strong medical and nursing programs. Very friendly culture. Convert to Student Visa (9f) if you enter on tourist visa — talk to your university's international office."
+    "tips": "Philippines is one of the most affordable English-speaking study destinations. Strong medical and nursing programs. Very friendly culture. Convert to Student Visa (9f) if you enter on tourist visa \u2014 talk to your university's international office."
   },
   {
     "country": "Chile",

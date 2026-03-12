@@ -51,14 +51,14 @@ if os.path.exists(env_path):
 GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
 if not GROQ_API_KEY:
     # Fall back to the key pool used by app.py
-    for i in range(1, 10):
+    for i in range(1, 11):
         k = os.environ.get(f'GROQ_KEY_{i}', '')
         if k:
             GROQ_API_KEY = k
             break
 
 # Groq key pool for rotation (spreads rate limits across accounts)
-_GROQ_KEYS = [os.environ.get(f'GROQ_KEY_{i}', '') for i in range(1, 10)]
+_GROQ_KEYS = [os.environ.get(f'GROQ_KEY_{i}', '') for i in range(1, 11)]
 _GROQ_KEYS = [k for k in _GROQ_KEYS if k]
 if GROQ_API_KEY and GROQ_API_KEY not in _GROQ_KEYS:
     _GROQ_KEYS.insert(0, GROQ_API_KEY)

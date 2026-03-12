@@ -1,10 +1,11 @@
 {% extends "base.html" %}
 {% block title %}Cost of Living{% endblock %}
+{% block body_class %}{% endblock %}
 {% block content %}
 <section class="section">
     <div class="container">
         <h2 class="section-title">💰 Cost of Living</h2>
-        <p style="color:var(--text2);margin-bottom:20px;">Compare monthly living costs across 51 student cities worldwide</p>
+        <p style="color:var(--text2);margin-bottom:20px;">Compare monthly living costs across {{ costs|length }}+ student cities worldwide</p>
         <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
             <input type="text" id="citySearch" placeholder="🔍 Search cities..." class="form-input" style="max-width:300px;">
             <button class="btn btn-secondary btn-sm" id="toggleCompare">📊 Compare Two Cities</button>

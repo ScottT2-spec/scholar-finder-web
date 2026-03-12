@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Scholarships{% endblock %}
+{% block body_class %}{% endblock %}
 {% block content %}
 <section class="section">
     <div class="container">
@@ -16,7 +17,7 @@
         </div>
 
         <p id="resultsInfo" style="color: var(--text2); margin-bottom: 12px;"></p>
-        <div id="results" class="scroll-container" style="max-height:calc(100vh - 260px);"></div>
+        <div id="results"></div>
         <button id="loadMore" class="btn btn-secondary" style="display: none; margin: 20px auto;">Load More</button>
     </div>
 </section>

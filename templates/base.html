@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}ScholarFinder{% endblock %} — Study Abroad Platform</title>
-    <meta name="description" content="Find 485+ scholarships, 86 universities, and 138 opportunities to study abroad. Free tools: essay rater, resume review, school matcher, visa guides, cost of living comparison.">
+    <meta name="description" content="Find 500+ scholarships, 200+ universities, and 180+ opportunities to study abroad. Free tools: essay rater, resume review, school matcher, visa guides, cost of living comparison.">
     <meta name="keywords" content="scholarships, study abroad, universities, international students, funding, opportunities, STEM, scholarship finder, global, worldwide">
     <meta name="author" content="Scott Antwi — Alpha Global Minds">
     <meta name="google-site-verification" content="zzKbvY2042VwsudBL454uiEItDuI7XSbc3sSR61L6GE">
     <meta property="og:title" content="ScholarFinder — Find Your Perfect Scholarship Match">
-    <meta property="og:description" content="Search 485+ scholarships, 86 universities, and 138 opportunities worldwide. Free tools for students.">
+    <meta property="og:description" content="Search 500+ scholarships, 200+ universities, and 180+ opportunities worldwide. Free tools for students.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://scholarfinder.pythonanywhere.com">
     <link rel="canonical" href="https://scholarfinder.pythonanywhere.com">
@@ -89,16 +89,16 @@
             --bg2: #050505;
             --card: rgba(255, 255, 255, 0.04);
             --card-hover: rgba(255, 255, 255, 0.07);
-            --accent: #00E5C3;
-            --accent2: #00B894;
-            --accent-light: rgba(0, 229, 195, 0.12);
-            --accent-lighter: transparent;
-            --grad: linear-gradient(135deg, #00E5C3, #00B894);
-            --grad2: linear-gradient(135deg, #00E5C3, #00B4E5);
+            --accent: #2ECC71;
+            --accent2: #27AE60;
+            --accent-light: rgba(46, 204, 113, 0.12);
+            --accent-lighter: rgba(46, 204, 113, 0.04);
+            --grad: linear-gradient(135deg, #2ECC71, #27AE60);
+            --grad2: linear-gradient(135deg, #2ECC71, #4ECDC4);
             --text: rgba(255, 255, 255, 0.92);
             --text2: #8899A6;
             --text3: #4A6580;
-            --success: #00E5C3;
+            --success: #2ECC71;
             --success-bg: rgba(16, 185, 129, 0.1);
             --warning: #f59e0b;
             --warning-bg: rgba(245, 158, 11, 0.1);
@@ -118,6 +118,9 @@
         *, *::before, *::after { transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
         html { scroll-behavior: smooth; }
         body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; overflow-x: hidden; position: relative; }
+        body::before { content: ''; position: fixed; top: -20%; left: -10%; width: 500px; height: 500px; background: radial-gradient(circle, rgba(46, 204, 113, 0.12) 0%, transparent 70%); border-radius: 50%; z-index: 0; pointer-events: none; }
+        body::after { content: ''; position: fixed; bottom: -10%; right: -10%; width: 600px; height: 600px; background: radial-gradient(circle, rgba(139, 92, 246, 0.10) 0%, transparent 70%); border-radius: 50%; z-index: 0; pointer-events: none; }
+        main, .footer, nav { position: relative; z-index: 1; }
         a { color: var(--accent); text-decoration: none; transition: 0.2s; }
         a:hover { color: var(--accent2); }
 
@@ -152,7 +155,7 @@
         .hamburger span { display: block; width: 20px; height: 2px; background: var(--text); border-radius: 2px; transition: 0.2s; }
 
         /* Slide-out menu */
-        .menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 200; opacity: 0; pointer-events: none; transition: 0.3s; }
+        .menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 200; opacity: 0; pointer-events: none; transition: 0.3s; touch-action: none; overscroll-behavior: contain; }
         .menu-overlay.open { opacity: 1; pointer-events: auto; }
         .slide-menu {
             position: fixed; top: 0; right: -300px; width: 280px; height: 100%;
@@ -199,12 +202,12 @@
 
         /* Buttons */
         .btn { display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; border-radius: 12px; font-size: 0.95rem; font-weight: 600; border: none; cursor: pointer; transition: 0.3s; text-decoration: none; font-family: var(--font); }
-        .btn-primary { background: linear-gradient(135deg, #00E5C3, #00B894); color: #000000; box-shadow: 0 0 20px rgba(0,229,195,0.25); border-radius: 12px; font-weight: 700; letter-spacing: -0.01em; }
-        .btn-primary:hover { transform: translateY(-1px); opacity: 0.9; color: #000000; box-shadow: 0 8px 24px rgba(0,229,195,0.2); }
+        .btn-primary { background: linear-gradient(135deg, #2ECC71, #27AE60); color: #000000; box-shadow: 0 0 20px rgba(46,204,113,0.25); border-radius: 12px; font-weight: 700; letter-spacing: -0.01em; }
+        .btn-primary:hover { transform: translateY(-1px); opacity: 0.9; color: #000000; box-shadow: 0 8px 24px rgba(46,204,113,0.2); }
         .btn-secondary { background: transparent; color: var(--text); border: 1px solid #3D5A73; border-radius: 12px; }
-        .btn-secondary:hover { background: rgba(0,229,195,0.06); border-color: #00E5C3; color: #00E5C3; }
-        .btn-accent { background: linear-gradient(135deg, #00E5C3, #00B894); color: #000000; box-shadow: none; border-radius: 12px; font-weight: 600; }
-        .btn-accent:hover { transform: translateY(-1px); opacity: 0.9; color: #000000; box-shadow: 0 8px 24px rgba(0,229,195,0.2); }
+        .btn-secondary:hover { background: rgba(46,204,113,0.06); border-color: #2ECC71; color: #2ECC71; }
+        .btn-accent { background: linear-gradient(135deg, #2ECC71, #27AE60); color: #000000; box-shadow: none; border-radius: 12px; font-weight: 600; }
+        .btn-accent:hover { transform: translateY(-1px); opacity: 0.9; color: #000000; box-shadow: 0 8px 24px rgba(46,204,113,0.2); }
         .btn-danger { background: var(--danger-bg); color: var(--danger); }
         .btn-success { background: var(--success-bg); color: var(--success); }
         .btn-sm { padding: 8px 16px; font-size: 0.82rem; border-radius: 8px; }
@@ -213,14 +216,14 @@
 
         .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
 
-        .card { background: #111111; border: 1px solid #222222; border-radius: var(--radius); padding: 28px; transition: 0.3s ease; }
-        .card:hover { border-color: rgba(0,229,195,0.3); transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.3), 0 0 20px rgba(0,229,195,0.05); }
+        .card { background: rgba(20, 20, 20, 0.7); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--radius); padding: 28px; transition: 0.3s ease; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05); }
+        .card:hover { border-color: rgba(46,204,113,0.3); transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.3), 0 0 20px rgba(0,229,195,0.05); }
 
         .form-group { margin-bottom: 18px; }
         .form-group label { display: block; margin-bottom: 6px; color: var(--text); font-size: 0.88rem; font-weight: 600; }
         .form-group .required { color: var(--danger); }
-        .form-input { width: 100%; padding: 14px 18px; background: #0a0a0a; border: 1px solid #222222; border-radius: var(--radius-sm); color: var(--text); font-size: 0.85rem; font-family: var(--font); transition: 0.3s; box-sizing: border-box; }
-        .form-input:focus { outline: none; border-color: #00E5C3; box-shadow: 0 0 0 3px rgba(0,229,195,0.1); background: #0a0a0a; color: #fff; }
+        .form-input { width: 100%; padding: 14px 18px; background: #0a0a0a; border: 1px solid #222222; border-radius: var(--radius-sm); color: var(--text); font-size: 16px; font-family: var(--font); transition: 0.3s; box-sizing: border-box; }
+        .form-input:focus { outline: none; border-color: #2ECC71; box-shadow: 0 0 0 3px rgba(46,204,113,0.15); background: #0a0a0a; color: #fff; }
         .form-input::placeholder { color: #5A7A96; }
         select.form-input { cursor: pointer; }
         textarea.form-input { resize: vertical; min-height: 90px; }
@@ -246,12 +249,21 @@
         /* Hero */
         .hero { text-align: center; padding: 120px 20px 80px; }
         .hero h1 { font-size: 1.2rem; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 20px; line-height: 1.1; }
-        .hero h1 .grad-text { background: linear-gradient(90deg, #00E5C3, #00B4E5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .hero h1 .grad-text { background: linear-gradient(90deg, #2ECC71, #4ECDC4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .hero p { color: var(--text2); font-size: 1.1rem; max-width: 520px; margin: 0 auto 36px; line-height: 1.7; }
         .hero .stat-row { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; margin: 40px 0; }
         .hero .stat-item { text-align: center; background: #111111; border: 1px solid #222222; border-radius: var(--radius); padding: 24px 32px; min-width: 120px; }
         .hero .stat-num { font-size: 2.2rem; font-weight: 800; color: #fff; }
         .hero .stat-label { color: var(--text3); font-size: 0.8rem; font-weight: 500; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+        /* University Logo Ticker */
+        .uni-ticker-wrap { margin-top: 48px; }
+        .uni-ticker-label { text-align: center; color: var(--text3); font-size: 0.78rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 20px; }
+        .uni-ticker { overflow: hidden; position: relative; }
+        .uni-ticker-track { display: flex; align-items: center; width: max-content; will-change: transform; }
+        .uni-ticker-set { display: flex; align-items: center; gap: 48px; padding-right: 48px; flex-shrink: 0; }
+        .uni-ticker-track img { height: 44px; width: auto; opacity: 0.8; flex-shrink: 0; object-fit: contain; pointer-events: none; -webkit-user-select: none; user-select: none; -webkit-user-drag: none; }
+        @media (max-width: 640px) { .uni-ticker-track img { height: 34px; } .uni-ticker-wrap { margin-top: 36px; } }
 
         /* Carousel */
         .carousel-section { padding: 0 16px 48px; overflow: hidden; }
@@ -283,13 +295,13 @@
         .scholarship-card .actions { margin-top: 12px; display: flex; gap: 8px; }
 
         .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.73rem; font-weight: 600; }
-        .badge-blue { background: rgba(0,229,195,0.12); color: #00E5C3; }
+        .badge-blue { background: rgba(46,204,113,0.12); color: #2ECC71; }
         .badge-green { background: var(--success-bg); color: var(--success); }
         .badge-yellow { background: var(--warning-bg); color: var(--warning); }
         .badge-red { background: var(--danger-bg); color: var(--danger); }
 
         .dash-stats { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 28px; }
-        .dash-stat { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; flex: 1; min-width: 140px; text-align: center; box-shadow: var(--shadow-sm); }
+        .dash-stat { background: rgba(20, 20, 20, 0.7); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--radius); padding: 24px; flex: 1; min-width: 140px; text-align: center; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05); }
         .dash-stat .num { font-size: 2rem; font-weight: 800; color: var(--accent); }
         .dash-stat .label { color: var(--text2); font-size: 0.82rem; font-weight: 500; }
 
@@ -299,14 +311,14 @@
         .auth-box .sub { text-align: center; color: var(--text2); margin-bottom: 28px; font-size: 0.85rem; }
 
         .feature-card { background: #111111; border: 1px solid #222222; border-radius: var(--radius); padding: 32px; text-align: center; transition: 0.3s ease; }
-        .feature-card:hover { transform: translateY(-4px); border-color: rgba(0,229,195,0.3); box-shadow: 0 12px 40px rgba(0,0,0,0.3), 0 0 24px rgba(0,229,195,0.08); }
+        .feature-card:hover { transform: translateY(-4px); border-color: rgba(46,204,113,0.3); box-shadow: 0 12px 40px rgba(0,0,0,0.3), 0 0 24px rgba(46,204,113,0.08); }
         .feature-card .icon { font-size: 1.5rem; margin-bottom: 16px; }
         .feature-card h3 { font-size: 0.82rem; font-weight: 700; margin-bottom: 8px; }
         .feature-card p { color: var(--text2); font-size: 0.88rem; line-height: 1.6; }
 
         /* Tool cards */
         .tool-card { background: #111111; border: 1px solid #222222; border-radius: var(--radius); padding: 28px; transition: 0.3s ease; cursor: pointer; text-decoration: none; color: var(--text); display: block; }
-        .tool-card:hover { transform: translateY(-2px); border-color: rgba(0,229,195,0.3); color: var(--text); box-shadow: 0 0 24px rgba(0,229,195,0.08); }
+        .tool-card:hover { transform: translateY(-2px); border-color: rgba(46,204,113,0.3); color: var(--text); box-shadow: 0 0 24px rgba(46,204,113,0.08); }
         .tool-card .tool-icon { font-size: 2rem; margin-bottom: 12px; }
         .tool-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
         .tool-card p { color: var(--text2); font-size: 0.85rem; line-height: 1.5; }
@@ -380,6 +392,58 @@
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             overscroll-behavior: contain;
+        }
+
+        /* Full-page app mode: content fills viewport below nav, scrolls independently */
+        body.page-app {
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        body.page-app main {
+            flex: 1 1 0;
+            min-height: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        body.page-app main .section {
+            flex: 1 1 0;
+            min-height: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        body.page-app main .section > .container {
+            flex: 1 1 0;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+            display: flex;
+            flex-direction: column;
+        }
+        /* Auth pages (login/signup/verify) inside page-app: scrollable, centered via auto margins */
+        body.page-app main .auth-page {
+            flex: 1 1 0;
+            min-height: 0 !important;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+            display: block;
+            padding: 20px 20px 40px;
+        }
+        body.page-app main .auth-page .auth-box {
+            margin: auto;
+        }
+
+        body.page-app .footer,
+        body.page-app .footer + div {
+            display: none;
         }
         body.scroll-lock {
             overflow: hidden !important;
@@ -472,7 +536,7 @@
         will-change: transform, opacity;
     }
     .p1  { width:4px; height:4px; background:rgba(255,255,255,0.2);  top:8%;  left:12%; animation: pFloat1 12s ease-in-out infinite alternate; }
-    .p2  { width:3px; height:3px; background:rgba(0,229,195,0.25);   top:15%; right:20%; animation: pFloat2 15s ease-in-out infinite alternate; }
+    .p2  { width:3px; height:3px; background:rgba(46,204,113,0.25);   top:15%; right:20%; animation: pFloat2 15s ease-in-out infinite alternate; }
     .p3  { width:5px; height:5px; background:rgba(255,255,255,0.15); top:22%; left:45%; animation: pFloat3 18s ease-in-out infinite alternate; }
     .p4  { width:3px; height:3px; background:rgba(139,92,246,0.22);  top:30%; left:8%;  animation: pFloat4 14s ease-in-out infinite alternate; }
     .p5  { width:6px; height:6px; background:rgba(255,255,255,0.12); top:35%; right:12%; animation: pFloat1 20s ease-in-out infinite alternate; }
@@ -484,7 +548,7 @@
     .p11 { width:4px; height:4px; background:rgba(255,255,255,0.16); top:75%; right:28%; animation: pFloat3 14s ease-in-out infinite alternate; }
     .p12 { width:3px; height:3px; background:rgba(255,255,255,0.2);  top:82%; left:40%; animation: pFloat4 16s ease-in-out infinite alternate; }
     .p13 { width:2px; height:2px; background:rgba(139,92,246,0.18); top:12%; left:65%; animation: pFloat1 21s ease-in-out infinite alternate; }
-    .p14 { width:4px; height:4px; background:rgba(0,229,195,0.2);   top:88%; right:45%; animation: pFloat2 13s ease-in-out infinite alternate; }
+    .p14 { width:4px; height:4px; background:rgba(46,204,113,0.2);   top:88%; right:45%; animation: pFloat2 13s ease-in-out infinite alternate; }
     .p15 { width:3px; height:3px; background:rgba(255,255,255,0.22); top:5%;  right:40%; animation: pFloat3 15s ease-in-out infinite alternate; }
 
     @keyframes pFloat1 {
@@ -545,7 +609,7 @@
     </style>
     {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
     <div class="geo-decor geo-arc-1"></div>
     <div class="geo-decor geo-arc-2"></div>
     <div class="geo-decor geo-arc-3"></div>
@@ -605,27 +669,27 @@
             <button class="menu-close" onclick="toggleMenu()">×</button>
         </div>
         <div class="menu-links">
+            <a href="/" class="menu-link" onclick="toggleMenu()"><span class="icon">🏠</span> Home</a>
             {% if user %}
-            <a href="/dashboard" class="menu-link"><span class="icon">📊</span> Dashboard</a>
-            <a href="/profile" class="menu-link"><span class="icon">👤</span> Profile</a>
+            <a href="/dashboard" class="menu-link" onclick="toggleMenu()"><span class="icon">📊</span> Dashboard</a>
+            <a href="/profile" class="menu-link" onclick="toggleMenu()"><span class="icon">👤</span> Profile</a>
             <div class="menu-divider"></div>
             {% endif %}
-            <a href="/scholarships" class="menu-link"><span class="icon">🎯</span> Scholarships</a>
-            <a href="/universities" class="menu-link"><span class="icon">🏫</span> Universities</a>
-            <a href="/opportunities" class="menu-link"><span class="icon">🚀</span> Opportunities</a>
-            <a href="/cost-of-living" class="menu-link"><span class="icon">💰</span> Cost of Living</a>
-            <a href="/visa-guide" class="menu-link"><span class="icon">🛂</span> Visa Guide</a>
-            <a href="/test-prep" class="menu-link"><span class="icon">📝</span> Test Prep</a>
-            <a href="/faq" class="menu-link"><span class="icon">❓</span> FAQ</a>
+            <a href="/scholarships" class="menu-link" onclick="toggleMenu()"><span class="icon">🎯</span> Scholarships</a>
+            <a href="/universities" class="menu-link" onclick="toggleMenu()"><span class="icon">🏫</span> Universities</a>
+            <a href="/opportunities" class="menu-link" onclick="toggleMenu()"><span class="icon">🚀</span> Opportunities</a>
+            <a href="/cost-of-living" class="menu-link" onclick="toggleMenu()"><span class="icon">💰</span> Cost of Living</a>
+            <a href="/visa-guide" class="menu-link" onclick="toggleMenu()"><span class="icon">🛂</span> Visa Guide</a>
+            <a href="/test-prep" class="menu-link" onclick="toggleMenu()"><span class="icon">📝</span> Test Prep</a>
+            <a href="/faq" class="menu-link" onclick="toggleMenu()"><span class="icon">❓</span> FAQ</a>
             <div class="menu-divider"></div>
-            <a href="/tools/essay-rater" class="menu-link"><span class="icon">✍️</span> Essay Rater</a>
-            <a href="/tools/resume-review" class="menu-link"><span class="icon">📄</span> Resume Review</a>
+            <a href="/tools/essay-rater" class="menu-link" onclick="toggleMenu()"><span class="icon">✍️</span> Essay Rater</a>
+            <a href="/tools/resume-review" class="menu-link" onclick="toggleMenu()"><span class="icon">📄</span> Resume Review</a>
             <a href="/#ai-agents" class="menu-link" onclick="toggleMenu()"><span class="icon">🤖</span> AI Agents</a>
             <div class="menu-divider"></div>
-            <a href="https://t.me/ScholarFinder_bot" class="menu-link" target="_blank"><span class="icon">📱</span> Telegram Bot</a>
-            <a href="https://github.com/ScottT2-spec" class="menu-link" target="_blank"><span class="icon">💻</span> GitHub</a>
+
             {% if user and user.is_admin %}
-            <a href="/admin" class="menu-link"><span class="icon">⚙️</span> Admin</a>
+            <a href="/admin" class="menu-link" onclick="toggleMenu()"><span class="icon">⚙️</span> Admin</a>
             {% endif %}
         </div>
         {% if user %}
@@ -649,18 +713,20 @@
 
     <footer class="footer">
         <p>© 2026 <strong>Scott Antwi</strong> | Alpha Global Minds 🌍</p>
-        <p style="margin-top: 6px;"><a href="https://t.me/ScholarFinder_bot">📱 Telegram Bot</a> · <a href="https://github.com/ScottT2-spec">💻 GitHub</a></p>
+        <p style="margin-top: 10px; display:flex; justify-content:center; gap:16px; align-items:center;"><a href="https://t.me/ScholarFinder_bot" target="_blank" title="Telegram" style="color:var(--text2);transition:0.2s;"><svg height="20" width="20" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg></a><a href="https://github.com/ScottT2-spec" target="_blank" title="GitHub" style="color:var(--text2);transition:0.2s;"><svg height="20" width="20" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a><a href="https://www.instagram.com/bb_scott1" target="_blank" title="Instagram" style="color:var(--text2);transition:0.2s;"><svg height="20" width="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg></a><a href="https://www.linkedin.com/in/scott-antwi" target="_blank" title="LinkedIn" style="color:var(--text2);transition:0.2s;"><svg height="20" width="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a></p>
     </footer>
 
     <!-- Contact Bar -->
-    <div style="background:rgba(255,255,255,0.02);color:rgba(255,255,255,0.5);text-align:center;padding:20px 20px 90px 20px;font-size:0.85rem;line-height:2;border-top:1px solid rgba(255,255,255,0.08);">
-        <strong style="color:rgba(255,255,255,0.7);">📩 For more enquiries &amp; updates</strong><br>
-        📱 WhatsApp: <a href="https://wa.me/233549545063" style="color:#a78bfa;text-decoration:none;font-weight:600;">+233 549 545 063</a><br>
-        ✉️ Email: <a href="mailto:scottantwi930@gmail.com" style="color:#a78bfa;text-decoration:none;font-weight:600;">scottantwi930@gmail.com</a>
+    <div style="background:rgba(255,255,255,0.02);color:rgba(255,255,255,0.5);text-align:center;padding:20px 20px 90px 20px;font-size:0.85rem;border-top:1px solid rgba(255,255,255,0.08);">
+        <p style="color:rgba(255,255,255,0.5);font-size:0.8rem;margin-bottom:12px;">Enquiries &amp; updates</p>
+        <div style="display:flex;justify-content:center;gap:20px;align-items:center;">
+            <a href="https://wa.me/233549545063" target="_blank" title="WhatsApp" style="color:var(--text2);transition:0.2s;"><svg height="22" width="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>
+            <a href="mailto:scottantwi930@gmail.com" title="Email" style="color:var(--text2);transition:0.2s;"><svg height="22" width="22" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></a>
+        </div>
     </div>
 
     <!-- Chat Overlay -->
-    <div id="chatOverlay" onclick="toggleChat()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:299;"></div>
+    <div id="chatOverlay" onclick="toggleChat()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:299;touch-action:none;overscroll-behavior:contain;"></div>
 
     <!-- Chat Window (separate from FAB so it can go truly fullscreen) -->
     <div id="chatWindow" class="chat-fullscreen" style="display:none;">
@@ -913,5 +979,33 @@ User is not logged in (guest).
     </script>
 
     {% block scripts %}{% endblock %}
+
+    <script>
+    // Seamless logo ticker - calculates exact width for perfect loop
+    (function() {
+        const track = document.querySelector('.uni-ticker-track');
+        if (!track) return;
+        const sets = track.querySelectorAll('.uni-ticker-set');
+        if (sets.length < 2) return;
+        
+        let offset = 0;
+        const speed = 0.5; // pixels per frame (~30px/sec at 60fps)
+        
+        function animate() {
+            const setWidth = sets[0].offsetWidth;
+            offset -= speed;
+            if (Math.abs(offset) >= setWidth) {
+                offset += setWidth;
+            }
+            track.style.transform = 'translateX(' + offset + 'px)';
+            requestAnimationFrame(animate);
+        }
+        
+        // Wait for images to load so widths are accurate
+        window.addEventListener('load', function() {
+            requestAnimationFrame(animate);
+        });
+    })();
+    </script>
 </body>
 </html>

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Dashboard{% endblock %}
+{% block body_class %}{% endblock %}
 {% block content %}
 <section class="section">
     <div class="container">
@@ -24,6 +25,18 @@
             <a href="/profile" class="btn btn-secondary btn-sm">✏️ Edit Profile</a>
             <a href="/scholarships" class="btn btn-secondary btn-sm">🔍 Search Scholarships</a>
             {% if user.is_admin %}<a href="/admin" class="btn btn-secondary btn-sm">⚙️ Admin</a>{% endif %}
+        </div>
+
+        <!-- PERSONALIZED RECOMMENDATIONS (loads automatically via AI) -->
+        <div id="recommendations-section" style="margin-bottom: 24px;">
+            <div id="rec-loading" style="text-align:center;padding:20px;">
+                <div style="display:inline-flex;align-items:center;gap:10px;color:var(--text3);font-size:0.9rem;">
+                    <div style="width:18px;height:18px;border:2px solid var(--border);border-top:2px solid var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+                    Finding your best matches...
+                </div>
+            </div>
+            <div id="rec-scholarships" style="display:none;"></div>
+            <div id="rec-universities" style="display:none;"></div>
         </div>
 
         <!-- PANEL: SAVED -->
@@ -59,6 +72,7 @@
                 <h3>📅 Upcoming Deadlines</h3>
                 <button class="panel-close" onclick="closePanel()">✕</button>
             </div>
+            <div>
             {% if deadlines %}
             {% for d in deadlines %}
             <div class="card" style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
@@ -74,6 +88,7 @@
                 {% endif %}
             </div>
             {% endfor %}
+            </div>
             {% else %}
             <div class="card" style="text-align: center; padding: 40px;">
                 <p style="font-size: 1.1rem; color: var(--text2);">📅 No deadlines to show</p>
@@ -83,38 +98,7 @@
             {% endif %}
         </div>
 
-        <!-- Top Matches -->
-        <h3 style="margin: 24px 0 12px;">🎯 Top Matches For You</h3>
-        <div id="matchedSection" style="margin-bottom: 32px;">
-            <!-- Server-rendered fallback, replaced by AI results -->
-            {% if matched %}
-            {% for s in matched %}
-            <div class="card scholarship-card" style="margin-bottom: 10px;">
-                <h3>{{ s.get('name', s.get('title', 'Scholarship')) }}</h3>
-                <div class="meta">
-                    {% if s.get('country') %}<span>📍 {{ s.country }}</span>{% endif %}
-                    {% if s.get('level') %}<span>📚 {{ s.level }}</span>{% endif %}
-                    {% if s.get('amount') %}<span>💰 {{ s.amount }}</span>{% endif %}
-                    {% if s.get('deadline') %}<span>⏰ {{ s.deadline }}</span>{% endif %}
-                </div>
-                {% if s.get('description') %}
-                <p style="color: var(--text2); font-size: 0.9rem; margin-top: 8px;">{{ s.description[:150] }}{% if s.description|length > 150 %}...{% endif %}</p>
-                {% endif %}
-                <div class="actions">
-                    <button class="btn btn-sm btn-primary bookmark-btn" data-type="scholarship" data-name="{{ s.get('name', s.get('title', '')) }}">📌 Save</button>
-                    {% if s.get('link') or s.get('url') %}
-                    <a href="{{ s.get('link', s.get('url', '#')) }}" target="_blank" class="btn btn-sm btn-secondary">View →</a>
-                    {% endif %}
-                </div>
-            </div>
-            {% endfor %}
-            {% elif not user.country and not user.field_of_study %}
-            <div class="card" style="text-align: center; padding: 40px;">
-                <p style="font-size: 1.2rem;">🎯 Complete your profile to get matched scholarships!</p>
-                <a href="/profile" class="btn btn-primary" style="margin-top: 16px;">Set Up Profile →</a>
-            </div>
-            {% endif %}
-        </div>
+
     </div>
 </section>
 {% endblock %}
@@ -132,6 +116,36 @@
 @keyframes panelIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
 .deadline-badge { display:inline-block; background:#fef3c7; color:#92400e; font-size:0.82rem; font-weight:600; padding:3px 10px; border-radius:20px; }
 @keyframes fadeIn { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+@keyframes spin { to{transform:rotate(360deg)} }
+
+/* Recommendation cards */
+.rec-section-title {
+    font-size: 1rem; font-weight: 700; color: var(--text);
+    margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+}
+.rec-section-title .rec-badge {
+    font-size: 0.65rem; font-weight: 600; color: var(--accent);
+    background: rgba(107,33,168,0.1); padding: 3px 8px; border-radius: 100px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+}
+.rec-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px; margin-bottom: 10px; animation: fadeIn 0.4s ease;
+    transition: border-color 0.2s;
+}
+.rec-card:hover { border-color: rgba(107,33,168,0.3); }
+.rec-card h4 { font-size: 0.95rem; color: var(--text); margin: 0 0 4px; }
+.rec-card .rec-reason { font-size: 0.82rem; color: var(--accent); margin-bottom: 8px; }
+.rec-card .rec-meta { display: flex; flex-wrap: wrap; gap: 10px; font-size: 0.8rem; color: var(--text3); margin-bottom: 10px; }
+.rec-card .rec-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.rec-summary {
+    background: linear-gradient(135deg, rgba(107,33,168,0.06), rgba(32,178,170,0.04));
+    border: 1px solid rgba(107,33,168,0.15); border-radius: var(--radius);
+    padding: 14px 18px; margin-bottom: 20px; font-size: 0.9rem; color: var(--text2); line-height: 1.5;
+}
+.rec-no-profile {
+    text-align: center; padding: 32px; color: var(--text3);
+}
 </style>
 
 <script>
@@ -168,67 +182,6 @@ document.querySelectorAll('.remove-btn').forEach(btn => {
     btn.addEventListener('click', async () => { await fetch(`/api/bookmarks/${btn.dataset.id}`, {method:'DELETE'}); location.reload(); });
 });
 
-// AI-powered recommendations (silent, replaces server-rendered matches)
-(async function() {
-    try {
-        const res = await fetch('/api/ai-recommendations');
-        if (!res.ok) return;
-        const data = await res.json();
-        if (data.error) return; // incomplete profile, keep server fallback
-
-        const container = document.getElementById('matchedSection');
-        let html = '';
-
-        if (data.scholarships && data.scholarships.length) {
-            html += data.scholarships.map(s => `
-                <div class="card scholarship-card" style="margin-bottom:10px;animation:fadeIn 0.3s ease;">
-                    <h3>${s.name}</h3>
-                    <div class="meta">
-                        ${s.country ? '<span>📍 '+s.country+'</span>' : ''}
-                        ${s.level ? '<span>📚 '+s.level+'</span>' : ''}
-                        ${s.funding ? '<span>💰 '+s.funding+'</span>' : ''}
-                        ${s.deadline ? '<span>⏰ '+s.deadline+'</span>' : ''}
-                    </div>
-                    <div class="actions" style="margin-top:8px;">
-                        <button class="btn btn-sm btn-primary ai-save-btn" data-type="scholarship" data-name="${s.name}">📌 Save</button>
-                        ${s.link ? '<a href="'+s.link+'" target="_blank" class="btn btn-sm btn-secondary">View →</a>' : ''}
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        if (data.universities && data.universities.length) {
-            html += '<h3 style="margin:20px 0 12px;">🏫 Universities For You</h3>';
-            html += data.universities.map(u => `
-                <div class="card scholarship-card" style="margin-bottom:10px;animation:fadeIn 0.3s ease;">
-                    <h3>${u.name}</h3>
-                    <div class="meta">
-                        ${u.country ? '<span>📍 '+u.country+'</span>' : ''}
-                        ${u.ranking ? '<span>🏆 Rank: '+u.ranking+'</span>' : ''}
-                    </div>
-                    <div class="actions" style="margin-top:8px;">
-                        <button class="btn btn-sm btn-primary ai-save-btn" data-type="university" data-name="${u.name}">📌 Save</button>
-                        ${u.link ? '<a href="'+u.link+'" target="_blank" class="btn btn-sm btn-secondary">View →</a>' : ''}
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        if (html) {
-            container.innerHTML = html;
-            container.querySelectorAll('.ai-save-btn').forEach(btn => {
-                btn.onclick = async () => {
-                    const r = await fetch('/api/bookmarks', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({type:btn.dataset.type, name:btn.dataset.name}) });
-                    if (r.ok) { btn.textContent = '✅ Saved'; btn.disabled = true; }
-                    else if (r.status === 409) { btn.textContent = '✅ Already saved'; btn.disabled = true; }
-                };
-            });
-        }
-    } catch(e) {
-        // Silently fail — server-rendered matches stay as fallback
-    }
-})();
-
 // Live-refresh saved
 (function() {
     let lastCount = {{ bookmarks|length }};
@@ -260,5 +213,112 @@ document.querySelectorAll('.remove-btn').forEach(btn => {
     document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshSaved(); });
 })();
 async function removeBookmark(id) { await fetch('/api/bookmarks/'+id, {method:'DELETE'}); location.reload(); }
+
+// ============================================
+// PERSONALIZED AI RECOMMENDATIONS (auto-load)
+// ============================================
+(function() {
+    const loading = document.getElementById('rec-loading');
+    const scholSection = document.getElementById('rec-scholarships');
+    const uniSection = document.getElementById('rec-universities');
+    const wrapper = document.getElementById('recommendations-section');
+
+    function escapeHtml(s) { if (!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    function renderScholarships(items) {
+        if (!items || !items.length) return;
+        let html = '<div class="rec-section-title">🎓 Recommended Scholarships <span class="rec-badge">Personalized</span></div>';
+        html += items.map((s, i) => `
+            <div class="rec-card" style="animation-delay:${i * 0.08}s;">
+                <h4>${escapeHtml(s.name)}</h4>
+                ${s.reason ? '<div class="rec-reason">✨ ' + escapeHtml(s.reason) + '</div>' : ''}
+                <div class="rec-meta">
+                    ${s.country ? '<span>📍 ' + escapeHtml(s.country) + '</span>' : ''}
+                    ${s.level ? '<span>📚 ' + escapeHtml(String(s.level)) + '</span>' : ''}
+                    ${s.funding ? '<span>💰 ' + escapeHtml(s.funding) + '</span>' : ''}
+                    ${s.deadline ? '<span>⏰ ' + escapeHtml(s.deadline) + '</span>' : ''}
+                </div>
+                <div class="rec-actions">
+                    <button class="btn btn-sm btn-primary rec-save-btn" data-type="scholarship" data-name="${escapeHtml(s.name)}">📌 Save</button>
+                    ${s.link ? '<a href="' + escapeHtml(s.link) + '" target="_blank" class="btn btn-sm btn-secondary">Apply →</a>' : ''}
+                </div>
+            </div>
+        `).join('');
+        scholSection.innerHTML = html;
+        scholSection.style.display = 'block';
+    }
+
+    function renderUniversities(items) {
+        if (!items || !items.length) return;
+        let html = '<div class="rec-section-title" style="margin-top:24px;">🏫 Recommended Universities <span class="rec-badge">Personalized</span></div>';
+        html += items.map((u, i) => `
+            <div class="rec-card" style="animation-delay:${i * 0.08}s;">
+                <h4>${escapeHtml(u.name)}</h4>
+                ${u.reason ? '<div class="rec-reason">✨ ' + escapeHtml(u.reason) + '</div>' : ''}
+                <div class="rec-meta">
+                    ${u.country ? '<span>📍 ' + escapeHtml(u.country) + '</span>' : ''}
+                    ${u.ranking ? '<span>🏆 ' + escapeHtml(String(u.ranking)) + '</span>' : ''}
+                </div>
+                <div class="rec-actions">
+                    <button class="btn btn-sm btn-primary rec-save-btn" data-type="university" data-name="${escapeHtml(u.name)}">📌 Save</button>
+                    ${u.link ? '<a href="' + escapeHtml(u.link) + '" target="_blank" class="btn btn-sm btn-secondary">View →</a>' : ''}
+                </div>
+            </div>
+        `).join('');
+        uniSection.innerHTML = html;
+        uniSection.style.display = 'block';
+    }
+
+    function bindSaveButtons() {
+        document.querySelectorAll('.rec-save-btn').forEach(btn => {
+            btn.onclick = async () => {
+                const r = await fetch('/api/bookmarks', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: btn.dataset.type, name: btn.dataset.name })
+                });
+                if (r.ok) { btn.textContent = '✅ Saved'; btn.disabled = true; }
+                else if (r.status === 409) { btn.textContent = '✅ Already saved'; btn.disabled = true; }
+            };
+        });
+    }
+
+    async function loadRecommendations() {
+        try {
+            const res = await fetch('/api/ai-recommendations');
+            if (!res.ok) { loading.style.display = 'none'; return; }
+            const data = await res.json();
+
+            if (data.error === 'incomplete_profile') {
+                loading.style.display = 'none';
+                wrapper.innerHTML = '<div class="rec-no-profile"><p style="font-size:1rem;margin-bottom:12px;">🎯 Complete your profile to get personalized recommendations</p><a href="/profile" class="btn btn-primary btn-sm">Set Up Profile →</a></div>';
+                return;
+            }
+
+            loading.style.display = 'none';
+
+            if (data.summary) {
+                const summaryEl = document.createElement('div');
+                summaryEl.className = 'rec-summary';
+                summaryEl.innerHTML = '🤖 ' + escapeHtml(data.summary);
+                wrapper.insertBefore(summaryEl, scholSection);
+            }
+
+            renderScholarships(data.scholarships);
+            renderUniversities(data.universities);
+            bindSaveButtons();
+
+        } catch(e) {
+            loading.style.display = 'none';
+        }
+    }
+
+    // Auto-load on page ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadRecommendations);
+    } else {
+        loadRecommendations();
+    }
+})();
 </script>
 {% endblock %}
