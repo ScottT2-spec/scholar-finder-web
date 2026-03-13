@@ -62,9 +62,7 @@ app.config.update(
 # Webhook secret for scholarship management
 WEBHOOK_SECRET = 'sf_whk_' + hashlib.sha256(app.secret_key.encode()).hexdigest()[:32]
 
-# ============================================
 # DATABASE
-# ============================================
 DB_PATH = os.path.join(os.path.dirname(__file__), 'scholarweb.db')
 # Use local data/ folder (works on PythonAnywhere and local)
 _local_data = os.path.join(os.path.dirname(__file__), 'data')
@@ -199,9 +197,7 @@ def call_groq(payload_bytes, timeout=30):
 GROQ_API_KEY = GROQ_API_KEYS[0] if GROQ_API_KEYS else ''
 GROQ_MODEL = 'llama-3.3-70b-versatile'
 
-# ============================================
-# FIELD OF STUDY VALIDATION
-# ============================================
+# field validation
 VALID_FIELDS = {
     # STEM
     'computer science', 'software engineering', 'information technology', 'data science',
@@ -263,7 +259,7 @@ VALID_FIELDS = {
     'translation', 'interpreting', 'sign language',
 }
 
-# Also accept common variations and abbreviations
+
 FIELD_ALIASES = {
     'cs': 'computer science', 'it': 'information technology', 'ai': 'artificial intelligence',
     'ml': 'machine learning', 'ee': 'electrical engineering', 'me': 'mechanical engineering',
@@ -282,12 +278,7 @@ FIELD_ALIASES = {
 }
 
 def validate_field_of_study(field_str):
-    """Check if the field of study is a real/recognized field.
-    Returns (is_valid, cleaned_field_or_none, suggestion_or_none)
-    
-    STRICT MODE: only accepts fields in our known list or close matches.
-    Anything not recognized is flagged — no guessing.
-    """
+    """Check if the field is recognized. Returns (is_valid, cleaned, suggestion)"""
     if not field_str or not field_str.strip():
         return False, None, None
 
@@ -351,9 +342,7 @@ GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth'
 GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
 GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v2/userinfo'
 
-# ============================================
-# RATE LIMITING (SQLite-backed — survives restarts)
-# ============================================
+# rate limiting
 import time as _time
 
 _MAX_LOGIN_ATTEMPTS = 5
@@ -362,7 +351,6 @@ _MAX_RESEND = 3
 _RESEND_WINDOW = 300  # 5 minutes
 
 def _init_rate_limit_table():
-    """Create rate limit table if it doesn't exist"""
     db = sqlite3.connect(DB_PATH)
     db.execute("""
         CREATE TABLE IF NOT EXISTS rate_limits (
@@ -377,7 +365,6 @@ def _init_rate_limit_table():
     db.close()
 
 def _check_rate(key, category, max_attempts, window_seconds):
-    """Generic rate limit check using SQLite. Returns True if allowed."""
     now = _time.time()
     cutoff = now - window_seconds
     try:
@@ -555,9 +542,7 @@ def init_db():
     db.commit()
     db.close()
 
-# ============================================
 # AUTH HELPERS
-# ============================================
 def hash_password(password, salt=None):
     if salt is None:
         salt = secrets.token_hex(16)
@@ -608,19 +593,13 @@ def log_activity(user_id, action, details=''):
     except Exception:
         pass
 
-# ============================================
 # LOAD DATA FILES
-# ============================================
-# ============================================
-# CACHING LAYER — keeps JSON data in memory
-# ============================================
+# caching
 _json_cache = {}       # filename -> data
 _json_cache_mtime = {} # filename -> last modified time
 
 def load_json(filename):
-    """Load JSON with automatic file-change detection cache.
-    Re-reads only when the file has been modified (mtime changed).
-    Zero-TTL — always fresh, but avoids re-parsing unchanged files."""
+    """Load JSON, cached until file changes on disk"""
     path = os.path.join(DATA_DIR, filename)
     if not os.path.exists(path):
         return []
@@ -641,7 +620,6 @@ def load_json(filename):
     return data
 
 def clear_json_cache(filename=None):
-    """Clear cache for a specific file or all files."""
     if filename:
         _json_cache.pop(filename, None)
         _json_cache_mtime.pop(filename, None)
@@ -673,9 +651,7 @@ def get_test_prep():
 def get_essay_guides():
     return load_json('essay_guides.json')
 
-# ============================================
 # SCHOLARSHIP MATCHING
-# ============================================
 def match_scholarships(user):
     """Match scholarships to user profile — returns sorted by relevance"""
     scholarships = get_scholarships()
@@ -736,9 +712,7 @@ def match_scholarships(user):
     return [s for _, s in scored]
 
 
-# ============================================
 # CSRF PROTECTION
-# ============================================
 # Clean up stale unverified accounts (older than 1 hour)
 @app.before_request
 def cleanup_unverified():
@@ -777,9 +751,7 @@ def inject_tracking():
 def inject_csrf():
     return dict(csrf_token=session.get('csrf_token', ''))
 
-# ============================================
 # PAGE ROUTES
-# ============================================
 @app.route('/')
 def index():
     user = get_current_user()
@@ -1220,9 +1192,7 @@ def faq_page():
     user = get_current_user()
     return render_template('faq.html', user=user)
 
-# ============================================
 # API ENDPOINTS
-# ============================================
 @app.route('/api/scholarships')
 def api_scholarships():
     q = request.args.get('q', '').lower()
@@ -1362,9 +1332,7 @@ def api_stats():
         'faq': len(get_faq()),
     })
 
-# ============================================
 # BOOKMARK API
-# ============================================
 @app.route('/api/bookmarks', methods=['GET'])
 @login_required
 def api_get_bookmarks():
@@ -1424,9 +1392,7 @@ def api_update_bookmark_status(bookmark_id):
     db.commit()
     return jsonify({'success': True})
 
-# ============================================
 # MATCHING API
-# ============================================
 @app.route('/api/match')
 @login_required
 def api_match():
@@ -1438,9 +1404,7 @@ def api_match():
         'results': matched[:limit]
     })
 
-# ============================================
 # ADMIN API
-# ============================================
 @app.route('/api/admin/stats')
 @admin_required
 def api_admin_stats():
@@ -1508,9 +1472,7 @@ def api_admin_clear_searches():
     db.commit()
     return jsonify({'success': True, 'message': 'Search logs cleared'})
 
-# ============================================
 # TOOLS — Essay Rater, School Matcher, Resume Review
-# ============================================
 @app.route('/agents/<agent_type>')
 def agent_page(agent_type):
     agents = {
@@ -2000,9 +1962,7 @@ def google_callback():
 
         return redirect(url_for('dashboard_page') + '?welcome=1')
 
-# ============================================
 # AI CHATBOT API
-# ============================================
 # DASHBOARD SEARCH — unified search across categories
 # ============================================
 @app.route('/api/dashboard-search')
@@ -2394,9 +2354,7 @@ def api_chat():
 
 
 
-# ============================================
 # SCHOLARSHIP DATABASE MANAGEMENT
-# ============================================
 def init_scholarship_db():
     db = sqlite3.connect(DB_PATH)
     db.execute("PRAGMA journal_mode=WAL")
@@ -2439,9 +2397,7 @@ def save_opportunities(data):
     clear_json_cache('opportunities.json')
 
 
-# ============================================
 # WEBHOOK — Scholarship Management
-# ============================================
 def verify_webhook(req):
     token = req.headers.get('X-Webhook-Secret') or req.args.get('secret')
     return token == WEBHOOK_SECRET
@@ -2635,9 +2591,7 @@ def get_webhook_secret():
     return jsonify({'webhook_secret': WEBHOOK_SECRET, 'endpoint': request.host_url.rstrip('/') + '/webhook/scholarships'})
 
 
-# ============================================
 # WEBHOOK — Opportunities Management
-# ============================================
 @app.route('/webhook/opportunities', methods=['POST'])
 def webhook_opportunities():
     if not verify_webhook(request):
@@ -2684,9 +2638,7 @@ def webhook_opportunities():
     return jsonify({'error': f'Unknown action: {action}'}), 400
 
 
-# ============================================
 # DAILY SCRAPER TRIGGER
-# ============================================
 @app.route('/webhook/scraper/run', methods=['POST'])
 def webhook_scraper_run():
     if not verify_webhook(request):
@@ -2717,9 +2669,7 @@ def webhook_scraper_run():
         return jsonify({'error': str(e), 'traceback': traceback.format_exc()}), 500
 
 
-# ============================================
 # ERROR HANDLERS
-# ============================================
 @app.errorhandler(404)
 def not_found(e):
     if request.path.startswith('/api/'):
@@ -2732,9 +2682,7 @@ def server_error(e):
         return jsonify({'error': 'Server error'}), 500
     return render_template('500.html'), 500
 
-# ============================================
 # INIT & RUN
-# ============================================
 # SEO ROUTES
 # ============================================
 @app.route('/robots.txt')
@@ -2767,9 +2715,7 @@ init_db()
 _init_rate_limit_table()
 
 
-# ============================================
 # AI AGENT PROXY — keeps API key server-side
-# ============================================
 # GROQ config moved to top
 
 @app.route('/api/ai/chat', methods=['POST'])
