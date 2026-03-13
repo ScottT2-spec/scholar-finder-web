@@ -1,100 +1,26 @@
-# 🎓 ScholarFinder
+# ScholarFinder
 
-**Find your perfect scholarship match.** A free platform helping students discover scholarships, universities, and study abroad opportunities worldwide.
+source code for [scholarfinder.pythonanywhere.com](https://scholarfinder.pythonanywhere.com)
 
-🔗 **Live:** [scholarfinder.pythonanywhere.com](https://scholarfinder.pythonanywhere.com)
+flask app with SQLite, 12 Groq API keys (LLaMA 3.3 70B), and a daily scraper.
 
----
+## features
 
-## ✨ Features
+- 400+ scholarships, 200+ universities, 195+ opportunities
+- smart matching (country + field + level + interests scoring)
+- 6 AI agents (scout, writer, profiler, tracker, advisor, prep)
+- essay rater and resume reviewer (strict scoring)
+- cost of living for 85 cities, visa guides for 49 countries
+- test prep, FAQ, email verification, Google OAuth
 
-- 🎯 **Smart Matching** — Scholarships ranked by how well they fit your profile
-- 📌 **Save & Track** — Bookmark opportunities and track application status (live-updating dashboard)
-- 🏫 **University Explorer** — Browse 184+ universities with rankings and tuition
-- 💰 **Cost Comparison** — Compare living costs across 51+ student cities
-- 🛂 **Visa Guides** — Student visa info for 26 countries
-- 📝 **Test Prep** — IELTS, TOEFL, SAT, GRE tips and resources
+## ai setup
 
-### 🤖 AI-Powered Tools
-- **Essay Rater** — Instant feedback on personal statements and motivation letters
-- **Resume Review** — AI analysis of structure and impact
-- **School Matcher** — Find universities that fit your profile
-- **6 AI Agents** — Scout, Writer, Profiler, Tracker, Advisor, and Prep — working together to guide your scholarship journey
+12 Groq keys with round-robin rotation. auto-skips rate-limited keys, retries with next available. 30s retry budget.
 
-### 📊 Database
-- 487+ scholarships
-- 184+ universities
-- 138+ opportunities
-- 51+ cities
+## scraper
 
----
+runs daily on GitHub Actions. 40+ sources, BeautifulSoup + AI extraction, auto-dedup, deadline parsing.
 
-## 🛠️ Tech Stack
+## running
 
-- **Backend:** Python / Flask
-- **Frontend:** Jinja2 templates, vanilla JS, CSS
-- **AI:** Groq API (LLaMA 3.3 70B)
-- **Auth:** Email/password + Google OAuth
-- **Hosting:** PythonAnywhere
-- **Data:** SQLite + JSON
-
----
-
-## 🚀 Setup
-
-### 1. Clone
-```bash
-git clone https://github.com/ScottT2-spec/scholar-finder-web.git
-cd scholar-finder-web
-```
-
-### 2. Install dependencies
-```bash
-pip install -r requirements.txt
-```
-
-```
-
-### 4. Run
-```bash
-python app.py
-```
-
----
-
-## 📁 Project Structure
-
-```
-├── app.py                  # Main Flask application
-├── scholarship_scraper.py  # Automated scholarship scraper
-├── templates/              # Jinja2 HTML templates
-│   ├── base.html           # Base layout (nav, theme, particles)
-│   ├── index.html          # Homepage (typewriter, counter, AI agents)
-│   ├── dashboard.html      # User dashboard (live-updating)
-│   ├── scholarships.html   # Scholarship search & filter
-│   └── ...                 # 15+ more pages
-├── data/                   # JSON data files
-│   ├── scholarships.json   # Scholarship database
-│   ├── universities.json   # University database
-│   └── ...
-├── .env                    # Secrets (not in repo)
-└── requirements.txt
-```
-
----
-
-## 🔐 Security
-
-All sensitive data (API keys, OAuth credentials, passwords) are stored in `.env` and excluded from version control via `.gitignore`. Zero hardcoded secrets.
-
----
-
-## 👤 Author
-
-
-
----
-
-## 📄 License
-
-This project is proprietary. All rights reserved.
+hosted on PythonAnywhere free tier. set your Groq keys as env vars (`GROQ_KEY_1` through `GROQ_KEY_12`).
