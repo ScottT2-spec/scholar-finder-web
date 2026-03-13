@@ -90,6 +90,8 @@ GROQ_API_KEYS = [
     os.environ.get('GROQ_KEY_8', ''),  # account 8
     os.environ.get('GROQ_KEY_9', ''),  # account 9
     os.environ.get('GROQ_KEY_10', ''), # account 10
+    os.environ.get('GROQ_KEY_11', ''), # account 11
+    os.environ.get('GROQ_KEY_12', ''), # account 12
 ]
 GROQ_API_KEYS = [k for k in GROQ_API_KEYS if k]  # remove empty
 _groq_key_index = 0
@@ -196,6 +198,138 @@ def call_groq(payload_bytes, timeout=30):
 
 GROQ_API_KEY = GROQ_API_KEYS[0] if GROQ_API_KEYS else ''
 GROQ_MODEL = 'llama-3.3-70b-versatile'
+
+# ============================================
+# FIELD OF STUDY VALIDATION
+# ============================================
+VALID_FIELDS = {
+    # STEM
+    'computer science', 'software engineering', 'information technology', 'data science',
+    'artificial intelligence', 'machine learning', 'cybersecurity', 'web development',
+    'mathematics', 'statistics', 'physics', 'chemistry', 'biology', 'biochemistry',
+    'biotechnology', 'bioinformatics', 'environmental science', 'geology', 'geosciences',
+    'astronomy', 'astrophysics', 'materials science', 'nanotechnology',
+    'engineering', 'mechanical engineering', 'electrical engineering', 'civil engineering',
+    'chemical engineering', 'aerospace engineering', 'biomedical engineering',
+    'industrial engineering', 'petroleum engineering', 'mining engineering',
+    'agricultural engineering', 'marine engineering', 'nuclear engineering',
+    'robotics', 'mechatronics', 'telecommunications',
+    # Medicine & Health
+    'medicine', 'nursing', 'pharmacy', 'dentistry', 'veterinary medicine',
+    'public health', 'epidemiology', 'biomedical sciences', 'physiotherapy',
+    'occupational therapy', 'radiology', 'pathology', 'nutrition', 'dietetics',
+    'midwifery', 'optometry', 'speech therapy', 'mental health', 'psychology',
+    'clinical psychology', 'neuroscience', 'anatomy', 'immunology', 'microbiology',
+    'medical laboratory science', 'health informatics', 'global health',
+    # Business & Economics
+    'business', 'business administration', 'accounting', 'finance', 'economics',
+    'marketing', 'management', 'entrepreneurship', 'human resources',
+    'supply chain management', 'logistics', 'international business',
+    'actuarial science', 'banking', 'insurance', 'real estate',
+    'project management', 'operations management', 'commerce',
+    # Law & Politics
+    'law', 'international law', 'criminal justice', 'political science',
+    'international relations', 'public administration', 'public policy',
+    'diplomacy', 'governance', 'human rights',
+    # Arts & Humanities
+    'english', 'literature', 'history', 'philosophy', 'linguistics',
+    'creative writing', 'journalism', 'media studies', 'communication',
+    'film studies', 'theater', 'performing arts', 'music', 'fine arts',
+    'visual arts', 'graphic design', 'animation', 'photography',
+    'art history', 'cultural studies', 'religious studies', 'theology',
+    'classical studies', 'gender studies', 'african studies', 'asian studies',
+    # Social Sciences
+    'sociology', 'anthropology', 'geography', 'demography',
+    'social work', 'criminology', 'archaeology', 'urban planning',
+    'development studies', 'peace studies', 'conflict resolution',
+    # Education
+    'education', 'teaching', 'early childhood education', 'special education',
+    'educational technology', 'curriculum development', 'educational psychology',
+    'higher education', 'adult education', 'stem education',
+    # Agriculture & Environment
+    'agriculture', 'agronomy', 'horticulture', 'animal science',
+    'fisheries', 'forestry', 'food science', 'food technology',
+    'environmental management', 'climate science', 'sustainability',
+    'renewable energy', 'water resources', 'wildlife management', 'ecology',
+    # Architecture & Design
+    'architecture', 'interior design', 'urban design', 'landscape architecture',
+    'industrial design', 'fashion design', 'textile design',
+    # Sports & Hospitality
+    'sport science', 'sport management', 'physical education',
+    'hospitality management', 'tourism', 'hotel management', 'culinary arts',
+    # Other
+    'library science', 'archival studies', 'museum studies',
+    'aviation', 'maritime studies', 'military science',
+    'translation', 'interpreting', 'sign language',
+}
+
+# Also accept common variations and abbreviations
+FIELD_ALIASES = {
+    'cs': 'computer science', 'it': 'information technology', 'ai': 'artificial intelligence',
+    'ml': 'machine learning', 'ee': 'electrical engineering', 'me': 'mechanical engineering',
+    'ce': 'civil engineering', 'bme': 'biomedical engineering', 'mba': 'business administration',
+    'hr': 'human resources', 'ir': 'international relations', 'pa': 'public administration',
+    'med': 'medicine', 'pharm': 'pharmacy', 'econ': 'economics', 'polisci': 'political science',
+    'comms': 'communication', 'psych': 'psychology', 'soc': 'sociology', 'bio': 'biology',
+    'chem': 'chemistry', 'math': 'mathematics', 'stats': 'statistics', 'phys': 'physics',
+    'eng': 'engineering', 'arch': 'architecture', 'enviro': 'environmental science',
+    'agric': 'agriculture', 'mech eng': 'mechanical engineering', 'comp sci': 'computer science',
+    'info tech': 'information technology', 'biz': 'business', 'acct': 'accounting',
+    'nursing science': 'nursing', 'political studies': 'political science',
+    'mass communication': 'communication', 'mass comm': 'communication',
+    'electrical electronics engineering': 'electrical engineering',
+    'computer engineering': 'computer science', 'ict': 'information technology',
+}
+
+def validate_field_of_study(field_str):
+    """Check if the field of study is a real/recognized field.
+    Returns (is_valid, cleaned_field_or_none, suggestion_or_none)
+    """
+    if not field_str or not field_str.strip():
+        return False, None, None
+
+    field = field_str.strip().lower()
+
+    # Direct match
+    if field in VALID_FIELDS:
+        return True, field, None
+
+    # Alias match
+    if field in FIELD_ALIASES:
+        return True, FIELD_ALIASES[field], None
+
+    # Fuzzy: check if any valid field is contained in the input or vice versa
+    for vf in VALID_FIELDS:
+        if vf in field or field in vf:
+            return True, vf, None
+
+    # Check for gibberish: too many consonants in a row, no vowels, very short nonsense
+    vowels = set('aeiou')
+    alpha_chars = ''.join(c for c in field if c.isalpha())
+    if len(alpha_chars) < 3:
+        return False, None, None
+
+    vowel_ratio = sum(1 for c in alpha_chars if c in vowels) / len(alpha_chars) if alpha_chars else 0
+    # Real English words typically have 30-50% vowels. Below 15% is likely gibberish.
+    if vowel_ratio < 0.15:
+        return False, None, None
+
+    # Check for repeating characters (like "jjjjj" or "kkkk")
+    max_repeat = max(len(list(g)) for _, g in __import__('itertools').groupby(alpha_chars)) if alpha_chars else 0
+    if max_repeat >= 3:
+        return False, None, None
+
+    # If it has spaces and reasonable length, might be a real but unlisted field
+    if ' ' in field.strip() and len(alpha_chars) > 6 and vowel_ratio > 0.25:
+        return True, field, 'unlisted'  # Probably real, just not in our list
+
+    # Single word not in our list — check if it looks like a real word
+    if vowel_ratio > 0.25 and len(alpha_chars) > 4:
+        return True, field, 'unlisted'
+
+    return False, None, None
+
+
 
 # Google OAuth config
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
@@ -585,6 +719,7 @@ def index():
         'universities': len(get_universities()),
         'opportunities': len(get_opportunities()),
         'cities': len(get_cost_of_living()),
+        'visa_countries': len(get_visa_guides()),
     }
     # Last updated timestamp from scholarships data file
     try:
@@ -1307,6 +1442,21 @@ def api_admin_clear_searches():
 # ============================================
 # TOOLS — Essay Rater, School Matcher, Resume Review
 # ============================================
+@app.route('/agents/<agent_type>')
+def agent_page(agent_type):
+    agents = {
+        'scout': 'Scout — Scholarship Finder',
+        'writer': 'Writer — Essay Assistant',
+        'profiler': 'Profiler — Student Matcher',
+        'tracker': 'Tracker — Deadline Manager',
+        'advisor': 'Advisor — Strategy Coach',
+        'prep': 'Prep — Interview Coach',
+    }
+    if agent_type not in agents:
+        return render_template('404.html'), 404
+    user = get_current_user()
+    return render_template('agent.html', user=user, agent_key=agent_type, agent_title=agents[agent_type])
+
 @app.route('/tools/essay-rater', methods=['GET'])
 def essay_rater_page():
     user = get_current_user()
@@ -1421,7 +1571,8 @@ Word count: {word_count} | Paragraphs: {len(paragraphs)} | Type: {type_label}"""
             'sentence_count': sentence_count,
             'paragraph_count': len(paragraphs),
             'feedback': feedback,
-            'ai_powered': False
+            'ai_powered': False,
+            'field_warning': field_warning if field_warning else None
         })
 
 
@@ -1873,6 +2024,16 @@ def api_ai_recommendations():
     if not profile_country and not profile_field:
         return jsonify({'error': 'incomplete_profile', 'message': 'Complete your profile first'})
 
+    # Validate field of study
+    field_warning = None
+    field_valid = True
+    if profile_field:
+        is_valid, cleaned, note = validate_field_of_study(profile_field)
+        if not is_valid:
+            field_valid = False
+            field_warning = f"We couldn't recognize \"{profile_field}\" as a field of study. Showing general recommendations for all fields. Update your profile with a valid field (e.g., Computer Science, Medicine, Business, Engineering, Law) for personalized matches."
+            profile_field = ''  # Treat as empty so they get general recommendations
+
     # Gather top candidates from data
     scholarships = get_scholarships()[:200]
     universities = get_universities()[:100]
@@ -1961,6 +2122,8 @@ RULES:
             item['link'] = src.get('website', src.get('link', src.get('url', '')))
 
         ai_data['ai_powered'] = True
+        if field_warning:
+            ai_data['field_warning'] = field_warning
         return jsonify(ai_data)
 
     except Exception as e:
@@ -2511,7 +2674,8 @@ def sitemap():
     from flask import make_response
     base = request.host_url.rstrip('/')
     pages = ['/', '/scholarships', '/universities', '/opportunities', '/cost-of-living',
-             '/visa-guide', '/test-prep', '/faq', '/tools/essay-rater', '/tools/resume-review', '/tools/school-matcher']
+             '/visa-guide', '/test-prep', '/faq', '/tools/essay-rater', '/tools/resume-review', '/tools/school-matcher',
+             '/agents/scout', '/agents/writer', '/agents/profiler', '/agents/tracker', '/agents/advisor', '/agents/prep']
     xml = ['<?xml version="1.0" encoding="UTF-8"?>',
            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     for p in pages:
