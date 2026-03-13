@@ -284,6 +284,9 @@ FIELD_ALIASES = {
 def validate_field_of_study(field_str):
     """Check if the field of study is a real/recognized field.
     Returns (is_valid, cleaned_field_or_none, suggestion_or_none)
+    
+    STRICT MODE: only accepts fields in our known list or close matches.
+    Anything not recognized is flagged — no guessing.
     """
     if not field_str or not field_str.strip():
         return False, None, None
@@ -303,31 +306,39 @@ def validate_field_of_study(field_str):
         if vf in field or field in vf:
             return True, vf, None
 
-    # Check for gibberish: too many consonants in a row, no vowels, very short nonsense
-    vowels = set('aeiou')
-    alpha_chars = ''.join(c for c in field if c.isalpha())
-    if len(alpha_chars) < 3:
-        return False, None, None
+    # Word-level matching: check if any word in the input matches a word in valid fields
+    input_words = set(field.split())
+    for vf in VALID_FIELDS:
+        vf_words = set(vf.split())
+        # If they share a meaningful word (>3 chars), it's probably related
+        common = input_words & vf_words
+        if any(len(w) > 3 for w in common):
+            return True, vf, None
 
-    vowel_ratio = sum(1 for c in alpha_chars if c in vowels) / len(alpha_chars) if alpha_chars else 0
-    # Real English words typically have 30-50% vowels. Below 15% is likely gibberish.
-    if vowel_ratio < 0.15:
-        return False, None, None
+    # Check against all words that appear in valid fields
+    all_field_words = set()
+    for vf in VALID_FIELDS:
+        for w in vf.split():
+            if len(w) > 3:
+                all_field_words.add(w)
+    for w in input_words:
+        if len(w) > 3 and w in all_field_words:
+            return True, field, 'partial'
 
-    # Check for repeating characters (like "jjjjj" or "kkkk")
-    max_repeat = max(len(list(g)) for _, g in __import__('itertools').groupby(alpha_chars)) if alpha_chars else 0
-    if max_repeat >= 3:
-        return False, None, None
+    # If we get here, it's not recognized — flag it
+    # Find the closest match to suggest
+    best_match = None
+    best_score = 0
+    for vf in VALID_FIELDS:
+        # Simple character overlap score
+        field_set = set(field)
+        vf_set = set(vf)
+        overlap = len(field_set & vf_set) / max(len(field_set | vf_set), 1)
+        if overlap > best_score:
+            best_score = overlap
+            best_match = vf
 
-    # If it has spaces and reasonable length, might be a real but unlisted field
-    if ' ' in field.strip() and len(alpha_chars) > 6 and vowel_ratio > 0.25:
-        return True, field, 'unlisted'  # Probably real, just not in our list
-
-    # Single word not in our list — check if it looks like a real word
-    if vowel_ratio > 0.25 and len(alpha_chars) > 4:
-        return True, field, 'unlisted'
-
-    return False, None, None
+    return False, None, best_match if best_score > 0.4 else None
 
 
 
@@ -341,34 +352,61 @@ GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
 GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v2/userinfo'
 
 # ============================================
-# RATE LIMITING (in-memory)
+# RATE LIMITING (SQLite-backed — survives restarts)
 # ============================================
-from collections import defaultdict
 import time as _time
 
-_login_attempts = defaultdict(list)  # ip -> [timestamps]
 _MAX_LOGIN_ATTEMPTS = 5
 _LOGIN_WINDOW = 300  # 5 minutes
-
-_resend_attempts = defaultdict(list)  # email -> [timestamps]
 _MAX_RESEND = 3
 _RESEND_WINDOW = 300  # 5 minutes
 
-def check_rate_limit(ip):
+def _init_rate_limit_table():
+    """Create rate limit table if it doesn't exist"""
+    db = sqlite3.connect(DB_PATH)
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS rate_limits (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            key TEXT NOT NULL,
+            category TEXT NOT NULL,
+            timestamp REAL NOT NULL
+        )
+    """)
+    db.execute("CREATE INDEX IF NOT EXISTS idx_rate_key_cat ON rate_limits(key, category)")
+    db.commit()
+    db.close()
+
+def _check_rate(key, category, max_attempts, window_seconds):
+    """Generic rate limit check using SQLite. Returns True if allowed."""
     now = _time.time()
-    _login_attempts[ip] = [t for t in _login_attempts[ip] if now - t < _LOGIN_WINDOW]
-    if len(_login_attempts[ip]) >= _MAX_LOGIN_ATTEMPTS:
-        return False
-    _login_attempts[ip].append(now)
-    return True
+    cutoff = now - window_seconds
+    try:
+        db = get_db()
+        # Clean old entries
+        db.execute('DELETE FROM rate_limits WHERE category = ? AND timestamp < ?', (category, cutoff))
+        # Count recent attempts
+        count = db.execute(
+            'SELECT COUNT(*) FROM rate_limits WHERE key = ? AND category = ? AND timestamp >= ?',
+            (key, category, cutoff)
+        ).fetchone()[0]
+        if count >= max_attempts:
+            db.commit()
+            return False
+        # Record this attempt
+        db.execute(
+            'INSERT INTO rate_limits (key, category, timestamp) VALUES (?, ?, ?)',
+            (key, category, now)
+        )
+        db.commit()
+        return True
+    except Exception:
+        return True  # Fail open — don't block users if DB has issues
+
+def check_rate_limit(ip):
+    return _check_rate(ip, 'login', _MAX_LOGIN_ATTEMPTS, _LOGIN_WINDOW)
 
 def check_resend_limit(email):
-    now = _time.time()
-    _resend_attempts[email] = [t for t in _resend_attempts[email] if now - t < _RESEND_WINDOW]
-    if len(_resend_attempts[email]) >= _MAX_RESEND:
-        return False
-    _resend_attempts[email].append(now)
-    return True
+    return _check_rate(email, 'resend', _MAX_RESEND, _RESEND_WINDOW)
 
 def generate_verification_code():
     """Generate a 6-digit verification code"""
@@ -573,12 +611,43 @@ def log_activity(user_id, action, details=''):
 # ============================================
 # LOAD DATA FILES
 # ============================================
+# ============================================
+# CACHING LAYER — keeps JSON data in memory
+# ============================================
+_json_cache = {}       # filename -> data
+_json_cache_mtime = {} # filename -> last modified time
+
 def load_json(filename):
+    """Load JSON with automatic file-change detection cache.
+    Re-reads only when the file has been modified (mtime changed).
+    Zero-TTL — always fresh, but avoids re-parsing unchanged files."""
     path = os.path.join(DATA_DIR, filename)
-    if os.path.exists(path):
-        with open(path, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    return []
+    if not os.path.exists(path):
+        return []
+    try:
+        mtime = os.path.getmtime(path)
+    except OSError:
+        mtime = 0
+
+    # Return cached version if file hasn't changed
+    if filename in _json_cache and _json_cache_mtime.get(filename) == mtime:
+        return _json_cache[filename]
+
+    # File changed (or first load) — read and cache
+    with open(path, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    _json_cache[filename] = data
+    _json_cache_mtime[filename] = mtime
+    return data
+
+def clear_json_cache(filename=None):
+    """Clear cache for a specific file or all files."""
+    if filename:
+        _json_cache.pop(filename, None)
+        _json_cache_mtime.pop(filename, None)
+    else:
+        _json_cache.clear()
+        _json_cache_mtime.clear()
 
 def get_scholarships():
     return load_json('scholarships.json')
@@ -2015,6 +2084,7 @@ def api_ai_recommendations():
     if not user:
         return jsonify({'error': 'Login required'}), 401
 
+    profile_name = (user['full_name'] or user['username'] or 'Student').split()[0]
     profile_country = user['country'] or ''
     profile_field = user['field_of_study'] or ''
     profile_level = user['education_level'] or ''
@@ -2031,7 +2101,8 @@ def api_ai_recommendations():
         is_valid, cleaned, note = validate_field_of_study(profile_field)
         if not is_valid:
             field_valid = False
-            field_warning = f"We couldn't recognize \"{profile_field}\" as a field of study. Showing general recommendations for all fields. Update your profile with a valid field (e.g., Computer Science, Medicine, Business, Engineering, Law) for personalized matches."
+            suggestion_text = f" Did you mean \"{note}\"?" if note else ""
+            field_warning = f"We couldn't recognize \"{profile_field}\" as a field of study.{suggestion_text} Showing general recommendations for all fields. Update your profile with a recognized field (e.g., Computer Science, Medicine, Business, Engineering, Law, Nursing, Psychology, Journalism) for personalized matches."
             profile_field = ''  # Treat as empty so they get general recommendations
 
     # Gather top candidates from data
@@ -2049,6 +2120,7 @@ def api_ai_recommendations():
     system_prompt = f"""You are ScholarFinder's AI matching engine. Given a student profile and available scholarships/universities, pick the BEST matches.
 
 STUDENT PROFILE:
+- Name: {profile_name}
 - Country: {profile_country}
 - Field: {profile_field}
 - Level: {profile_level}
@@ -2071,7 +2143,7 @@ Return ONLY valid JSON (no markdown, no code blocks):
         {{"name": "<exact university name from list>", "reason": "<1 sentence why this matches>"}},
         ... (pick 4-6 best matches)
     ],
-    "summary": "<1 sentence about their overall profile strength>"
+    "summary": "<1 sentence speaking DIRECTLY to the student — use 'you/your' and their first name>"
 }}
 
 RULES:
@@ -2079,7 +2151,8 @@ RULES:
 - Match based on country, field, education level, and interests
 - Rank by relevance — best match first
 - Be specific in reasons — reference actual profile details
-- If field is broad like "any", prioritize country and level matches"""
+- If field is broad like "any", prioritize country and level matches
+- TONE: Write as if you're their personal advisor who knows them. Address them directly using "you/your" and their first name. Say "{profile_name}, you have..." NOT "{profile_name} has...". Say "this fits your interest in..." NOT "this fits the student's interest in...". Make it feel personal — like the platform was built just for them"""
 
     try:
         ai_payload = json.dumps({
@@ -2357,11 +2430,13 @@ def save_scholarships(data):
     path = os.path.join(DATA_DIR, 'scholarships.json')
     with open(path, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
+    clear_json_cache('scholarships.json')
 
 def save_opportunities(data):
     path = os.path.join(DATA_DIR, 'opportunities.json')
     with open(path, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
+    clear_json_cache('opportunities.json')
 
 
 # ============================================
@@ -2689,6 +2764,7 @@ def sitemap():
 init_db()
 
 init_db()
+_init_rate_limit_table()
 
 
 # ─── Malaria Cell Scanner ───
