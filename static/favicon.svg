@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg3" x1="0" y1="0" x2="0" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0c0c0c"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </linearGradient>
+    <linearGradient id="mint" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2ECC71"/>
+      <stop offset="40%" stop-color="#4ECDC4"/>
+      <stop offset="100%" stop-color="#2ECC71"/>
+    </linearGradient>
+    <filter id="glow3">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="64" fill="url(#bg3)"/>
+
+  <!-- Hexagonal geometric pattern -->
+  <g opacity="0.04" stroke="white" stroke-width="0.5" fill="none">
+    <circle cx="256" cy="256" r="160"/>
+    <circle cx="256" cy="256" r="200"/>
+    <circle cx="256" cy="256" r="240"/>
+    <line x1="56" y1="256" x2="456" y2="256"/>
+    <line x1="256" y1="56" x2="256" y2="456"/>
+    <line x1="115" y1="115" x2="397" y2="397"/>
+    <line x1="397" y1="115" x2="115" y2="397"/>
+  </g>
+
+  <!-- S - flowing calligraphic style with green accent -->
+  <path d="
+    M 190 108
+    C 130 108, 82 148, 82 198
+    C 82 248, 118 276, 174 296
+    C 222 314, 242 338, 242 370
+    C 242 408, 210 434, 170 434
+    C 134 434, 104 408, 100 374
+  " fill="none" stroke="white" stroke-width="26" stroke-linecap="round"/>
+  
+  <!-- Green accent on S curve -->
+  <path d="
+    M 190 108
+    C 130 108, 82 148, 82 198
+  " fill="none" stroke="url(#mint)" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
+
+  <!-- F - bold with green accent -->
+  <line x1="292" y1="108" x2="292" y2="434" stroke="white" stroke-width="26" stroke-linecap="round"/>
+  <line x1="292" y1="108" x2="418" y2="108" stroke="white" stroke-width="26" stroke-linecap="round"/>
+  <line x1="292" y1="260" x2="384" y2="260" stroke="white" stroke-width="22" stroke-linecap="round"/>
+  
+  <!-- Green accent on F top -->
+  <line x1="350" y1="108" x2="418" y2="108" stroke="url(#mint)" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
+
+  <!-- Divider -->
+  <line x1="80" y1="462" x2="432" y2="462" stroke="url(#mint)" stroke-width="1.5" opacity="0.25"/>
+
+  <!-- ALPHA GLOBAL MINDS -->
+  <text x="256" y="496" 
+        text-anchor="middle" 
+        font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" 
+        font-weight="700" 
+        font-size="24" 
+        letter-spacing="7"
+        fill="url(#mint)">ALPHA GLOBAL MINDS</text>
+</svg>
