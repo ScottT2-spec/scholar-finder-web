@@ -91,7 +91,7 @@ All sensitive data (API keys, OAuth credentials, passwords) are stored in `.env`
 
 ## 👤 Author
 
-**Scott Antwi** — [GitHub](https://github.com/ScottT2-spec)
+
 
 ---
 
