@@ -76,36 +76,26 @@ SMTP_EMAIL = os.environ.get('SMTP_EMAIL', '')
 SMTP_APP_PASSWORD = os.environ.get('SMTP_APP_PASSWORD', '')
 VERIFICATION_EXPIRY_MINUTES = 1  # 1 minute
 
-# Groq AI config — keys loaded from .env, with automatic rotation on 429
-GROQ_API_KEYS = [
-    os.environ.get('GROQ_KEY_1', ''),  # account 2 (primary)
-    os.environ.get('GROQ_KEY_2', ''),  # account 3
-    os.environ.get('GROQ_KEY_3', ''),  # account 3
-    os.environ.get('GROQ_KEY_4', ''),  # account 4
-    os.environ.get('GROQ_KEY_5', ''),  # account 5
-    os.environ.get('GROQ_KEY_6', ''),  # account 6
-    os.environ.get('GROQ_KEY_7', ''),  # account 7
-    os.environ.get('GROQ_KEY_8', ''),  # account 8
-    os.environ.get('GROQ_KEY_9', ''),  # account 9
-    os.environ.get('GROQ_KEY_10', ''), # account 10
-    os.environ.get('GROQ_KEY_11', ''), # account 11
-    os.environ.get('GROQ_KEY_12', ''), # account 12
-]
-GROQ_API_KEYS = [k for k in GROQ_API_KEYS if k]  # remove empty
-_groq_key_index = 0
-_groq_dead_keys = {}  # key -> timestamp when it will be available again
+# ai config — reads from .env, auto-detects all AI_KEY_* vars
+AI_PROVIDER_URL = os.environ.get('AI_PROVIDER_URL', 'https://api.groq.com/openai/v1/chat/completions')
+AI_MODEL = os.environ.get('AI_MODEL', 'llama-3.3-70b-versatile')
+AI_KEYS = [v for k, v in sorted(os.environ.items()) if k.startswith('AI_KEY_') and v]
+# fallback: also read old GROQ_KEY_* if no AI_KEY_* found
+if not AI_KEYS:
+    AI_KEYS = [v for k, v in sorted(os.environ.items()) if k.startswith('GROQ_KEY_') and v]
+_ai_key_index = 0
+_ai_dead_keys = {}  # key -> timestamp when it will be available again
 
-def get_groq_key():
+def get_ai_key():
     """Round-robin key selection."""
-    global _groq_key_index
-    key = GROQ_API_KEYS[_groq_key_index % len(GROQ_API_KEYS)]
-    _groq_key_index += 1
+    global _ai_key_index
+    key = AI_KEYS[_ai_key_index % len(AI_KEYS)]
+    _ai_key_index += 1
     return key
 
-def _make_groq_request(key, payload_bytes, timeout):
-    """Make a single Groq API call with the given key."""
+def _make_ai_request(key, payload_bytes, timeout):
     req = urllib.request.Request(
-        'https://api.groq.com/openai/v1/chat/completions',
+        AI_PROVIDER_URL,
         data=payload_bytes,
         headers={
             'Authorization': 'Bearer ' + key,
@@ -127,12 +117,12 @@ def _parse_retry_after(e):
         pass
     return 60  # default cooldown if header missing
 
-def call_groq(payload_bytes, timeout=30):
-    """Call Groq API with automatic key rotation on 429.
+def call_ai(payload_bytes, timeout=30):
+    """Call AI API with automatic key rotation on 429.
     
     How it works:
     1. Tries all keys round-robin, instantly skipping to the next on 429.
-    2. Reads Groq's retry-after header to know exactly when each key recovers.
+    2. Reads retry-after header to know exactly when each key recovers.
     3. If all keys are limited, waits for the soonest one to recover and retries.
     4. Keeps retrying up to 30 seconds total — catches keys that come back mid-wait.
     5. Works with any number of keys (1 to 100).
@@ -143,48 +133,48 @@ def call_groq(payload_bytes, timeout=30):
 
     # Clean up recovered keys
     now = _t.time()
-    for k in list(_groq_dead_keys):
-        if now >= _groq_dead_keys[k]:
-            del _groq_dead_keys[k]
+    for k in list(_ai_dead_keys):
+        if now >= _ai_dead_keys[k]:
+            del _ai_dead_keys[k]
 
     last_error = None
 
     while (_t.time() - start) < max_wait:
         # Try every key once this round
         tried_any = False
-        for _ in range(len(GROQ_API_KEYS)):
-            key = get_groq_key()
+        for _ in range(len(AI_KEYS)):
+            key = get_ai_key()
 
             # Skip keys that are still cooling down
             now = _t.time()
-            if key in _groq_dead_keys and now < _groq_dead_keys[key]:
+            if key in _ai_dead_keys and now < _ai_dead_keys[key]:
                 continue
 
             # Key is available — try it
             tried_any = True
             try:
-                return _make_groq_request(key, payload_bytes, timeout)
+                return _make_ai_request(key, payload_bytes, timeout)
             except urllib.error.HTTPError as e:
                 if e.code == 429:
                     # Mark key as dead until retry-after expires
                     retry_after = _parse_retry_after(e)
-                    _groq_dead_keys[key] = _t.time() + retry_after
+                    _ai_dead_keys[key] = _t.time() + retry_after
                     last_error = e
                     continue  # immediately try next key
                 raise  # non-429 errors bubble up
 
         # All keys were either skipped or returned 429
         # Find the soonest key to recover
-        if _groq_dead_keys:
-            soonest = min(_groq_dead_keys.values())
+        if _ai_dead_keys:
+            soonest = min(_ai_dead_keys.values())
             wait_needed = soonest - _t.time()
             if wait_needed > 0 and (_t.time() - start + wait_needed) < max_wait:
                 _t.sleep(min(wait_needed + 0.5, 5))  # wait for it, cap at 5s per sleep
                 # Remove recovered keys
                 now = _t.time()
-                for k in list(_groq_dead_keys):
-                    if now >= _groq_dead_keys[k]:
-                        del _groq_dead_keys[k]
+                for k in list(_ai_dead_keys):
+                    if now >= _ai_dead_keys[k]:
+                        del _ai_dead_keys[k]
                 continue  # retry the loop
             else:
                 break  # would exceed max_wait
@@ -192,10 +182,10 @@ def call_groq(payload_bytes, timeout=30):
             break  # no dead keys but nothing worked — shouldn't happen
 
     # All keys exhausted and max wait exceeded
-    raise last_error or Exception('All Groq API keys are rate-limited. Please try again shortly.')
+    raise last_error or Exception('All AI keys are rate-limited. Please try again shortly.')
 
-GROQ_API_KEY = GROQ_API_KEYS[0] if GROQ_API_KEYS else ''
-GROQ_MODEL = 'llama-3.3-70b-versatile'
+AI_KEY = AI_KEYS[0] if AI_KEYS else ''
+
 
 # field validation
 VALID_FIELDS = {
@@ -1552,7 +1542,7 @@ Word count: {word_count} | Paragraphs: {len(paragraphs)} | Type: {type_label}"""
 
     try:
         ai_payload = json.dumps({
-            'model': GROQ_MODEL,
+            'model': AI_MODEL,
             'messages': [
                 {'role': 'system', 'content': system_prompt},
                 {'role': 'user', 'content': essay}
@@ -1561,7 +1551,7 @@ Word count: {word_count} | Paragraphs: {len(paragraphs)} | Type: {type_label}"""
             'temperature': 0.3
         }).encode('utf-8')
 
-        result = call_groq(ai_payload)
+        result = call_ai(ai_payload)
         ai_text = result['choices'][0]['message']['content'].strip()
 
         # Clean markdown code blocks if present
@@ -1761,7 +1751,7 @@ Word count: {word_count} | Sections detected: {', '.join(sections_found) if sect
 
     try:
         ai_payload = json.dumps({
-            'model': GROQ_MODEL,
+            'model': AI_MODEL,
             'messages': [
                 {'role': 'system', 'content': system_prompt},
                 {'role': 'user', 'content': resume}
@@ -1770,7 +1760,7 @@ Word count: {word_count} | Sections detected: {', '.join(sections_found) if sect
             'temperature': 0.3
         }).encode('utf-8')
 
-        result = call_groq(ai_payload)
+        result = call_ai(ai_payload)
         ai_text = result['choices'][0]['message']['content'].strip()
 
         # Clean markdown code blocks if present
@@ -2116,7 +2106,7 @@ RULES:
 
     try:
         ai_payload = json.dumps({
-            'model': GROQ_MODEL,
+            'model': AI_MODEL,
             'messages': [
                 {'role': 'system', 'content': system_prompt},
                 {'role': 'user', 'content': 'Match me with the best scholarships and universities.'}
@@ -2125,7 +2115,7 @@ RULES:
             'temperature': 0.3
         }).encode('utf-8')
 
-        result = call_groq(ai_payload)
+        result = call_ai(ai_payload)
         ai_text = result['choices'][0]['message']['content'].strip()
 
         if ai_text.startswith('```'):
@@ -2731,13 +2721,13 @@ def api_ai_chat():
     try:
         import urllib.request
         req_data = json.dumps({
-            'model': GROQ_MODEL,
+            'model': AI_MODEL,
             'messages': messages,
             'max_tokens': max_tokens,
             'temperature': 0.7
         }).encode('utf-8')
 
-        result = call_groq(req_data)
+        result = call_ai(req_data)
         content = result['choices'][0]['message']['content']
         return jsonify({'content': content})
     except urllib.error.HTTPError as he:
@@ -2746,7 +2736,7 @@ def api_ai_chat():
             error_body = he.read().decode('utf-8')
         except:
             pass
-        print(f'Groq API error {he.code}: {error_body}')
+        print(f'AI API error {he.code}: {error_body}')
         return jsonify({'error': f'AI service error ({he.code}). Please try again.', 'detail': error_body}), 500
     except Exception as e:
         print(f'AI chat error: {e}')
