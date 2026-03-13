@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 ScholarFinder — Scholarship Scraper & Cleaner
-================================================
+
 Run daily via PythonAnywhere scheduled tasks:
   python3 /home/scholarfinder/scholar-finder-web/scholarship_scraper.py
 
@@ -93,9 +93,7 @@ logging.basicConfig(
 )
 log = logging.getLogger('scraper')
 
-# ============================================
-# SCHOLARSHIP SOURCES
-# ============================================
+## scholarship sources
 SOURCES = [
     # --- Africa-focused ---
     {
@@ -432,9 +430,7 @@ OPPORTUNITY_SOURCES = [
     },
 ]
 
-# ============================================
-# UTILITIES
-# ============================================
+## utilities
 
 def load_scholarships():
     """Load current scholarship data"""
@@ -565,9 +561,7 @@ def parse_deadline(deadline_str):
     return None
 
 
-# ============================================
-# SCRAPING
-# ============================================
+## scraping
 
 def fetch_page(url, timeout=20):
     """Fetch a URL and return the HTML content"""
@@ -936,9 +930,7 @@ def merge_new_opportunities(existing, new_opps):
     return existing, added
 
 
-# ============================================
-# CLEANUP — Remove expired scholarships
-# ============================================
+## cleanup — remove expired scholarships
 
 def clean_expired(scholarships):
     """Move expired scholarships to archive"""
@@ -959,9 +951,7 @@ def clean_expired(scholarships):
     return active, expired
 
 
-# ============================================
-# DEDUPLICATION
-# ============================================
+## deduplication
 
 def deduplicate(scholarships):
     """Remove duplicate scholarships based on name similarity"""
@@ -986,9 +976,7 @@ def deduplicate(scholarships):
     return unique
 
 
-# ============================================
-# MAIN SCRAPER
-# ============================================
+## main scraper
 
 def scrape_all_sources():
     """Scrape all configured sources and return new scholarships"""
@@ -1052,9 +1040,7 @@ def merge_new(existing, new_scholarships):
     return existing, added
 
 
-# ============================================
-# ENTRY POINT
-# ============================================
+## entry point
 
 def run():
     """Main scraper run"""
