@@ -2767,52 +2767,6 @@ init_db()
 _init_rate_limit_table()
 
 
-# ─── Malaria Cell Scanner ───
-import joblib
-import numpy as np
-from PIL import Image
-import io, base64
-
-MALARIA_MODEL_PATH = '/home/scholarfinder/malaria-app/malaria_model.pkl'
-MALARIA_IMG_SIZE = 32
-malaria_model = None
-
-try:
-    malaria_model = joblib.load(MALARIA_MODEL_PATH)
-except:
-    pass
-
-@app.route('/malaria')
-def malaria_scanner():
-    return send_from_directory('/home/scholarfinder/malaria-app/templates', 'index.html')
-
-@app.route('/predict', methods=['POST'])
-def malaria_predict():
-    if malaria_model is None:
-        return jsonify({'error': 'Model not loaded'}), 500
-    data = request.get_json()
-    if not data or 'image' not in data:
-        return jsonify({'error': 'No image'}), 400
-    try:
-        image_data = data['image']
-        if ',' in image_data:
-            image_data = image_data.split(',')[1]
-        img = Image.open(io.BytesIO(base64.b64decode(image_data))).convert('RGB').resize((MALARIA_IMG_SIZE, MALARIA_IMG_SIZE))
-        X = (np.array(img, dtype=np.float32) / 255.0).flatten().reshape(1, -1)
-        proba = malaria_model.predict_proba(X)[0]
-        parasitized_prob = float(proba[1])
-        uninfected_prob = float(proba[0])
-        is_malaria = parasitized_prob > 0.5
-        return jsonify({
-            'parasitized': round(parasitized_prob * 100, 1),
-            'uninfected': round(uninfected_prob * 100, 1),
-            'diagnosis': 'Parasitized — Malaria Detected' if is_malaria else 'Uninfected — No Malaria',
-            'confidence': round(max(parasitized_prob, uninfected_prob) * 100, 1),
-            'is_malaria': is_malaria
-        })
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
 # ============================================
 # AI AGENT PROXY — keeps API key server-side
 # ============================================
