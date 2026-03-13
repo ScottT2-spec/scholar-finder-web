@@ -297,6 +297,14 @@ async function removeBookmark(id) { await fetch('/api/bookmarks/'+id, {method:'D
 
             loading.style.display = 'none';
 
+            // Show field of study warning if present
+            if (data.field_warning) {
+                const warnEl = document.createElement('div');
+                warnEl.style.cssText = 'background: rgba(255,171,0,0.1); border: 1px solid rgba(255,171,0,0.3); border-radius: 12px; padding: 16px; margin-bottom: 16px; display: flex; align-items: flex-start; gap: 12px;';
+                warnEl.innerHTML = '<span style="font-size:1.4rem;">⚠️</span><div><strong style="color: #FFab00;">Unrecognized field of study</strong><p style="margin:6px 0 10px; font-size:0.9rem; opacity:0.85;">' + escapeHtml(data.field_warning) + '</p><a href="/profile" style="color: #2ECC71; font-weight: 600; text-decoration: none; font-size: 0.9rem;">Update Profile →</a></div>';
+                wrapper.insertBefore(warnEl, scholSection);
+            }
+
             if (data.summary) {
                 const summaryEl = document.createElement('div');
                 summaryEl.className = 'rec-summary';
