@@ -214,9 +214,7 @@ document.querySelectorAll('.remove-btn').forEach(btn => {
 })();
 async function removeBookmark(id) { await fetch('/api/bookmarks/'+id, {method:'DELETE'}); location.reload(); }
 
-// ============================================
-// PERSONALIZED AI RECOMMENDATIONS (auto-load)
-// ============================================
+// personalized ai recommendations (auto-load)
 (function() {
     const loading = document.getElementById('rec-loading');
     const scholSection = document.getElementById('rec-scholarships');
