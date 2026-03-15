@@ -14,7 +14,8 @@ Features:
 
 import os
 import json
-import sqlite3
+import psycopg2
+from psycopg2.extras import RealDictCursor
 import hashlib
 import secrets
 from datetime import datetime, timedelta
@@ -63,7 +64,7 @@ app.config.update(
 WEBHOOK_SECRET = 'sf_whk_' + hashlib.sha256(app.secret_key.encode()).hexdigest()[:32]
 
 # DATABASE
-DB_PATH = os.path.join(os.path.dirname(__file__), 'scholarweb.db')
+DATABASE_URL = os.environ.get('DATABASE_URL', '')
 # Use local data/ folder (works on PythonAnywhere and local)
 _local_data = os.path.join(os.path.dirname(__file__), 'data')
 _bot_data = os.path.join(os.path.dirname(__file__), '..', 'scholarbot')
@@ -76,36 +77,151 @@ SMTP_EMAIL = os.environ.get('SMTP_EMAIL', '')
 SMTP_APP_PASSWORD = os.environ.get('SMTP_APP_PASSWORD', '')
 VERIFICATION_EXPIRY_MINUTES = 1  # 1 minute
 
-# ai config — reads from .env, auto-detects all AI_KEY_* vars
-AI_PROVIDER_URL = os.environ.get('AI_PROVIDER_URL', 'https://api.groq.com/openai/v1/chat/completions')
-AI_MODEL = os.environ.get('AI_MODEL', 'llama-3.3-70b-versatile')
-AI_KEYS = [v for k, v in sorted(os.environ.items()) if k.startswith('AI_KEY_') and v]
-# fallback: also read old GROQ_KEY_* if no AI_KEY_* found
-if not AI_KEYS:
-    AI_KEYS = [v for k, v in sorted(os.environ.items()) if k.startswith('GROQ_KEY_') and v]
-_ai_key_index = 0
+# ai config — multi-provider with automatic fallback
+# Providers: each has a URL, model, and list of keys
+# Tries Groq first (fast), falls back to Cerebras if all Groq keys are limited
+
+_AI_PROVIDERS = []
+
+# Load provider keys
+_groq_url = os.environ.get('AI_PROVIDER_URL', 'https://api.groq.com/openai/v1/chat/completions')
+_groq_model = os.environ.get('AI_MODEL', 'llama-3.3-70b-versatile')
+_groq_keys = [v for k, v in sorted(os.environ.items()) if k.startswith('AI_KEY_') and v]
+if not _groq_keys:
+    _groq_keys = [v for k, v in sorted(os.environ.items()) if k.startswith('GROQ_KEY_') and v]
+_sambanova_keys = [v for k, v in sorted(os.environ.items()) if k.startswith('SAMBANOVA_KEY_') and v]
+_cerebras_keys = [v for k, v in sorted(os.environ.items()) if k.startswith('CEREBRAS_KEY_') and v]
+_openrouter_keys = [v for k, v in sorted(os.environ.items()) if k.startswith('OPENROUTER_KEY_') and v]
+
+# Build interleaved slots: Groq1, SambaNova, Groq2, Cerebras, Groq3, OpenRouter, Groq4
+# This spreads Groq usage across other providers so no single provider gets hammered
+_AI_SLOTS = []
+_other_slots = []
+if _sambanova_keys:
+    for k in _sambanova_keys:
+        _other_slots.append({'url': 'https://api.sambanova.ai/v1/chat/completions', 'model': 'Meta-Llama-3.3-70B-Instruct', 'name': 'sambanova', 'key': k})
+_fireworks_keys = [v for k, v in sorted(os.environ.items()) if k.startswith('FIREWORKS_KEY_') and v]
+if _fireworks_keys:
+    for k in _fireworks_keys:
+        _other_slots.append({'url': 'https://api.fireworks.ai/inference/v1/chat/completions', 'model': 'accounts/fireworks/models/llama-v3p3-70b-instruct', 'name': 'fireworks', 'key': k})
+if _cerebras_keys:
+    for k in _cerebras_keys:
+        _other_slots.append({'url': 'https://api.cerebras.ai/v1/chat/completions', 'model': 'qwen-3-235b-a22b-instruct-2507', 'name': 'cerebras', 'key': k})
+_novita_keys = [v for k, v in sorted(os.environ.items()) if k.startswith('NOVITA_KEY_') and v]
+if _novita_keys:
+    for k in _novita_keys:
+        _other_slots.append({'url': 'https://api.novita.ai/v3/openai/chat/completions', 'model': 'meta-llama/llama-3.3-70b-instruct', 'name': 'novita', 'key': k})
+_cohere_keys = [v for k, v in sorted(os.environ.items()) if k.startswith('COHERE_KEY_') and v]
+if _cohere_keys:
+    for k in _cohere_keys:
+        _other_slots.append({'url': 'https://api.cohere.com/v2/chat', 'model': 'command-a-03-2025', 'name': 'cohere', 'key': k})
+if _openrouter_keys:
+    for k in _openrouter_keys:
+        _other_slots.append({'url': 'https://openrouter.ai/api/v1/chat/completions', 'model': 'meta-llama/llama-3.3-70b-instruct:free', 'name': 'openrouter', 'key': k})
+
+# Interleave: one Groq key, then one other provider, repeat
+_other_idx = 0
+for i, gk in enumerate(_groq_keys):
+    _AI_SLOTS.append({'url': _groq_url, 'model': _groq_model, 'name': 'groq', 'key': gk})
+    if _other_idx < len(_other_slots):
+        _AI_SLOTS.append(_other_slots[_other_idx])
+        _other_idx += 1
+# Add any remaining other providers
+while _other_idx < len(_other_slots):
+    _AI_SLOTS.append(_other_slots[_other_idx])
+    _other_idx += 1
+
+AI_MODEL = _AI_PROVIDERS[0]['model'] if _AI_PROVIDERS else 'llama-3.3-70b-versatile'
+
+# AI provider usage tracking (in-memory, resets on restart)
+_ai_provider_stats = {}  # provider_name -> {'requests': int, 'tokens': int, 'errors': int}
+_ai_requests_today = {'count': 0, 'errors': 0, 'date': '', 'by_hour': {}}
+
+def _track_ai_usage(provider_name, tokens=0, error=False):
+    """Track AI provider usage stats."""
+    from datetime import datetime
+    today = datetime.utcnow().strftime('%Y-%m-%d')
+    hour = datetime.utcnow().strftime('%H')
+    
+    if today != _ai_requests_today.get('date'):
+        _ai_requests_today['count'] = 0
+        _ai_requests_today['errors'] = 0
+        _ai_requests_today['date'] = today
+        _ai_requests_today['by_hour'] = {}
+    
+    _ai_requests_today['count'] += 1
+    _ai_requests_today['by_hour'][hour] = _ai_requests_today['by_hour'].get(hour, 0) + 1
+    if error:
+        _ai_requests_today['errors'] += 1
+    
+    if provider_name not in _ai_provider_stats:
+        _ai_provider_stats[provider_name] = {'requests': 0, 'tokens': 0, 'errors': 0}
+    _ai_provider_stats[provider_name]['requests'] += 1
+    _ai_provider_stats[provider_name]['tokens'] += tokens
+    if error:
+        _ai_provider_stats[provider_name]['errors'] += 1
+AI_KEYS = [s['key'] for s in _AI_SLOTS]
+AI_KEY = AI_KEYS[0] if AI_KEYS else ''
+
+_ai_slot_index = 0
 _ai_dead_keys = {}  # key -> timestamp when it will be available again
 
-def get_ai_key():
-    """Round-robin key selection."""
-    global _ai_key_index
-    key = AI_KEYS[_ai_key_index % len(AI_KEYS)]
-    _ai_key_index += 1
-    return key
+def _get_next_slot():
+    """Round-robin slot selection."""
+    global _ai_slot_index
+    slot = _AI_SLOTS[_ai_slot_index % len(_AI_SLOTS)]
+    _ai_slot_index += 1
+    return slot
 
-def _make_ai_request(key, payload_bytes, timeout):
+def _make_ai_request_slot(slot, payload_dict, timeout):
+    """Make AI request using a specific provider slot, swapping the model name."""
+    payload_dict['model'] = slot['model']
+
+    if slot['name'] == 'cohere':
+        # Cohere v2 uses a different format — convert OpenAI format to Cohere
+        cohere_payload = {
+            'model': slot['model'],
+            'messages': payload_dict.get('messages', []),
+            'max_tokens': payload_dict.get('max_tokens', 1024),
+        }
+        if 'temperature' in payload_dict:
+            cohere_payload['temperature'] = payload_dict['temperature']
+        payload_bytes = json.dumps(cohere_payload).encode('utf-8')
+    else:
+        payload_bytes = json.dumps(payload_dict).encode('utf-8')
+
     req = urllib.request.Request(
-        AI_PROVIDER_URL,
+        slot['url'],
         data=payload_bytes,
         headers={
-            'Authorization': 'Bearer ' + key,
+            'Authorization': 'Bearer ' + slot['key'],
             'Content-Type': 'application/json',
             'User-Agent': 'ScholarFinder/1.0',
             'Accept': 'application/json',
         }
     )
     with urllib.request.urlopen(req, timeout=timeout) as resp:
-        return json.loads(resp.read().decode('utf-8'))
+        data = json.loads(resp.read().decode('utf-8'))
+
+    # Normalize Cohere response to OpenAI format
+    if slot['name'] == 'cohere' and 'choices' not in data:
+        content = ''
+        if 'message' in data and 'content' in data['message']:
+            parts = data['message']['content']
+            if isinstance(parts, list):
+                content = ''.join(p.get('text', '') for p in parts)
+            else:
+                content = str(parts)
+        data = {
+            'choices': [{'message': {'role': 'assistant', 'content': content}}],
+            'model': data.get('model', slot['model']),
+        }
+
+    # Track usage
+    tokens = data.get('usage', {}).get('total_tokens', 0) if isinstance(data, dict) else 0
+    _track_ai_usage(slot['name'], tokens=tokens)
+
+    return data
 
 def _parse_retry_after(e):
     """Extract retry-after seconds from a 429 response."""
@@ -118,18 +234,25 @@ def _parse_retry_after(e):
     return 60  # default cooldown if header missing
 
 def call_ai(payload_bytes, timeout=30):
-    """Call AI API with automatic key rotation on 429.
+    """Call AI API with multi-provider fallback and automatic key rotation on 429.
     
     How it works:
-    1. Tries all keys round-robin, instantly skipping to the next on 429.
-    2. Reads retry-after header to know exactly when each key recovers.
-    3. If all keys are limited, waits for the soonest one to recover and retries.
-    4. Keeps retrying up to 30 seconds total — catches keys that come back mid-wait.
-    5. Works with any number of keys (1 to 100).
+    1. Tries all provider slots (Groq keys first, then Cerebras) round-robin.
+    2. On 429, instantly skips to the next slot (possibly a different provider).
+    3. Reads retry-after header to know exactly when each key recovers.
+    4. If all slots are limited, waits for the soonest one to recover and retries.
+    5. Keeps retrying up to 30 seconds total.
+    6. Automatically swaps the model name to match each provider.
     """
     import time as _t
     start = _t.time()
-    max_wait = 30  # total seconds we're willing to wait
+    max_wait = 30
+
+    # Decode payload so we can swap the model per-provider
+    if isinstance(payload_bytes, bytes):
+        payload_dict = json.loads(payload_bytes.decode('utf-8'))
+    else:
+        payload_dict = json.loads(payload_bytes)
 
     # Clean up recovered keys
     now = _t.time()
@@ -140,51 +263,39 @@ def call_ai(payload_bytes, timeout=30):
     last_error = None
 
     while (_t.time() - start) < max_wait:
-        # Try every key once this round
-        tried_any = False
-        for _ in range(len(AI_KEYS)):
-            key = get_ai_key()
+        for _ in range(len(_AI_SLOTS)):
+            slot = _get_next_slot()
 
-            # Skip keys that are still cooling down
             now = _t.time()
-            if key in _ai_dead_keys and now < _ai_dead_keys[key]:
+            if slot['key'] in _ai_dead_keys and now < _ai_dead_keys[slot['key']]:
                 continue
 
-            # Key is available — try it
-            tried_any = True
             try:
-                return _make_ai_request(key, payload_bytes, timeout)
+                return _make_ai_request_slot(slot, payload_dict.copy(), timeout)
             except urllib.error.HTTPError as e:
                 if e.code == 429:
-                    # Mark key as dead until retry-after expires
                     retry_after = _parse_retry_after(e)
-                    _ai_dead_keys[key] = _t.time() + retry_after
+                    _ai_dead_keys[slot['key']] = _t.time() + retry_after
                     last_error = e
-                    continue  # immediately try next key
-                raise  # non-429 errors bubble up
+                    continue
+                raise
 
-        # All keys were either skipped or returned 429
-        # Find the soonest key to recover
         if _ai_dead_keys:
             soonest = min(_ai_dead_keys.values())
             wait_needed = soonest - _t.time()
             if wait_needed > 0 and (_t.time() - start + wait_needed) < max_wait:
-                _t.sleep(min(wait_needed + 0.5, 5))  # wait for it, cap at 5s per sleep
-                # Remove recovered keys
+                _t.sleep(min(wait_needed + 0.5, 5))
                 now = _t.time()
                 for k in list(_ai_dead_keys):
                     if now >= _ai_dead_keys[k]:
                         del _ai_dead_keys[k]
-                continue  # retry the loop
+                continue
             else:
-                break  # would exceed max_wait
+                break
         else:
-            break  # no dead keys but nothing worked — shouldn't happen
+            break
 
-    # All keys exhausted and max wait exceeded
-    raise last_error or Exception('All AI keys are rate-limited. Please try again shortly.')
-
-AI_KEY = AI_KEYS[0] if AI_KEYS else ''
+    raise last_error or Exception('All AI providers are rate-limited. Please try again shortly.')
 
 
 # field validation
@@ -341,16 +452,16 @@ _MAX_RESEND = 3
 _RESEND_WINDOW = 300  # 5 minutes
 
 def _init_rate_limit_table():
-    db = sqlite3.connect(DB_PATH)
-    db.execute("""
+    db = psycopg2.connect(DATABASE_URL)
+    db_run("""
         CREATE TABLE IF NOT EXISTS rate_limits (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             key TEXT NOT NULL,
             category TEXT NOT NULL,
             timestamp REAL NOT NULL
         )
     """)
-    db.execute("CREATE INDEX IF NOT EXISTS idx_rate_key_cat ON rate_limits(key, category)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_rate_key_cat ON rate_limits(key, category)")
     db.commit()
     db.close()
 
@@ -360,18 +471,18 @@ def _check_rate(key, category, max_attempts, window_seconds):
     try:
         db = get_db()
         # Clean old entries
-        db.execute('DELETE FROM rate_limits WHERE category = ? AND timestamp < ?', (category, cutoff))
+        db_run('DELETE FROM rate_limits WHERE category = %s AND timestamp < %s', (category, cutoff))
         # Count recent attempts
-        count = db.execute(
-            'SELECT COUNT(*) FROM rate_limits WHERE key = ? AND category = ? AND timestamp >= ?',
+        count = db_query(
+            'SELECT COUNT(*) as count FROM rate_limits WHERE key = %s AND category = %s AND timestamp >= %s',
             (key, category, cutoff)
-        ).fetchone()[0]
+        ).fetchone()['count']
         if count >= max_attempts:
             db.commit()
             return False
         # Record this attempt
-        db.execute(
-            'INSERT INTO rate_limits (key, category, timestamp) VALUES (?, ?, ?)',
+        db_run(
+            'INSERT INTO rate_limits (key, category, timestamp) VALUES (%s, %s, %s)',
             (key, category, now)
         )
         db.commit()
@@ -452,9 +563,8 @@ def send_verification_email(to_email, code, full_name=''):
 
 def get_db():
     if 'db' not in g:
-        g.db = sqlite3.connect(DB_PATH)
-        g.db.row_factory = sqlite3.Row
-        g.db.execute("PRAGMA journal_mode=WAL")
+        g.db = psycopg2.connect(DATABASE_URL)
+        g.db.autocommit = False
     return g.db
 
 @app.teardown_appcontext
@@ -463,12 +573,28 @@ def close_db(exc):
     if db is not None:
         db.close()
 
+# PostgreSQL helper functions
+def db_query(sql, params=None):
+    """Execute SQL and return cursor (use for SELECT queries with fetchone/fetchall)."""
+    db = get_db()
+    cur = db.cursor(cursor_factory=RealDictCursor)
+    cur.execute(sql, params or ())
+    return cur
+
+def db_run(sql, params=None):
+    """Execute SQL without returning results (INSERT/UPDATE/DELETE)."""
+    db = get_db()
+    cur = db.cursor()
+    cur.execute(sql, params or ())
+    return cur
+
+
 def init_db():
-    db = sqlite3.connect(DB_PATH)
-    db.execute("PRAGMA journal_mode=WAL")
-    db.executescript("""
+    db = psycopg2.connect(DATABASE_URL)
+    cur = db.cursor()
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             email TEXT UNIQUE NOT NULL,
             username TEXT UNIQUE NOT NULL,
             password_hash TEXT NOT NULL,
@@ -483,52 +609,52 @@ def init_db():
             is_admin INTEGER DEFAULT 0,
             email_verified INTEGER DEFAULT 0,
             verification_code TEXT DEFAULT '',
-            verification_expires DATETIME DEFAULT NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            last_login DATETIME DEFAULT CURRENT_TIMESTAMP
+            verification_expires TIMESTAMP DEFAULT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            last_login TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
 
         CREATE TABLE IF NOT EXISTS bookmarks (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             user_id INTEGER NOT NULL,
             item_type TEXT NOT NULL,
             item_name TEXT NOT NULL,
             item_data TEXT DEFAULT '{}',
             notes TEXT DEFAULT '',
             status TEXT DEFAULT 'interested',
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users(id),
             UNIQUE(user_id, item_type, item_name)
         );
 
         CREATE TABLE IF NOT EXISTS activity_log (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             user_id INTEGER,
             action TEXT NOT NULL,
             details TEXT DEFAULT '',
             ip_address TEXT DEFAULT '',
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
 
         CREATE TABLE IF NOT EXISTS search_log (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             user_id INTEGER,
             query TEXT NOT NULL,
             results_count INTEGER DEFAULT 0,
             category TEXT DEFAULT '',
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
     """)
     # Migrate existing tables — add new columns if missing
-    cursor = db.execute("PRAGMA table_info(users)")
-    existing_cols = {row[1] for row in cursor.fetchall()}
+    cur = db.cursor(cursor_factory=RealDictCursor)
+    cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'users'")
+    existing_cols = {row['column_name'] for row in cur.fetchall()}
     if 'email_verified' not in existing_cols:
-        db.execute("ALTER TABLE users ADD COLUMN email_verified INTEGER DEFAULT 1")  # Existing users are auto-verified
+        cur.execute("ALTER TABLE users ADD COLUMN email_verified INTEGER DEFAULT 1")  # Existing users are auto-verified
     if 'verification_code' not in existing_cols:
-        db.execute("ALTER TABLE users ADD COLUMN verification_code TEXT DEFAULT ''")
+        cur.execute("ALTER TABLE users ADD COLUMN verification_code TEXT DEFAULT ''")
     if 'verification_expires' not in existing_cols:
-        db.execute("ALTER TABLE users ADD COLUMN verification_expires DATETIME DEFAULT NULL")
-
+        cur.execute("ALTER TABLE users ADD COLUMN verification_expires TIMESTAMP DEFAULT NULL")
     db.commit()
     db.close()
 
@@ -559,7 +685,7 @@ def admin_required(f):
         if 'user_id' not in session:
             return jsonify({'error': 'Login required'}), 401
         db = get_db()
-        user = db.execute('SELECT is_admin FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+        user = db_query('SELECT is_admin FROM users WHERE id = %s', (session['user_id'],)).fetchone()
         if not user or not user['is_admin']:
             return jsonify({'error': 'Admin access required'}), 403
         return f(*args, **kwargs)
@@ -569,14 +695,14 @@ def get_current_user():
     if 'user_id' not in session:
         return None
     db = get_db()
-    return db.execute('SELECT * FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+    return db_query('SELECT * FROM users WHERE id = %s', (session['user_id'],)).fetchone()
 
 def log_activity(user_id, action, details=''):
     try:
         db = get_db()
         ip = request.remote_addr or ''
-        db.execute(
-            'INSERT INTO activity_log (user_id, action, details, ip_address) VALUES (?, ?, ?, ?)',
+        db_run(
+            'INSERT INTO activity_log (user_id, action, details, ip_address) VALUES (%s, %s, %s, %s)',
             (user_id, action, details, ip)
         )
         db.commit()
@@ -710,8 +836,8 @@ def cleanup_unverified():
         return  # Skip for static files
     try:
         db = get_db()
-        db.execute(
-            "DELETE FROM users WHERE email_verified = 0 AND created_at < datetime('now', '-1 hour')"
+        db_run(
+            "DELETE FROM users WHERE email_verified = 0 AND created_at < NOW() - INTERVAL '1 hour'"
         )
         db.commit()
     except Exception:
@@ -782,8 +908,8 @@ def signup_page():
             return render_template('signup.html')
 
         db = get_db()
-        existing = db.execute(
-            'SELECT id FROM users WHERE email = ? OR username = ?',
+        existing = db_query(
+            'SELECT id FROM users WHERE email = %s OR username = %s',
             (email, username)
         ).fetchone()
 
@@ -819,13 +945,13 @@ def signup_page():
             flash('Could not send verification email. Please check your email address and try again.', 'error')
             return render_template('signup.html')
 
-        db.execute(
-            'INSERT INTO users (email, username, password_hash, salt, full_name, is_admin, country, education_level, field_of_study, dob, hear_about, friend_name, email_verified, verification_code, verification_expires) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)',
+        db_run(
+            'INSERT INTO users (email, username, password_hash, salt, full_name, is_admin, country, education_level, field_of_study, dob, hear_about, friend_name, email_verified, verification_code, verification_expires) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 0, %s, %s)',
             (email, username, password_hash, salt, full_name, is_admin, country, education_level, field_of_study, dob, hear_about, friend_name, code, expires)
         )
         db.commit()
 
-        user = db.execute('SELECT id FROM users WHERE email = ?', (email,)).fetchone()
+        user = db_query('SELECT id FROM users WHERE email = %s', (email,)).fetchone()
         log_activity(user['id'], 'signup')
 
         # Handle avatar upload during signup
@@ -838,7 +964,7 @@ def signup_page():
                     upload_dir = os.path.join(os.path.dirname(__file__), 'uploads', 'avatars')
                     os.makedirs(upload_dir, exist_ok=True)
                     f.save(os.path.join(upload_dir, fname))
-                    db.execute('UPDATE users SET avatar = ? WHERE id = ?', (f"/uploads/avatars/{fname}", user['id']))
+                    db_run('UPDATE users SET avatar = %s WHERE id = %s', (f"/uploads/avatars/{fname}", user['id']))
                     db.commit()
 
         # Store email in session for verification page (don't log them in yet)
@@ -854,8 +980,8 @@ def login_page():
         password = request.form.get('password', '')
 
         db = get_db()
-        user = db.execute(
-            'SELECT * FROM users WHERE email = ? OR username = ?',
+        user = db_query(
+            'SELECT * FROM users WHERE email = %s OR username = %s',
             (login_id, login_id)
         ).fetchone()
 
@@ -874,7 +1000,7 @@ def login_page():
             # Resend a fresh code
             code = generate_verification_code()
             expires = (datetime.now() + timedelta(minutes=VERIFICATION_EXPIRY_MINUTES)).strftime('%Y-%m-%d %H:%M:%S')
-            db.execute('UPDATE users SET verification_code = ?, verification_expires = ? WHERE id = ?',
+            db_run('UPDATE users SET verification_code = %s, verification_expires = %s WHERE id = %s',
                        (code, expires, user['id']))
             db.commit()
             send_verification_email(user['email'], code, user['full_name'])
@@ -885,7 +1011,7 @@ def login_page():
         session.permanent = True
         session['user_id'] = user['id']
         session['username'] = user['username']
-        db.execute('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?', (user['id'],))
+        db_run('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = %s', (user['id'],))
         db.commit()
         log_activity(user['id'], 'login')
 
@@ -918,7 +1044,7 @@ def verify_page():
             code = ''.join(digits).strip()
 
         db = get_db()
-        user = db.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
+        user = db_query('SELECT * FROM users WHERE email = %s', (email,)).fetchone()
 
         if not user:
             flash('Account not found.', 'error')
@@ -943,7 +1069,7 @@ def verify_page():
             return render_template('verify.html', email=email)
 
         # Verified!
-        db.execute('UPDATE users SET email_verified = 1, verification_code = NULL, verification_expires = NULL WHERE id = ?',
+        db_run('UPDATE users SET email_verified = 1, verification_code = NULL, verification_expires = NULL WHERE id = %s',
                    (user['id'],))
         db.commit()
         log_activity(user['id'], 'email_verified')
@@ -953,7 +1079,7 @@ def verify_page():
         session['user_id'] = user['id']
         session['username'] = user['username']
         session.pop('pending_verification_email', None)
-        db.execute('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?', (user['id'],))
+        db_run('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = %s', (user['id'],))
         db.commit()
 
         if request.is_json:
@@ -972,7 +1098,7 @@ def resend_verification():
         return jsonify({'error': 'Too many resend attempts. Please wait 5 minutes.'}), 429
 
     db = get_db()
-    user = db.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
+    user = db_query('SELECT * FROM users WHERE email = %s', (email,)).fetchone()
     if not user:
         return jsonify({'error': 'Account not found'}), 404
 
@@ -981,7 +1107,7 @@ def resend_verification():
 
     code = generate_verification_code()
     expires = (datetime.now() + timedelta(minutes=VERIFICATION_EXPIRY_MINUTES)).strftime('%Y-%m-%d %H:%M:%S')
-    db.execute('UPDATE users SET verification_code = ?, verification_expires = ? WHERE id = ?',
+    db_run('UPDATE users SET verification_code = %s, verification_expires = %s WHERE id = %s',
                (code, expires, user['id']))
     db.commit()
 
@@ -998,11 +1124,11 @@ def profile_page():
     user = get_current_user()
 
     if request.method == 'POST':
-        db.execute("""
+        db_run("""
             UPDATE users SET
-                full_name = ?, country = ?, field_of_study = ?,
-                education_level = ?, gpa = ?, interests = ?, bio = ?
-            WHERE id = ?
+                full_name = %s, country = %s, field_of_study = %s,
+                education_level = %s, gpa = %s, interests = %s, bio = %s
+            WHERE id = %s
         """, (
             request.form.get('full_name', ''),
             request.form.get('country', ''),
@@ -1039,7 +1165,7 @@ def upload_avatar():
     os.makedirs(upload_dir, exist_ok=True)
     f.save(os.path.join(upload_dir, fname))
     db = get_db()
-    db.execute('UPDATE users SET avatar = ? WHERE id = ?', (f"/uploads/avatars/{fname}", session['user_id']))
+    db_run('UPDATE users SET avatar = %s WHERE id = %s', (f"/uploads/avatars/{fname}", session['user_id']))
     db.commit()
     flash('Profile picture updated!', 'success')
     return redirect(url_for('profile_page'))
@@ -1089,13 +1215,13 @@ def api_admin_send_email():
         return jsonify({'error': 'Missing to, subject, or body'}), 400
     # Store emails in DB for now (actual SMTP can be configured later)
     db = get_db()
-    db.execute("""CREATE TABLE IF NOT EXISTS sent_emails (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        to_email TEXT, subject TEXT, body TEXT, sent_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    db_run("""CREATE TABLE IF NOT EXISTS sent_emails (
+        id SERIAL PRIMARY KEY,
+        to_email TEXT, subject TEXT, body TEXT, sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )""")
     sent = 0
     for email in to_emails:
-        db.execute('INSERT INTO sent_emails (to_email, subject, body) VALUES (?, ?, ?)', (email, subject, body))
+        db_run('INSERT INTO sent_emails (to_email, subject, body) VALUES (%s, %s, %s)', (email, subject, body))
         sent += 1
     db.commit()
     return jsonify({'success': True, 'sent': sent, 'note': 'Emails queued. Configure SMTP in settings to actually deliver.'})
@@ -1104,7 +1230,7 @@ def api_admin_send_email():
 @admin_required
 def api_admin_users_full():
     db = get_db()
-    users = db.execute('''
+    users = db_query('''
         SELECT u.*, COUNT(b.id) as bookmark_count
         FROM users u LEFT JOIN bookmarks b ON u.id = b.user_id
         GROUP BY u.id ORDER BY u.created_at DESC
@@ -1117,8 +1243,8 @@ def dashboard_page():
     user = get_current_user()
     db = get_db()
 
-    bookmarks = db.execute(
-        'SELECT * FROM bookmarks WHERE user_id = ? ORDER BY created_at DESC',
+    bookmarks = db_run(
+        'SELECT * FROM bookmarks WHERE user_id = %s ORDER BY created_at DESC',
         (session['user_id'],)
     ).fetchall()
 
@@ -1216,8 +1342,8 @@ def api_scholarships():
     if q and session.get('user_id'):
         try:
             db = get_db()
-            db.execute(
-                'INSERT INTO search_log (user_id, query, results_count, category) VALUES (?, ?, ?, ?)',
+            db_run(
+                'INSERT INTO search_log (user_id, query, results_count, category) VALUES (%s, %s, %s, %s)',
                 (session['user_id'], q, len(results), 'scholarships')
             )
             db.commit()
@@ -1327,8 +1453,8 @@ def api_stats():
 @login_required
 def api_get_bookmarks():
     db = get_db()
-    bookmarks = db.execute(
-        'SELECT * FROM bookmarks WHERE user_id = ? ORDER BY created_at DESC',
+    bookmarks = db_run(
+        'SELECT * FROM bookmarks WHERE user_id = %s ORDER BY created_at DESC',
         (session['user_id'],)
     ).fetchall()
     return jsonify([dict(b) for b in bookmarks])
@@ -1348,22 +1474,23 @@ def api_add_bookmark():
 
     db = get_db()
     try:
-        db.execute(
-            'INSERT INTO bookmarks (user_id, item_type, item_name, item_data) VALUES (?, ?, ?, ?)',
+        db_run(
+            'INSERT INTO bookmarks (user_id, item_type, item_name, item_data) VALUES (%s, %s, %s, %s)',
             (session['user_id'], item_type, item_name, json.dumps(data.get('data', {})))
         )
         db.commit()
         log_activity(session['user_id'], 'bookmark_add', f'{item_type}: {item_name}')
         return jsonify({'success': True})
-    except sqlite3.IntegrityError:
+    except psycopg2.IntegrityError:
+        get_db().rollback()
         return jsonify({'error': 'Already bookmarked'}), 409
 
 @app.route('/api/bookmarks/<int:bookmark_id>', methods=['DELETE'])
 @login_required
 def api_remove_bookmark(bookmark_id):
     db = get_db()
-    db.execute(
-        'DELETE FROM bookmarks WHERE id = ? AND user_id = ?',
+    db_run(
+        'DELETE FROM bookmarks WHERE id = %s AND user_id = %s',
         (bookmark_id, session['user_id'])
     )
     db.commit()
@@ -1375,8 +1502,8 @@ def api_update_bookmark_status(bookmark_id):
     data = request.get_json()
     status = data.get('status', 'interested')
     db = get_db()
-    db.execute(
-        'UPDATE bookmarks SET status = ? WHERE id = ? AND user_id = ?',
+    db_run(
+        'UPDATE bookmarks SET status = %s WHERE id = %s AND user_id = %s',
         (status, bookmark_id, session['user_id'])
     )
     db.commit()
@@ -1399,19 +1526,19 @@ def api_match():
 @admin_required
 def api_admin_stats():
     db = get_db()
-    total_users = db.execute('SELECT COUNT(*) FROM users').fetchone()[0]
-    total_bookmarks = db.execute('SELECT COUNT(*) FROM bookmarks').fetchone()[0]
-    total_searches = db.execute('SELECT COUNT(*) FROM search_log').fetchone()[0]
+    total_users = db_query('SELECT COUNT(*) as count FROM users').fetchone()['count']
+    total_bookmarks = db_query('SELECT COUNT(*) as count FROM bookmarks').fetchone()['count']
+    total_searches = db_query('SELECT COUNT(*) as count FROM search_log').fetchone()['count']
 
-    recent_users = db.execute(
-        'SELECT username, email, country, created_at FROM users ORDER BY created_at DESC LIMIT 20'
+    recent_users = db_query(
+        'SELECT username, email, country, created_at FROM users ORDER BY created_at DESC'
     ).fetchall()
 
-    top_searches = db.execute(
+    top_searches = db_run(
         'SELECT query, COUNT(*) as cnt FROM search_log GROUP BY query ORDER BY cnt DESC LIMIT 20'
     ).fetchall()
 
-    daily_signups = db.execute(
+    daily_signups = db_run(
         "SELECT date(created_at) as day, COUNT(*) as cnt FROM users GROUP BY day ORDER BY day DESC LIMIT 30"
     ).fetchall()
 
@@ -1445,12 +1572,12 @@ def api_admin_delete_user():
     if not username:
         return jsonify({'error': 'No username provided'}), 400
     db = get_db()
-    user = db.execute('SELECT id FROM users WHERE username = ?', (username,)).fetchone()
+    user = db_query('SELECT id FROM users WHERE username = %s', (username,)).fetchone()
     if not user:
         return jsonify({'error': 'User not found'}), 404
-    db.execute('DELETE FROM bookmarks WHERE user_id = ?', (user['id'],))
-    db.execute('DELETE FROM search_log WHERE user_id = ?', (user['id'],))
-    db.execute('DELETE FROM users WHERE id = ?', (user['id'],))
+    db_run('DELETE FROM bookmarks WHERE user_id = %s', (user['id'],))
+    db_run('DELETE FROM search_log WHERE user_id = %s', (user['id'],))
+    db_run('DELETE FROM users WHERE id = %s', (user['id'],))
     db.commit()
     return jsonify({'success': True})
 
@@ -1458,9 +1585,152 @@ def api_admin_delete_user():
 @admin_required
 def api_admin_clear_searches():
     db = get_db()
-    db.execute('DELETE FROM search_log')
+    db_run('DELETE FROM search_log')
     db.commit()
     return jsonify({'success': True, 'message': 'Search logs cleared'})
+
+@app.route('/api/admin/all-emails')
+@admin_required
+def api_admin_all_emails():
+    db = get_db()
+    users = db_query('SELECT email, username FROM users ORDER BY username').fetchall()
+    return jsonify([dict(u) for u in users])
+
+@app.route('/api/admin/activity-feed')
+@admin_required
+def api_admin_activity_feed():
+    db = get_db()
+    activities = db_run('''
+        SELECT a.*, u.username FROM activity_log a 
+        LEFT JOIN users u ON a.user_id = u.id 
+        ORDER BY a.created_at DESC LIMIT 100
+    ''').fetchall()
+    return jsonify([dict(a) for a in activities])
+
+@app.route('/api/admin/ai-usage')
+@admin_required
+def api_admin_ai_usage():
+    return jsonify({
+        'providers': _ai_provider_stats,
+        'today': _ai_requests_today,
+        'total_slots': len(_AI_SLOTS),
+        'slot_order': [{'name': s['name'], 'model': s['model']} for s in _AI_SLOTS],
+    })
+
+@app.route('/api/admin/analytics-full')
+@admin_required
+def api_admin_analytics_full():
+    db = get_db()
+    # Top countries
+    countries = db_run(
+        "SELECT country, COUNT(*) as cnt FROM users WHERE country != '' AND country IS NOT NULL GROUP BY country ORDER BY cnt DESC LIMIT 20"
+    ).fetchall()
+    # Feature usage from activity log
+    features = db_run(
+        "SELECT action, COUNT(*) as cnt FROM activity_log GROUP BY action ORDER BY cnt DESC"
+    ).fetchall()
+    # Peak hours
+    hours = db_run(
+        "SELECT TO_CHAR(created_at, 'HH24') as hour, COUNT(*) as cnt FROM activity_log GROUP BY hour ORDER BY hour"
+    ).fetchall()
+    # User retention — users who logged in more than once
+    retention = db_run(
+        "SELECT COUNT(DISTINCT user_id) as returning_users FROM activity_log WHERE action='login' AND user_id IN (SELECT user_id FROM activity_log WHERE action='login' GROUP BY user_id HAVING COUNT(*) > 1)"
+    ).fetchone()
+    total_users = db_query('SELECT COUNT(*) as count FROM users').fetchone()['count']
+    return jsonify({
+        'countries': [dict(c) for c in countries],
+        'features': [dict(f) for f in features],
+        'hours': [dict(h) for h in hours],
+        'returning_users': retention['returning_users'] if retention else 0,
+        'total_users': total_users,
+    })
+
+@app.route('/api/admin/moderation')
+@admin_required
+def api_admin_moderation():
+    db = get_db()
+    # Recent AI submissions
+    recent_ai = db_query('''
+        SELECT a.*, u.username FROM activity_log a
+        LEFT JOIN users u ON a.user_id = u.id
+        WHERE a.action IN ('essay_rate', 'resume_review', 'agent_chat')
+        ORDER BY a.created_at DESC LIMIT 50
+    ''').fetchall()
+    # Flagged users (users with is_banned column)
+    try:
+        flagged = db_query("SELECT * FROM users WHERE is_banned = 1").fetchall()
+    except:
+        flagged = []
+    return jsonify({
+        'recent_ai': [dict(a) for a in recent_ai],
+        'flagged': [dict(f) for f in flagged],
+    })
+
+@app.route('/api/admin/ban-user', methods=['POST'])
+@admin_required
+def api_admin_ban_user():
+    data = request.get_json()
+    username = data.get('username')
+    ban = data.get('ban', True)
+    if not username:
+        return jsonify({'error': 'No username'}), 400
+    db = get_db()
+    try:
+        db_run("ALTER TABLE users ADD COLUMN is_banned INTEGER DEFAULT 0")
+        db.commit()
+    except Exception:
+        db.rollback()
+    db_run('UPDATE users SET is_banned = %s WHERE username = %s', (1 if ban else 0, username))
+    db.commit()
+    return jsonify({'success': True})
+
+@app.route('/api/admin/add-scholarship', methods=['POST'])
+@admin_required
+def api_admin_add_scholarship():
+    data = request.get_json()
+    if not data or not data.get('name'):
+        return jsonify({'error': 'Name required'}), 400
+    scholarships = load_json('scholarships.json')
+    scholarships.append(data)
+    path = os.path.join(DATA_DIR, 'scholarships.json')
+    with open(path, 'w') as f:
+        json.dump(scholarships, f, indent=2)
+    _json_cache.pop('scholarships.json', None)
+    _json_cache_mtime.pop('scholarships.json', None)
+    return jsonify({'success': True, 'total': len(scholarships)})
+
+@app.route('/api/admin/delete-scholarship', methods=['POST'])
+@admin_required
+def api_admin_delete_scholarship():
+    data = request.get_json()
+    name = data.get('name')
+    if not name:
+        return jsonify({'error': 'Name required'}), 400
+    scholarships = load_json('scholarships.json')
+    scholarships = [s for s in scholarships if s.get('name') != name]
+    path = os.path.join(DATA_DIR, 'scholarships.json')
+    with open(path, 'w') as f:
+        json.dump(scholarships, f, indent=2)
+    _json_cache.pop('scholarships.json', None)
+    _json_cache_mtime.pop('scholarships.json', None)
+    return jsonify({'success': True, 'total': len(scholarships)})
+
+@app.route('/api/admin/bulk-import-scholarships', methods=['POST'])
+@admin_required
+def api_admin_bulk_import():
+    data = request.get_json()
+    items = data.get('scholarships', [])
+    if not items:
+        return jsonify({'error': 'No scholarships provided'}), 400
+    scholarships = load_json('scholarships.json')
+    scholarships.extend(items)
+    path = os.path.join(DATA_DIR, 'scholarships.json')
+    with open(path, 'w') as f:
+        json.dump(scholarships, f, indent=2)
+    _json_cache.pop('scholarships.json', None)
+    _json_cache_mtime.pop('scholarships.json', None)
+    return jsonify({'success': True, 'imported': len(items), 'total': len(scholarships)})
 
 # TOOLS — Essay Rater, School Matcher, Resume Review
 @app.route('/agents/<agent_type>')
@@ -1553,6 +1823,7 @@ Word count: {word_count} | Paragraphs: {len(paragraphs)} | Type: {type_label}"""
 
         result = call_ai(ai_payload)
         ai_text = result['choices'][0]['message']['content'].strip()
+        log_activity(session.get('user_id'), 'essay_rate', f'Type: {type_label}')
 
         # Clean markdown code blocks if present
         if ai_text.startswith('```'):
@@ -1825,7 +2096,7 @@ def google_auth():
         'prompt': 'select_account',
     })
 
-    return redirect(f'{GOOGLE_AUTH_URL}?{params}')
+    return redirect(f'{GOOGLE_AUTH_URL}%s{params}')
 
 @app.route('/auth/google/callback')
 def google_callback():
@@ -1896,19 +2167,19 @@ def google_callback():
     db = get_db()
 
     # Check if user already exists with this email
-    user = db.execute('SELECT * FROM users WHERE email = ?', (google_email,)).fetchone()
+    user = db_query('SELECT * FROM users WHERE email = %s', (google_email,)).fetchone()
 
     if user:
         # Existing user — log them in (auto-verify if not yet verified)
         if not user['email_verified']:
-            db.execute('UPDATE users SET email_verified = 1, verification_code = NULL, verification_expires = NULL WHERE id = ?',
+            db_run('UPDATE users SET email_verified = 1, verification_code = NULL, verification_expires = NULL WHERE id = %s',
                        (user['id'],))
 
         session.permanent = True
         session['user_id'] = user['id']
         session['username'] = user['username']
         session.pop('pending_verification_email', None)
-        db.execute('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?', (user['id'],))
+        db_run('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = %s', (user['id'],))
         db.commit()
         log_activity(user['id'], 'login_google')
         return redirect(url_for('dashboard_page'))
@@ -1922,7 +2193,7 @@ def google_callback():
 
         # Handle username collisions
         counter = 1
-        while db.execute('SELECT id FROM users WHERE username = ?', (username,)).fetchone():
+        while db_query('SELECT id FROM users WHERE username = %s', (username,)).fetchone():
             username = f'{base_username}{counter}'
             counter += 1
 
@@ -1931,17 +2202,17 @@ def google_callback():
         password_hash, salt = hash_password(random_password)
         is_admin = 1 if google_email == ADMIN_EMAIL else 0
 
-        db.execute(
-            'INSERT INTO users (email, username, password_hash, salt, full_name, is_admin, email_verified) VALUES (?, ?, ?, ?, ?, ?, 1)',
+        db_run(
+            'INSERT INTO users (email, username, password_hash, salt, full_name, is_admin, email_verified) VALUES (%s, %s, %s, %s, %s, %s, 1)',
             (google_email, username, password_hash, salt, google_name, is_admin)
         )
         db.commit()
 
-        user = db.execute('SELECT * FROM users WHERE email = ?', (google_email,)).fetchone()
+        user = db_query('SELECT * FROM users WHERE email = %s', (google_email,)).fetchone()
 
         # Save Google profile picture as avatar
         if google_picture:
-            db.execute('UPDATE users SET avatar = ? WHERE id = ?', (google_picture, user['id']))
+            db_run('UPDATE users SET avatar = %s WHERE id = %s', (google_picture, user['id']))
             db.commit()
 
         session.permanent = True
@@ -2175,8 +2446,8 @@ def api_chat():
     if user:
         try:
             db = get_db()
-            db.execute(
-                'INSERT INTO search_log (user_id, query, category) VALUES (?, ?, ?)',
+            db_run(
+                'INSERT INTO search_log (user_id, query, category) VALUES (%s, %s, %s)',
                 (session.get('user_id'), query, 'chat')
             )
             db.commit()
@@ -2346,26 +2617,26 @@ def api_chat():
 
 # SCHOLARSHIP DATABASE MANAGEMENT
 def init_scholarship_db():
-    db = sqlite3.connect(DB_PATH)
-    db.execute("PRAGMA journal_mode=WAL")
-    db.executescript("""
+    db = psycopg2.connect(DATABASE_URL)
+    cur = db.cursor()
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS scholarship_updates (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             action TEXT NOT NULL,
             scholarship_name TEXT NOT NULL,
             data TEXT DEFAULT '{}',
             source TEXT DEFAULT 'webhook',
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
 
         CREATE TABLE IF NOT EXISTS link_health (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             scholarship_name TEXT NOT NULL,
             url TEXT NOT NULL,
             status TEXT DEFAULT 'unknown',
-            last_checked DATETIME,
+            last_checked TIMESTAMP,
             fail_count INTEGER DEFAULT 0,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             UNIQUE(scholarship_name)
         );
     """)
@@ -2422,7 +2693,7 @@ def webhook_scholarships():
 
         # Log
         db = get_db()
-        db.execute('INSERT INTO scholarship_updates (action, scholarship_name, data, source) VALUES (?, ?, ?, ?)',
+        db_run('INSERT INTO scholarship_updates (action, scholarship_name, data, source) VALUES (%s, %s, %s, %s)',
                    ('add', new_schol['name'], json.dumps(new_schol), data.get('source', 'webhook')))
         db.commit()
 
@@ -2477,7 +2748,7 @@ def webhook_scholarships():
         save_scholarships(scholarships)
 
         db = get_db()
-        db.execute('INSERT INTO scholarship_updates (action, scholarship_name, data, source) VALUES (?, ?, ?, ?)',
+        db_run('INSERT INTO scholarship_updates (action, scholarship_name, data, source) VALUES (%s, %s, %s, %s)',
                    ('update', name, json.dumps(updates), data.get('source', 'webhook')))
         db.commit()
 
@@ -2499,7 +2770,7 @@ def webhook_scholarships():
         save_scholarships(scholarships)
 
         db = get_db()
-        db.execute('INSERT INTO scholarship_updates (action, scholarship_name, source) VALUES (?, ?, ?)',
+        db_run('INSERT INTO scholarship_updates (action, scholarship_name, source) VALUES (%s, %s, %s)',
                    ('remove', name, data.get('source', 'webhook')))
         db.commit()
 
