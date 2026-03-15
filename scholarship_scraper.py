@@ -184,16 +184,22 @@ SOURCES = [
         'selector': 'article, .content, .field-item',
     },
     {
-        'name': 'StudyPortals Scholarships',
-        'url': 'https://www.scholarshipportal.com/scholarships',
+        'name': 'IEFA International Scholarships',
+        'url': 'https://www.iefa.org/scholarships',
         'type': 'html',
-        'selector': 'article, .card, .ScholarshipCard, .listing-item',
+        'selector': 'article, .card, .listing-item',
     },
     {
-        'name': 'Marjo Scholarship (Trusted Aggregator)',
-        'url': 'https://www.marjoriefund.org/scholarships',
+        'name': 'ScholarshipsAds',
+        'url': 'https://www.scholarshipsads.com/',
         'type': 'html',
-        'selector': 'article, .card, .post',
+        'selector': 'article, .post, .entry',
+    },
+    {
+        'name': 'InternationalScholarships.com',
+        'url': 'https://www.internationalscholarships.com/',
+        'type': 'html',
+        'selector': 'article, .card, .listing-item',
     },
     {
         'name': 'IIE Scholar Rescue Fund',
@@ -334,9 +340,19 @@ OPPORTUNITY_SOURCES = [
     },
     # --- Highly Trusted Internship & Exchange Sources ---
     {
-        'name': 'UN Internships',
-        'url': 'https://www.un.org/en/careers/internships',
-        'selector': 'article, .card, .content-block, .field-item',
+        'name': 'GoAbroad Internships',
+        'url': 'https://www.goabroad.com/intern-abroad',
+        'selector': 'article, .card, .listing-item, .program-card',
+    },
+    {
+        'name': 'Devex International Jobs',
+        'url': 'https://www.devex.com/jobs/search',
+        'selector': 'article, .card, .job-listing',
+    },
+    {
+        'name': 'FundsForNGOs Grants',
+        'url': 'https://www2.fundsforngos.org/listing/',
+        'selector': 'article, .post, .entry',
     },
     {
         'name': 'World Bank Young Professionals',
@@ -344,18 +360,8 @@ OPPORTUNITY_SOURCES = [
         'selector': 'article, .card, .content',
     },
     {
-        'name': 'UNDP Internships',
-        'url': 'https://www.undp.org/careers/types-of-opportunities/internships',
-        'selector': 'article, .card, .content',
-    },
-    {
         'name': 'WHO Internships',
         'url': 'https://www.who.int/careers/internships',
-        'selector': 'article, .card, .content',
-    },
-    {
-        'name': 'UNICEF Internships',
-        'url': 'https://www.unicef.org/careers/internships',
         'selector': 'article, .card, .content',
     },
     {
@@ -399,14 +405,14 @@ OPPORTUNITY_SOURCES = [
         'selector': '.gb-query-loop-item, article',
     },
     {
-        'name': 'After School Africa (Competitions)',
-        'url': 'https://www.afterschoolafrica.com/competitions/',
-        'selector': '.gb-query-loop-item, article',
+        'name': 'WayUp Internships',
+        'url': 'https://www.wayup.com/s/internships/',
+        'selector': 'article, .card, .job-listing',
     },
     {
-        'name': 'Youth Opportunities (Summer Programs)',
-        'url': 'https://www.youthop.com/summer-programs',
-        'selector': 'article, .card',
+        'name': 'Fastweb Scholarships & Internships',
+        'url': 'https://www.fastweb.com/college-scholarships',
+        'selector': 'article, .card, .listing',
     },
     {
         'name': 'Youth Opportunities (Conferences)',
@@ -414,9 +420,9 @@ OPPORTUNITY_SOURCES = [
         'selector': 'article, .card',
     },
     {
-        'name': 'Scholars4Dev (Fellowships)',
-        'url': 'https://www.scholars4dev.com/category/fellowships/',
-        'selector': '.post, article',
+        'name': 'Idealist Internships',
+        'url': 'https://www.idealist.org/en/internships',
+        'selector': 'article, .card, .listing',
     },
     {
         'name': 'Google Summer of Code',
